@@ -1,0 +1,56 @@
+title: Pactus Improvement Proposals
+description: >-
+  Pactus Improvement Proposals (PIPs) serve as a comprehensive framework for outlining and defining the standards 
+  for the Pactus platform's ongoing development and enhancement. These proposals cover various aspects of the platform, 
+  including core protocol specifications and client application programming interfaces (APIs). By establishing a clear 
+  and consistent set of guidelines, PIPs ensure seamless interoperability and extensibility across the Pactus ecosystem, 
+  fostering a robust and efficient environment for developers and users alike.
+url: "https://pips.pactus.org"
+github_username:  pactus-project
+repository: pactus-project/PIPs
+
+header_pages:
+ - all.html
+ - core.html
+ - networking.html
+ - interface.html
+ - pip.html
+ - meta.html
+ - informational.html
+
+highlighter: rouge
+markdown: kramdown
+theme: minima
+kramdown:
+  parse_block_html: false
+  auto_ids: true
+  auto_id_stripping: true
+  syntax_highlighter: rouge
+
+permalink: /:slug
+
+defaults:
+  -
+    scope:
+      path: "PIPs"
+    values:
+      layout: "pip"
+
+exclude:
+  - .github
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - pip-template.md
+  - ISSUE_TEMPLATE.md
+  - PULL_REQUEST_TEMPLATE.md
+  - README.md
+  
+include:
+  - LICENSE
+
+markdown_ext: "markdown,mkdown,mkdn,mkd,md"

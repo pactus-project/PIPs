@@ -1,0 +1,36 @@
+<style type="text/css">
+  .piptable .title {
+    width: 67%;
+  }
+
+  .piptable .author {
+    width: 33%;
+  }
+</style>
+{% for status in site.data.statuses %}
+  {% assign pips = include.pips|where:"status",status|sort:"pip" %}
+  {% assign count = pips|size %}
+  {% if count > 0 %}
+    <h2 id="{{status|slugify}}">{{status}}</h2>
+    <table class="piptable">
+      <thead>
+        {% if status == "Last Call" %}
+          <tr>
+          <th class="pipnum">Number</th><th class="date">Review ends</th><th class="title">Title</th><th class="author">Author</th></tr>
+        {% else %}
+          <tr><th class="pipnum">Number</th><th class="title">Title</th><th class="author">Author</th></tr>
+        {% endif %}
+      </thead>
+      {% for page in pips %}
+        <tr>
+          <td class="pipnum"><a href="{{page.url|relative_url}}">{{page.pip|xml_escape}}</a></td>
+          {% if status == "Last Call" and page.last-call-deadline != undefined %}
+            <td class="date">{{ page.last-call-deadline | xml_escape }}</td>
+          {% endif %}
+          <td class="title">{{page.title|xml_escape}}</td>
+          <td class="author">{% include authorlist.html authors=page.author %}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+{% endfor %}

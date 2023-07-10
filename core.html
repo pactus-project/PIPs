@@ -1,0 +1,7 @@
+---
+layout: page
+title: Core
+---
+
+{% assign pips=site.pages|where:"type","Standards Track"|where:"category","Core" %}
+{% include piptable.html pips=pips %}

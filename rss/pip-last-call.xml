@@ -1,0 +1,35 @@
+---
+layout: null
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Pactus PIPs - Last Call Review</title>
+    <description>All PIPs which are in the "last call" status, please help review these and provide your feedback!</description>
+    <link>{{ site.url }}</link>
+    <atom:link href="{{ site.url }}/rss/last-call.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
+    {% assign pips = site.pages | sort: 'pip' %}
+    {% for pip in pips %}
+      {% if pip.category == "ERC" %}
+      {% if pip.status == "Last Call" %}
+      {% capture description %}
+        <p><strong>PIP #{{ pip.pip }} - {{pip.title }}</strong> is in Last Call status. It is authored by {{ pip.author }} and was originally created {{ pip.created }}. It is in the {{ pip.category }} category of type {{ pip.type }}. Please review and note any changes that should block acceptance.</p>
+        {% if pip.discussions-to %}
+          <p>The author has requested that discussions happen at the following URL: <a href="{{ pip.discussions-to }}">{{ pip.discussions-to }}</a></p>
+        {% endif %}
+        <hr />
+        {{ pip.content }}
+      {% endcapture %}
+      <item>
+        <title>{{ pip.title | xml_escape }}</title>
+        <description>{{ description | xml_escape }}</description>
+        <pubDate>{{ pip.created | date_to_rfc822 }}</pubDate>
+        <link>{{ site.url }}/{{ pip.url }}</link>
+        <guid isPermaLink="true">{{ site.url }}/{{ pip.url }}</guid>
+      </item>
+      {% endif %}
+      {% endif %}
+    {% endfor %}
+  </channel>
+</rss>

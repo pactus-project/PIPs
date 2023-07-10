@@ -1,0 +1,7 @@
+---
+layout: page
+title: Informational
+---
+
+{% assign pips=site.pages|where:"type","Informational" %}
+{% include piptable.html pips=pips %}
