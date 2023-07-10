@@ -5,7 +5,7 @@ description: >-
   including core protocol specifications and client application programming interfaces (APIs). By establishing a clear 
   and consistent set of guidelines, PIPs ensure seamless interoperability and extensibility across the Pactus ecosystem, 
   fostering a robust and efficient environment for developers and users alike.
-url: "https://pips.pactus.org"
+url: "https://pactus-project.github.io/PIPs/"
 github_username:  pactus-project
 repository: pactus-project/PIPs
 
