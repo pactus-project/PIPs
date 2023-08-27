@@ -31,9 +31,7 @@ layout: default
     {% if page.status == "Last Call" %}
       <span class="badge text-light bg-success" data-bs-toggle="tooltip" data-bs-title="This PIP is in the last call for review stage. The authors wish to finalize the PIP and ask you to provide feedback.">📢 Last Call</span>
     {% endif %}
-    {% if page.category == "ERC" %}
-      <a class="badge text-light bg-primary" data-bs-toggle="tooltip" data-bs-title="Application-level standards and conventions, including contract standards such as token standards, name registries, URI schemes, library/package formats, and wallet formats." href="../erc">Standards Track: ERC</a>
-    {% elsif page.category == "Interface" %}
+    {% if page.category == "Interface" %}
       <a class="badge text-light bg-primary" data-bs-toggle="tooltip" data-bs-title="Improvements around client API/RPC specifications and standards, and also certain language-level standards like method names and contract ABIs." href="../interface">Standards Track: Interface</a>
     {% elsif page.category == "Networking" %}
       <a class="badge text-light bg-primary" data-bs-toggle="tooltip" data-bs-title="Improvements around devp2p and Light Pactus Subprotocol, as well as proposed improvements to network protocol specifications of whisper and swarm." href="../networking">Standards Track: Networking</a>
@@ -115,7 +113,7 @@ layout: default
   IEEE specification for reference formatting:
   https://ieee-dataport.org/sites/default/files/analysis/27/IEEE%20Citation%20Guidelines.pdf
   {% endcomment %}
-  <p>{% include authorlist.html authors=page.author %}, "{% if page.category == "ERC" %}ERC{% else %}PIP{% endif %}-{{ page.pip | xml_escape }}: {{ page.title | xml_escape }}{% if page.status == "Draft" or page.status == "Stagnant" or page.status == "Withdrawn" or page.status == "Review" or page.status == "Last Call" %} [DRAFT]{% endif %}," <em>Pactus Improvement Proposals</em>, no. {{ page.pip | xml_escape }}, {{ page.created | date: "%B %Y" }}. [Online serial]. Available: https://pips.Pactus.org/PIPs/pip-{{ page.pip | xml_escape }}.</p>
+  <p>{% include authorlist.html authors=page.author %}, "PIP-{{ page.pip | xml_escape }}: {{ page.title | xml_escape }}{% if page.status == "Draft" or page.status == "Stagnant" or page.status == "Withdrawn" or page.status == "Review" or page.status == "Last Call" %} [DRAFT]{% endif %}," <em>Pactus Improvement Proposals</em>, no. {{ page.pip | xml_escape }}, {{ page.created | date: "%B %Y" }}. [Online serial]. Available: https://pips.Pactus.org/PIPs/pip-{{ page.pip | xml_escape }}.</p>
 </div>
 {% comment %}
 Article schema specification:
