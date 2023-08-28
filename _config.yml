@@ -6,6 +6,7 @@ description: >-
   and consistent set of guidelines, PIPs ensure seamless interoperability and extensibility across the Pactus ecosystem, 
   fostering a robust and efficient environment for developers and users alike.
 url: "https://pips.pactus.org"
+baseurl: ""
 github_username:  pactus-project
 repository: pactus-project/PIPs
 
