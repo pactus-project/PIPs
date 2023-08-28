@@ -11,7 +11,6 @@ layout: null
     <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
     {% assign pips = site.pages | sort: 'pip' %}
     {% for pip in pips %}
-      {% unless pip.category == "PIP" %}
       {% if pip.status == "Last Call" %}
       {% capture description %}
         <p><strong>PIP #{{ pip.pip }} - {{pip.title }}</strong> is in Last Call status. It is authored by {{ pip.author }} and was originally created {{ pip.created }}. It is in the {{ pip.category }} category of type {{ pip.type }}. Please review and note any changes that should block acceptance.</p>
@@ -29,7 +28,6 @@ layout: null
         <guid isPermaLink="true">{{ site.url }}/{{ pip.url }}</guid>
       </item>
       {% endif %}
-      {% endunless %}
     {% endfor %}
   </channel>
 </rss>
