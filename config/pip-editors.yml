@@ -11,11 +11,6 @@ core:
   - SamWilsn
   - Pandapip1
   - g11tech
-erc:
-  - axic
-  - SamWilsn
-  - Pandapip1
-  - xinbenlv
 networking:
   - lightclient
   - axic
