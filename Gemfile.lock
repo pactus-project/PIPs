@@ -2,8 +2,6 @@ GEM
   remote: https://rubygems.org/
   specs:
     Ascii85 (1.1.0)
-    activemodel (7.0.4.3)
-      activesupport (= 7.0.4.3)
     activesupport (7.0.4.3)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 1.6, < 2)
@@ -41,7 +39,6 @@ GEM
     ffi (1.15.5)
     fiber-local (1.0.0)
     forwardable-extended (2.6.0)
-    front_matter_parser (0.1.1)
     gemoji (3.0.1)
     github-pages (228)
       github-pages-health-check (= 1.17.9)
@@ -295,7 +292,7 @@ DEPENDENCIES
   html-proofer (>= 5.0.7)
   minima (~> 2.0)
   tzinfo-data
-  webrick (~> 1.8)
+  webrick (>= 1.8.1)
 
 BUNDLED WITH
    2.4.12

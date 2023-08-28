@@ -28,7 +28,6 @@ layout: null
         <guid isPermaLink="true">{{ site.url }}/{{ pip.url }}</guid>
       </item>
       {% endif %}
-      {% endif %}
     {% endfor %}
   </channel>
 </rss>
