@@ -1,4 +1,5 @@
 ---
+pip: 2
 title: Lock Time Transactions
 author: Mostafa Sedaghat Joo (@b00f)
 status: Final
