@@ -55,7 +55,7 @@ Needs discussion.
 
 ## Copyright
 
-Copyright and related rights waived via [CC0](../LICENSE.md).
+Copyright and related rights waived via [CC0](../LICENSE).
 
 ## References:
 
