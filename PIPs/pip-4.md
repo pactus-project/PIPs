@@ -1,4 +1,5 @@
 ---
+pip: 4
 title: Indexing Public Keys 
 status: Final 
 type: Standard 
