@@ -3,13 +3,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   {% if page.layout == "pip" %}
-    {% if page.category == "PIP" %}
-      <title>PIP-{{ page.pip }}: {{ page.title | escape }}</title>
-      <meta propery="og:title" content="PIP-{{ page.pip }}: {{ page.title | escape }}" />
-    {% else %}
-      <title>PIP-{{ page.pip }}: {{ page.title | escape }}</title>
-      <meta property="og:title" content="PIP-{{ page.pip }}: {{ page.title | escape }}" />
-    {% endif %}
+    <title>PIP-{{ page.pip }}: {{ page.title | escape }}</title>
+    <meta property="og:title" content="PIP-{{ page.pip }}: {{ page.title | escape }}" />
     <meta name="description" content="{{page.description | escape }}" />
     <meta property="og:description" content="{{page.description | escape }}" />
     <meta name="twitter:description" content="{{page.description | escape }}" />

@@ -45,9 +45,9 @@ jobs:
         uses: actions/checkout@47fbe2df0ad0e27efb67a70beac3555f192b062f
 
       - name: Install Ruby
-        uses: ruby/setup-ruby@55283cc23133118229fd3f97f9336ee23a179fcf
+        uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.1.4 # 3.2 fails, see https://github.com/github/pages-gem/issues/879
+          ruby-version: 3.2
           bundler-cache: true
 
       - name: Build Website
@@ -58,7 +58,7 @@ jobs:
       - name: HTML Proofer
         run: bundle exec htmlproofer --allow-missing-href --disable-external --assume-extension '.html' --log-level=:info --cache='{"timeframe":{"external":"6w"}}' --checks 'Links,Images,Scripts,OpenGraph' --no-check-sri --ignore-empty-alt --no-enforce_https ./_site
       - name: DNS Validator
-        run: bundle exec github-pages health-check
+        run: bundle exec github-pages
 
   link-check:
     name: Link Check
@@ -69,12 +69,13 @@ jobs:
         uses: actions/checkout@47fbe2df0ad0e27efb67a70beac3555f192b062f
         
       - name: Link Checker
-        uses: gaurav-nelson/github-action-markdown-link-check@d53a906aa6b22b8979d33bc86170567e619495ec
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
           config-file: config/mlc_config.json
           use-quiet-mode: no
           use-verbose-mode: yes
           check-modified-files-only: yes
+          base-branch: main
 
   codespell:
     name: CodeSpell
