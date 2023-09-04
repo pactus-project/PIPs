@@ -3,7 +3,7 @@ title: <The PIP title is a few words, not a complete sentence>
 description: <Description is one full (short) sentence>
 author: <a comma separated list of the author's or authors' name + GitHub username (in parenthesis), or name and email (in angle brackets).  Example, FirstName LastName (@GitHubUsername), FirstName LastName <foo@bar.com>, FirstName (@GitHubUsername) and GitHubUsername (@GitHubUsername)>
 discussions-to: <URL>
-status: Draft
+status: <Idea, Draft, Review, Last Call, Final, Stagnant, Withdrawn, Living> # More details about status in: https://pips.pactus.org/#:~:text=PIPs%20repository.-,PIP%20status%20terms,-Idea%20%2D%20An%20idea
 type: <Standards Track, Meta, or Informational>
 category: <Core, Networking, Interface> # Only required for Standards Track. Otherwise, remove this field.
 created: <date created on, in ISO 8601 (yyyy-mm-dd) format>
