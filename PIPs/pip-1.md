@@ -5,7 +5,6 @@ status: Living
 type: Meta
 author: Javad Rajabzadeh (ja7ad@live.com)
 created: 2023-07-10
-mermaid: true
 ---
 
 ## What is an PIP?
