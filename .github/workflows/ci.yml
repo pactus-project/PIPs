@@ -56,7 +56,7 @@ jobs:
           bundle exec jekyll build
 
       - name: HTML Proofer
-        run: bundle exec htmlproofer --allow-missing-href --disable-external --assume-extension '.html' --log-level=:info --cache='{"timeframe":{"external":"6w"}}' --checks 'Links,Images,Scripts,OpenGraph' --no-check-sri --ignore-empty-alt --ignore_urls 'https://mermaid.ink' --no-enforce_https ./_site
+        run: bundle exec htmlproofer --allow-missing-href --disable-external --assume-extension '.html' --log-level=:info --cache='{"timeframe":{"external":"6w"}}' --checks 'Links,Images,Scripts,OpenGraph' --no-check-sri --ignore-empty-alt --ignore_urls 'mermaid.ink' --no-enforce_https ./_site
       - name: DNS Validator
         run: bundle exec github-pages
 
