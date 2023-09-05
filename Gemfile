@@ -24,3 +24,5 @@ gem "wdm", "~> 0.1.1" if Gem.win_platform?
 gem "html-proofer", '>=4.0'
 
 gem "webrick", '>= 1.8'
+
+gem 'jekyll-spaceship', group: :jekyll_plugins

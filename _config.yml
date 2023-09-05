@@ -30,6 +30,40 @@ kramdown:
 
 permalink: /:slug
 
+jekyll-spaceship:
+  processors:
+    - mermaid-processor
+    - table-processor
+    - mathjax-processor
+  mathjax-processor:
+    src:
+      - https://polyfill.io/v3/polyfill.min.js?features=es6
+      - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+    config:
+      tex:
+        inlineMath:
+          - ['$','$']
+          - ['\(','\)']
+        displayMath:
+          - ['$$','$$']
+          - ['\[','\]']
+      svg:
+        fontCache: 'global'
+    optimize: 
+      enabled: true 
+      include: []   
+      exclude: []   
+  mermaid-processor:
+    mode: default
+    css:
+      class: mermaid
+    syntax:
+      code: 'mermaid!'
+      custom: ['@startmermaid', '@endmermaid']
+    config:
+      theme: default
+    src: https://mermaid.ink/svg/
+
 defaults:
   -
     scope:

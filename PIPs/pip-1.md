@@ -38,10 +38,9 @@ It is highly recommended that a single PIP contain a single key proposal or new 
 A PIP must meet certain minimum criteria. It must be a clear and complete description of the proposed enhancement. The enhancement must represent a net improvement. The proposed implementation, if applicable, must be solid and must not complicate the protocol unduly.
 
 ## PIPs Status Terms
-
 We have many status terms to finalize your proposal for implementation in the Pactus blockchain.
 
-<div class="mermaid">
+```mermaid!
 graph TD
   subgraph Idea
     A1[Idea]
@@ -101,7 +100,7 @@ graph TD
   F1 -->|Idea Pursued Later| D1
   F1 -->|Idea Pursued Later| E1
   F1 -->|Idea Pursued Later| H1
-</div>
+```
 
 1. **Idea:**  
    - Initial idea for an improvement.
