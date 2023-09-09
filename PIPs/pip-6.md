@@ -8,7 +8,7 @@ created: 2023-09-9
 ---
 ## Abstract
 
-This proposal outlines the implementation of an LRU (Least Recently Used) cache to store public keys, validators, and account data in memory within the blockchain project written in Golang. Storing this information in memory will optimize performance and reduce the need for redundant data storage.
+This proposal outlines the implementation of an LRU (Least Recently Used) cache to store public keys, validators, and account data in memory base on review for [PIP-4](https://pips.pactus.org/PIPs/pip-4). Storing this information in memory will optimize performance and reduce the need for redundant data storage.
 
 ## Motivation
 
@@ -53,4 +53,3 @@ By implementing an LRU cache to store public keys, validators, and account infor
 ## Copyright
 
 Copyright and related rights waived via [CC0](../LICENSE).
-
