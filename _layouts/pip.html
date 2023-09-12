@@ -117,9 +117,11 @@ layout: default
 
   {% include anchor_headings.html html=content anchorClass="anchor-link" beforeHeading=true %}
 
+  {% if page.status != "Living" %}
   </br>
   <h2>Copyright</h2>
   <p>Copyright and related rights waived via <a href="../LICENSE">CC0</a>.</p>
+  {% endif %}
 </div>
 {% comment %}
 Article schema specification:
