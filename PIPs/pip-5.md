@@ -3,7 +3,7 @@ pip: 5
 title: address prefix
 status: Draft
 type: Standard
-author: Kayhan Alizadeh (kehiiiiya@gmail.com)
+author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 created: 2023-08-27
 ---
 
