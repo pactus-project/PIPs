@@ -37,22 +37,6 @@ A light client doesn't need to store the entire blockchain history.
 Since Pactus transactions have a limited lifespan, the light client can avoid keeping all transaction records.
 For example, with the current consensus parameters, the number of transactions in a single day is sufficient to detect replay attacks.
 
-## Security Considerations
-
-<!--
-  All PIPs must contain a section that discusses the security implications/considerations relevant to the proposed change. Include information that might be important for security discussions, surfaces risks and can be used throughout the life cycle of the proposal. For example, include security-relevant design decisions, concerns, important discussions, implementation-specific guidance and pitfalls, an outline of threats and risks and how they are being addressed. PIP submissions missing the "Security Considerations" section will be rejected. An PIP cannot proceed to status "Final" without a Security Considerations discussion deemed sufficient by the reviewers.
-
-  The current placeholder is acceptable for a draft.
-
-  TODO: Remove this comment before submitting
--->
-
-Needs discussion.
-
-## Copyright
-
-Copyright and related rights waived via [CC0](../LICENSE).
-
 ## References
 
 [^1]: [https://en.wikipedia.org/wiki/Birthday_attack](https://en.wikipedia.org/wiki/Birthday_attack)

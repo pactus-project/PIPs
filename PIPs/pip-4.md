@@ -36,7 +36,3 @@ An adversary can change the value of the `Flags` in two ways:
 1. If the public key is not indexed or unknown yet, they can change the first bit of the `Flags` to 1. In this case, an honest node receiving this transaction cannot validate the transaction because it doesn't have the public key, and the transaction will be invalid.
 
 2. If the public key is indexed or known before, they can change the first bit of the `Flags` to 0. Because the `Flags` is set to 0, it means the public key is included in the transaction. In this case, the public key is redundant data.
-
-## Copyright
-
-Copyright and related rights waived via [CC0](../LICENSE).

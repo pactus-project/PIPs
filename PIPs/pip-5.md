@@ -24,7 +24,3 @@ To achieve this, we can define `3` prefix options for the current address types:
 - Contract:  `pc1pdw5fda6r757q780xvtsxhfls24vekrfqmddqrs`
 
 Furthermore, any possible future address types must follow the same rule and have their own prefix.
-
-## Copyright
-
-Copyright and related rights waived via [CC0](../LICENSE).

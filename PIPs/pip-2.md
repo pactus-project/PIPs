@@ -41,22 +41,6 @@ Stamped transactions provide resistance against long-range attack [^2].
 Both locked-time and stamped transactions have a limited lifespan,
 and they become invalid once the Transaction-To-Live (TTL) interval expires.
 
-## Security Considerations
-
-<!--
-  All PIPs must contain a section that discusses the security implications/considerations relevant to the proposed change. Include information that might be important for security discussions, surfaces risks and can be used throughout the life cycle of the proposal. For example, include security-relevant design decisions, concerns, important discussions, implementation-specific guidance and pitfalls, an outline of threats and risks and how they are being addressed. PIP submissions missing the "Security Considerations" section will be rejected. An PIP cannot proceed to status "Final" without a Security Considerations discussion deemed sufficient by the reviewers.
-
-  The current placeholder is acceptable for a draft.
-
-  TODO: Remove this comment before submitting
--->
-
-Needs discussion.
-
-## Copyright
-
-Copyright and related rights waived via [CC0](../LICENSE).
-
 ## References:
 
 [^1]: [https://en.bitcoin.it/wiki/Protocol_documentation#tx](https://en.bitcoin.it/wiki/Protocol_documentation#tx)

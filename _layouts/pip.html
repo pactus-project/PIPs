@@ -67,10 +67,12 @@ layout: default
         <th scope="row">Authors</th>
         <td>{% include authorlist.html authors=page.author %}</td>
       </tr>
+      {% if page.status != "Living" %}
       <tr>
         <th scope="row">Discussion</th>
         <td><a href="https://github.com/pactus-project/PIPs/discussions?discussions_q=PIP-{{ page.pip | xml_escape }}">View Discussion PIP-{{ page.pip | xml_escape }}</a></td>
       </tr>
+      {% endif %}
       {% if page.created != undefined %}
         <tr>
           <th scope="row">Created</th>
@@ -115,13 +117,9 @@ layout: default
 
   {% include anchor_headings.html html=content anchorClass="anchor-link" beforeHeading=true %}
 
-  <h2>Citation</h2>
-  <p>Please cite this document as:</p>
-  {% comment %}
-  IEEE specification for reference formatting:
-  https://ieee-dataport.org/sites/default/files/analysis/27/IEEE%20Citation%20Guidelines.pdf
-  {% endcomment %}
-  <p>{% include authorlist.html authors=page.author %}, "PIP-{{ page.pip | xml_escape }}: {{ page.title | xml_escape }}{% if page.status == "Draft" or page.status == "Accepted" or page.status == "Withdrawn" or page.status == "Rejected" %} [DRAFT]{% endif %}," <em>Pactus Improvement Proposals</em>, no. {{ page.pip | xml_escape }}, {{ page.created | date: "%B %Y" }}. [Online serial]. Available: https://pips.Pactus.org/PIPs/pip-{{ page.pip | xml_escape }} and https://github.com/pactus-project/PIPs/discussions?discussions_q=PIP-{{ page.pip | xml_escape }}.</p>
+  </br>
+  <h2>Copyright</h2>
+  <p>Copyright and related rights waived via <a href="../LICENSE">CC0</a>.</p>
 </div>
 {% comment %}
 Article schema specification:
