@@ -1,7 +1,7 @@
 ---
 pip: 7
-title: Checking timestamp difference in handshaking
-description: Check the timestamp difference between two peers before connecting to the network
+title: Checking Timestamp Difference in Handshaking
+description: Check the timestamp difference between two peers before connecting to the network.
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 status: Draft
 type: Standards
@@ -11,26 +11,23 @@ created: 2023-09-12
 
 ## Abstract
 
-For now, Pactus node implementations don't care about to time difference when connecting to each other and sometimes it brings some issues in network and sync modules, so, we can fix it by checking the timestamp difference in the hello message.
+Currently, Pactus node implementations do not consider time differences when connecting to each other. This oversight occasionally leads to issues in network and synchronization modules. To address this, we propose checking the timestamp difference in the hello message.
 
 ## Motivation
 
-Checking the timestamp difference in handshaking and hello messages, can reassure us that none of the nodes in the network have a wrong time config.
-Wrong time config can cause issues like calculating wrong `number of blocks left`.
-
-
+Checking the timestamp difference during handshaking and hello messages can ensure that none of the nodes in the network have incorrect time configurations. Incorrect time configurations can lead to problems such as inaccurately calculating the "number of blocks left."
 
 ## Specification
 
-We should add a new field to our `hello` message called `mytime`, each node when receiving a `hello` message can check the `mytime` value of the message and calculate the difference between the message `mytime` and its timestamp.
+We propose adding a new field to our `hello` message called `mytime`. Each node, upon receiving a `hello` message, can examine the `mytime` value within the message and calculate the difference between the message's `mytime` and its own timestamp.
 
-Full nodes must drop `hello` message with a timestamp difference of more than `20 seconds`.
+Full nodes must drop `hello` messages with a timestamp difference exceeding 20 seconds.
 
-The result is when a node has a wrong timestamp config none of the other nodes accept `hello` message from it and it forces the node owner to fix the timestamp and we can make sure all nodes in the network have the same time.
+The outcome of this approach is that when a node has an incorrect timestamp configuration, other nodes will reject `hello` messages from it. This compels the node owner to rectify the timestamp issue, ensuring that all nodes in the network maintain consistent time settings.
 
 ## Security Considerations
 
-
+[Insert security considerations here.]
 
 ## Copyright
 
