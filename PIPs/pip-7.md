@@ -27,7 +27,7 @@ The outcome of this approach is that when a node has an incorrect timestamp conf
 
 ## Security Considerations
 
-[Insert security considerations here.]
+Introducing a timestamp check during handshaking and hello messages can improve the security and integrity of the Pactus network. It is critical to prevent nodes with incorrect timestamp configurations from joining the network because they can potentially cause synchronization and consensus issues. Additionally, malicious actors may attempt to manipulate the timestamps of their nodes to disrupt network operations.
 
 ## Copyright
 
