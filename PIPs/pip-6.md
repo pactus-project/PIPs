@@ -49,7 +49,3 @@ To ensure the security of the LRU cache, we need to consider the following:
 ## Conclusion
 
 By implementing an LRU cache to store public keys, validators, and account information in memory, we aim to optimize the blockchain's performance, reduce disk I/O, and enhance the overall efficiency of our system. This proposal outlines the key steps required to achieve this goal and highlights security considerations to ensure the integrity of our cache.
-
-## Copyright
-
-Copyright and related rights waived via [CC0](../LICENSE).
