@@ -3,7 +3,7 @@ pip: 6
 title: In-Memory Storage of Public Keys, Validators, and Accounts using LRU Cache
 status: Draft
 type: Standard
-author: Javad Rajabzadeh (ja7ad@live.com)
+author: Javad Rajabzadeh <ja7ad@live.com>
 created: 2023-09-9
 ---
 ## Abstract

@@ -3,11 +3,12 @@ pip: 1
 title: PIP Purpose and Guidelines
 status: Living
 type: Meta
-author: Javad Rajabzadeh (ja7ad@live.com)
+author: Javad Rajabzadeh <ja7ad@live.com>
 created: 2023-07-10
 ---
 
 ## What is an PIP?
+
 Pactus Improvement Proposals (PIPs) serve as a comprehensive framework for outlining and defining the standards 
 for the Pactus platform's ongoing development and enhancement. These proposals cover various aspects of the platform, 
 including core protocol specifications and client application programming interfaces (APIs). By establishing a clear 
@@ -15,11 +16,13 @@ and consistent set of guidelines, PIPs ensure seamless interoperability and exte
 fostering a robust and efficient environment for developers and users alike.
 
 ## PIP Rationale
+
 We intend PIPs to be the primary mechanisms for proposing new features, for collecting community technical input on an issue, and for documenting the design decisions that have gone into Pactus. Because the PIPs are maintained as text files in a versioned repository, their revision history is the historical record of the feature proposal.
 
 For Pactus implementers, PIPs are a convenient way to track the progress of their implementation. Ideally, each implementation maintainer would list the PIPs that they have implemented. This will give end users a convenient way to know the current status of a given implementation or library.
 
 ## PIP Types
+
 There are three types of PIP:
 
 Standards Track PIP: Describes any change that affects most or all Pactus implementations, such as—a change to the network protocol, a change in block or transaction validity rules, proposed application standards/conventions, or any change or addition that affects the interoperability of applications using Pactus. Standards Track PIPs consist of three parts—a design document, an implementation, and (if warranted) an update to the formal specification. Furthermore, Standards Track PIPs can be broken down into the following categories:

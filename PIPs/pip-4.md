@@ -3,7 +3,7 @@ pip: 4
 title: Indexing Public Keys 
 status: Final 
 type: Standard 
-author: Kayhan Alizadeh (kehiiiiya@gmail.com) 
+author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 created: 2023-08-27
 ---
 
