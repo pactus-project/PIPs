@@ -25,7 +25,7 @@ Once a transaction is committed for the first time, its public key can be indexe
 
 The `Flags` field will be excluded from the hash data, and the hash computes only from the Header and Payload data.
 
-![Indexed public key](../assets/pip-0004/indexed-public-key.png)
+![Indexed public key](../assets/pip-4/indexed-public-key.png)
 
 ## Security Considerations
 

@@ -35,3 +35,13 @@ Informational PIP: Describes a Pactus design issue, or provides general guidelin
 It is highly recommended that a single PIP contain a single key proposal or new idea. The more focused the PIP, the more successful it tends to be. A change to one client doesn't require a PIP; a change that affects multiple clients, or defines a standard for multiple apps to use, does.
 
 A PIP must meet certain minimum criteria. It must be a clear and complete description of the proposed enhancement. The enhancement must represent a net improvement. The proposed implementation, if applicable, must be solid and must not complicate the protocol unduly.
+
+## PIP Status Terms
+
+![Status Workflow](../assets/pip-1/status-flow.jpg)
+
+- Draft - Proposal under active discussion and revision.
+- Accepted - Normative proposal accepted for implementation.
+- Final - Accepted and implementation complete, or no longer active.
+- Rejected - Formally declined and will not be accepted.
+- Withdrawn - Removed from consideration by sponsor or authors.

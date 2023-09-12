@@ -14,10 +14,9 @@ t-process: this?.old?.status == "Living" || this?.old?.title == "<The PIP title 
 
 # Status
 s-draft: this?.new?.status == "Draft"
+s-accepted: this?.new?.status == "Accepted"
 s-final: this?.new?.status == "Final"
-s-lastcall: this?.new?.status == "Lastcall"
-s-review: this?.new?.status == "Review"
-s-stagnant: this?.new?.status == "Stagnant"
+s-rejected: this?.new?.status == "Rejected"
 s-withdrawn: this?.new?.status == "Withdrawn"
 
 #### PR Classification ####

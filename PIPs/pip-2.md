@@ -3,7 +3,7 @@ pip: 2
 title: Lock Time Transactions
 author: Mostafa Sedaghat Joo (@b00f)
 status: Final
-type: Standard
+type: Interface
 created: 2023-08-23
 ---
 
