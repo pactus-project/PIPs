@@ -1,7 +1,7 @@
 ---
 pip: 7
 title: Checking Timestamp Difference in Handshaking
-description: Check the timestamp difference between two peers before connecting to the network.
+description: Check the timestamp difference between two peers before connecting to the network
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 status: Draft
 type: Standards
@@ -21,7 +21,7 @@ Checking the timestamp difference during handshaking and hello messages can ensu
 
 We propose adding a new field to our `hello` message called `mytime`. Each node, upon receiving a `hello` message, can examine the `mytime` value within the message and calculate the difference between the message's `mytime` and its own timestamp.
 
-Full nodes must drop `hello` messages with a timestamp difference exceeding 20 seconds.
+Full nodes must drop `hello` messages with a timestamp difference more or less than 20 seconds.
 
 The outcome of this approach is that when a node has an incorrect timestamp configuration, other nodes will reject `hello` messages from it. This compels the node owner to rectify the timestamp issue, ensuring that all nodes in the network maintain consistent time settings.
 
