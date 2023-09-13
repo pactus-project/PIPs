@@ -101,15 +101,6 @@ layout: default
   </table>
   <br/>
 
-  {% if page.status == "Accepted" %}
-    <div class="alert alert-primary d-flex align-items-center" role="alert">
-      <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Info:" style="width:2.5em;height:2.5em;"><use xlink:href="#bi-megaphone-fill"/></svg>
-      <div class="text-center w-100">
-        <a href="{{ page.discussions-to | uri_escape }}" target="__blank">This PIP is normative proposal accepted for implementation. If you are interested in this PIP, please participate using this discussion link.</a>
-      </div>
-    </div>
-  {% endif %}
-
   <div class="toc">
     <h2>Table of Contents</h2>
     {% include toc.html html=content sanitize=true h_max=3 %}
