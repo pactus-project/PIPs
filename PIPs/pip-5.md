@@ -2,7 +2,7 @@
 pip: 5
 title: Adding Different HRP For Validator, Account And Contract Address
 status: Withdrawn
-type: Standard
+type: Standards Track
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 created: 2023-08-27
 ---
