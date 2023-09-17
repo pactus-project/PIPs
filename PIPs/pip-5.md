@@ -1,7 +1,7 @@
 ---
 pip: 5
-title: address prefix
-status: Draft
+title: Adding Different HRP For Validator, Account And Contract Address
+status: Withdrawn
 type: Standard
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 created: 2023-08-27
