@@ -2,7 +2,7 @@
 pip: 5
 title: address prefix
 status: Draft
-type: Standard
+type: Standards Track
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 created: 2023-08-27
 ---

@@ -4,7 +4,7 @@ title: Checking Timestamp Difference in Handshaking
 description: Check the timestamp difference between two peers before connecting to the network
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 status: Draft
-type: Standards
+type: Standards Track
 category: Networking
 created: 2023-09-12
 ---
