@@ -8,105 +8,27 @@ author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 created: 2023-09-17
 ---
 
-<!--
-  READ PIP-1 (https://pips.pactus.org/PIPS/pip-1) BEFORE USING THIS TEMPLATE!
-
-  This is the suggested template for new PIPs. After you have filled in the requisite fields, please delete these comments.
-
-  Note that an PIP number will be assigned by an editor. When opening a pull request to submit your PIP, please use an abbreviated title in the filename, `PIP-draft_title_abbrev.md`.
-
-  The title should be 44 characters or less. It should not repeat the PIP number in title, irrespective of the category.
-
-  TODO: Remove this comment before submitting
--->
-
 ## Abstract
 
-<!--
-  The Abstract is a multi-sentence (short paragraph) technical summary. This should be a very terse and human-readable version of the specification section. Someone should be able to read only the abstract to get the gist of what this specification does.
-
-  TODO: Remove this comment before submitting
--->
+This proposal suggests adding Address usage in address types in Pactus, such as `validator` and `account`, to make their roles more understandable. 
 
 ## Motivation
 
-<!--
-  This section is optional.
+Currently, Pactus addresses types are just show encryption, regardless of their usage. This makes it hard for both humans and machines to identify the role of each address, whether it belongs to an `account`, `validator`, or `contract`.
 
-  The motivation section should include a description of any nontrivial problems the PIP solves. It should not describe how the PIP solves those problems, unless it is not immediately obvious. It should not describe why the PIP should be made into a standard, unless it is not immediately obvious.
+![Current Address Type](../assets/pip-8/pactus_address.png)
 
-  With a few exceptions, external links are not allowed. If you feel that a particular resource would demonstrate a compelling case for your PIP, then save it as a printer-friendly PDF, put it in the assets folder, and link to that copy.
+By adding appropriate usage to address type, we can quickly and easily identify the purpose of each address. For example:
 
-  TODO: Remove this comment before submitting
--->
+![PIP-8](../assets/pip-8/pip-8-address.png)
+
 
 ## Specification
 
-<!--
-  The Specification section should describe the syntax and semantics of any new feature. The specification should be detailed enough to allow competing, interoperable implementations for any of the current Pactus platforms (besu, erigon, Pactusjs, go-Pactus, nethermind, or others).
+To achieve this, we can define `4` address type (for now): `0` for Treasury, `1` for `BLS-Accounts`, `2` for `BLS-Validator` and `3` for `BLS-Contracts`. All addresses must have the correct type to be considered valid in Pactus. Additionally, we must consider to have new types for each new usage or encryption.
+ 
+- Account:   `pc1puc5zza3hnp2tcf6r5n8zz0mwcjhqlxtejnjkzv`
+- Validator: `pc2p8wqgmagsrzn0nr26weg6wekqtu2mc6uw72k04a`
+- Contract:  `pc3pdw5fda6r757q780xvtsxhfls24vekrfqmddqrs`
 
-  It is recommended to follow RFC 2119 and RFC 8170. Do not remove the key word definitions if RFC 2119 and RFC 8170 are followed.
-
-  TODO: Remove this comment before submitting
--->
-
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119 and RFC 8174.
-
-## Rationale
-
-<!--
-  The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made. It should describe alternate designs that were considered and related work, e.g. how the feature is supported in other languages.
-
-  The current placeholder is acceptable for a draft.
-
-  TODO: Remove this comment before submitting
--->
-
-TBD
-
-## Backwards Compatibility
-
-<!--
-
-  This section is optional.
-
-  All PIPs that introduce backwards incompatibilities must include a section describing these incompatibilities and their severity. The PIP must explain how the author proposes to deal with these incompatibilities. PIP submissions without a sufficient backwards compatibility treatise may be rejected outright.
-
-  The current placeholder is acceptable for a draft.
-
-  TODO: Remove this comment before submitting
--->
-
-No backward compatibility issues found.
-
-## Test Cases
-
-<!--
-  This section is optional for non-Core PIPs.
-
-  The Test Cases section should include expected input/output pairs, but may include a succinct set of executable tests. It should not include project build files. No new requirements may be be introduced here (meaning an implementation following only the Specification section should pass all tests here.)
-  If the test suite is too large to reasonably be included inline, then consider adding it as one or more files in `../assets/pip-####/`. External links will not be allowed
-
-  TODO: Remove this comment before submitting
--->
-
-## Reference Implementation
-
-<!--
-  This section is optional.
-
-  The Reference Implementation section should include a minimal implementation that assists in understanding or implementing this specification. It should not include project build files. The reference implementation is not a replacement for the Specification section, and the proposal should still be understandable without it.
-  If the reference implementation is too large to reasonably be included inline, then consider adding it as one or more files in `../assets/pip-####/`. External links will not be allowed.
-
-  TODO: Remove this comment before submitting
--->
-
-## Security Considerations
-
-<!--
-  All PIPs must contain a section that discusses the security implications/considerations relevant to the proposed change. Include information that might be important for security discussions, surfaces risks and can be used throughout the life cycle of the proposal. For example, include security-relevant design decisions, concerns, important discussions, implementation-specific guidance and pitfalls, an outline of threats and risks and how they are being addressed. PIP submissions missing the "Security Considerations" section will be rejected. An PIP cannot proceed to status "Final" without a Security Considerations discussion deemed sufficient by the reviewers.
-
-  The current placeholder is acceptable for a draft.
-
-  TODO: Remove this comment before submitting
--->
+Furthermore, any possible future address types must follow the same rule and have their own type base on `usage` and encryption.
