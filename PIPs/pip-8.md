@@ -1,6 +1,6 @@
 ---
 pip: 8
-title: Add Address Usage Next to Encryption in Address Type
+title: Defining address type based on the address usage
 status: Draft
 type: Standards Track
 category: Core
