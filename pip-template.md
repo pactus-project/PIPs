@@ -7,7 +7,7 @@ status: Draft
 type: <Standards Track, Meta, or Informational>
 category: <Core, Networking, Interface> # Only required for Standards Track. Otherwise, remove this field.
 created: <date created on, in ISO 8601 (yyyy-mm-dd) format>
-requires: <PIP number(s)> # Only required when you reference an PIP in the `Specification` section. Otherwise, remove this field.
+requires: <PIP number(s)> # Only required when you reference an PIP in the `Specification` section. Otherwise, remove this field, example: 2,3 or 2.
 ---
 
 <!--
