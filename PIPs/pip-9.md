@@ -2,7 +2,7 @@
 pip: 9
 title: Removing Stamp
 description: Removing Stamp from Transactions
-author: Amir Babazadeh
+author: Amir Babazadeh (@amirvalhalla)
 status: Draft
 type: Standards
 category: Core
