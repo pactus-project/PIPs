@@ -7,7 +7,7 @@ status: Draft
 type: Standards
 category: Core
 created: 2023-09-19
-requires: PIP-2
+requires: 2
 ---
 
 ## Abstract
