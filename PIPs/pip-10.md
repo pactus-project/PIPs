@@ -3,6 +3,7 @@ pip: 10
 title: Fast agreement consensus protocol
 author: Mostafa Sedaghat Joo (@b00f)
 status: Draft
+category: Core
 created: 2023-09-25
 ---
 
