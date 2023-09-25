@@ -9,7 +9,7 @@ created: 2023-09-25
 ## Abstract
 
 This proposal suggests an enhancement in the consensus protocol in which
-any non-faulty validator can commit a block upon receiving $$3f+1$ valid $\text{PREPARE}$ messages.
+any non-faulty validator can commit a block upon receiving $3f+1$ valid $\text{PREPARE}$ messages.
 
 Figure below shows the overview of the protocol.
 
