@@ -58,7 +58,7 @@ Examples of BLS-account address:
 - `pc1zhjk4pujm770elt30ud2d868czg9kth3e3nefnl`
 - `pc1zzya8am0h0y0nu6msxz5j5pt9tsqsdvgzs5r89v`
 
-Note that validator addresses start with `pc1p`, and account addresses start with `pc1z`.
+Note that validator addresses start with `pc1p`, and BLS account addresses start with `pac1z`.
 
 ### Address derivation path
 
@@ -84,14 +84,14 @@ Hardened derivation is used at this level.
 The coin type is set to `21888`, which matches the PAC coin type registered at
 [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md).
 
- Hardened derivation is used at this level.
+Hardened derivation is used at this level.
 
 ### Address type
 
 The address type is same as the type of address, setting 1 for validators and 2 for accounts.
 The value 0 is reserved and is not used.
 
- Hardened derivation is used at this level.
+Hardened derivation is used at this level.
 
 ### Address Index
 
@@ -99,4 +99,9 @@ Addresses start from index 0 and increase sequentially.
 This number is similar to the child index in
 [BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) derivation.
 
- Public derivation is used at this level.
+Non-Hardened derivation is used at this level.
+
+## References:
+
+- [BIP-44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
+- [EIP-2334](https://eips.ethereum.org/EIPS/eip-2334)
