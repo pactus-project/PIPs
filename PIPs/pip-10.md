@@ -65,6 +65,14 @@ Figure below shows the communication patterns for the agreement path when the pr
 
 ![Fast Agreement Path](../assets/pip-10/change_proposer_1.png)
 
+### Block certificate
+
+The block certificate should be modified as follows:
+
+If the most significant bit of the round number is set to 1, the certificate is issued at the prepare step.
+It should then be validated with $3f+1$ votes from the validators in the Prepare step.
+If set to zero, it should be validated with $2f+1$ votes from the validators in the Precommit step.
+
 ## References:
 
 1. [Zyzzyva: Speculative Byzantine Fault Tolerance](https://www.cs.cornell.edu/lorenzo/papers/kotla07Zyzzyva.pdf)
