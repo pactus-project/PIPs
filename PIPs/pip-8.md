@@ -1,7 +1,7 @@
 ---
 pip: 8
 title: Defining address type based on the address usage
-status: Draft
+status: Accepted
 type: Standards Track
 category: Core
 author: |
