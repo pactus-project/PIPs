@@ -62,11 +62,11 @@ The function CKDpriv((k<sub>par</sub>, c<sub>par</sub>), i) &rarr; (k<sub>i</sub
 
 1. Check whether i ≥ 2<sup>31</sup> (whether the child is a hardened key).
     * If so (hardened child):
-        + If public key is in G1: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = 0x00 \|\| ser<sub>256</sub>(k<sub>par</sub>) \|\| ser<sub>32</sub>(i)).
-        + If public key is in G2: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = 0x01 \|\| ser<sub>256</sub>(k<sub>par</sub>) \|\| ser<sub>32</sub>(i)).
+        * If public key is in G1: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = 0x00 \|\| ser<sub>256</sub>(k<sub>par</sub>) \|\| ser<sub>32</sub>(i)).
+        * If public key is in G2: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = 0x01 \|\| ser<sub>256</sub>(k<sub>par</sub>) \|\| ser<sub>32</sub>(i)).
     * If not (normal child):
-        + If public key is in G1: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = ser<sub>G1</sub>(point<sub>G1</sub>(k<sub>par</sub>)) \|\| ser<sub>32</sub>(i)).
-        + If public key is in G2: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = ser<sub>G2</sub>(point<sub>G2</sub>(k<sub>par</sub>)) \|\| ser<sub>32</sub>(i)).
+        * If public key is in G1: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = ser<sub>G1</sub>(point<sub>G1</sub>(k<sub>par</sub>)) \|\| ser<sub>32</sub>(i)).
+        * If public key is in G2: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = ser<sub>G2</sub>(point<sub>G2</sub>(k<sub>par</sub>)) \|\| ser<sub>32</sub>(i)).
 2. Split I into two 32-byte sequences, I<sub>L</sub> and I<sub>R</sub>.
 3. The returned chain code c<sub>i</sub> is I<sub>R</sub>.
 4. If parse<sub>256</sub>(I<sub>L</sub>) ≥ n or parse<sub>256</sub>(I<sub>L</sub>) + k<sub>par</sub> (mod n) = 0 (resulting key is invalid):
@@ -83,8 +83,8 @@ The function CKDpub((K<sub>par</sub>, c<sub>par</sub>), i) &rarr; (K<sub>i</sub>
 1. Check whether i ≥ 2<sup>31</sup> (whether the child is a hardened key).
     * If so (hardened child): return failure
     * If not (normal child):
-        + If public key is in G1: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = ser<sub>G1</sub>(K<sub>par</sub>) \|\| ser<sub>32</sub>(i)).
-        + If public key is in G2: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = ser<sub>G2</sub>(K<sub>par</sub>) \|\| ser<sub>32</sub>(i)).
+        * If public key is in G1: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = ser<sub>G1</sub>(K<sub>par</sub>) \|\| ser<sub>32</sub>(i)).
+        * If public key is in G2: let I = HMAC-SHA512(Key = c<sub>par</sub>, Data = ser<sub>G2</sub>(K<sub>par</sub>) \|\| ser<sub>32</sub>(i)).
 2. Split I into two 32-byte sequences, I<sub>L</sub> and I<sub>R</sub>.
 3. The returned child key K<sub>i</sub> can be calculated based on the public key subgroup.
     * If public key is in G1: point<sub>G1</sub>(parse<sub>256</sub>(I<sub>L</sub>)) + K<sub>par</sub>.
