@@ -21,7 +21,7 @@ Checking the timestamp difference during handshaking and hello messages can ensu
 
 We propose adding a new field to our `hello` message called `my_time`. Each node, upon receiving a `hello` message, can examine the `my_time` value within the message and calculate the difference between the message's `my_time` and its own timestamp.
 
-Full nodes must reject `hello` messages with a timestamp difference more or less than 20 seconds.
+Full nodes must reject `hello` messages with a timestamp difference more or less than 10 seconds.
 
 The outcome of this approach is that when a node has an incorrect timestamp configuration, other nodes will reject `hello` messages from it. This compels the node owner to rectify the timestamp issue, ensuring that all nodes in the network maintain consistent time settings.
 
