@@ -1,6 +1,6 @@
 ---
 pip: 11
-title: Deterministic key hierarchy for BLS-12381 curve
+title: Deterministic key hierarchy for BLS12-381 curve
 author: Mostafa Sedaghat Joo (@b00f)
 status: Draft
 category: Core
