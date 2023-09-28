@@ -58,7 +58,7 @@ Examples of BLS-account address:
 - `pc1zhjk4pujm770elt30ud2d868czg9kth3e3nefnl`
 - `pc1zzya8am0h0y0nu6msxz5j5pt9tsqsdvgzs5r89v`
 
-Note that validator addresses start with `pc1p`, and BLS account addresses start with `pac1z`.
+Note that validator addresses start with `pc1p`, and BLS account addresses start with `pc1z`.
 
 ### Address derivation path
 
