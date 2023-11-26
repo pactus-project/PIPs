@@ -7,7 +7,7 @@ category: Core
 created: 2023-11-26
 ---
 
-# Abstract
+## Abstract
 
 This proposal suggests an enhancement to both the graphical user interface (GUI) and command-line interface (CLI) clients of our blockchain application. The objective is to implement an automated version-checking mechanism that will discreetly run in the background for the GUI client and precede the execution of the CLI client. For the GUI, a scheduled task will periodically check for updates, and if a new version is detected, a non-intrusive announcement popup will be displayed, providing users with the option to update or cancel. On the CLI side, before initiating the node, a version check will be performed, and if a new version is available, detailed update information, including version number, change logs, and a prompt for user confirmation, will be presented. These improvements aim to streamline the update process, ensuring users are informed promptly and can seamlessly incorporate the latest enhancements to the blockchain application.
 
