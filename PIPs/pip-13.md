@@ -1,5 +1,5 @@
 ---
-pip: 12
+pip: 13
 title: Import Private Keys
 description: Import private keys to wallet based on BIP44
 author: Amir Babazadeh (@amirvalhalla)
