@@ -2,7 +2,7 @@
 pip: 14
 title: Adding more details in agent hello and structured value
 author: Javad Rajabzadeh <ja7ad@live.com>
-status: Draft
+status: Accepted
 category: Network
 created: 2023-11-28
 ---
