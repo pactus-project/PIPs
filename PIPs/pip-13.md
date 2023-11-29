@@ -39,4 +39,7 @@ m/65535'/21888'/1'/0'  // imported validator address at index zero
 m/65535'/21888'/2'/0'  // imported account address at index zero
 ```
 
-[BIP32](https://pips.pactus.org/PIPs/pip-8)
+## References
+
+* [BIP32](https://pips.pactus.org/PIPs/pip-8)
+* [BIP-0032: Hierarchical Deterministic Wallets](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)
