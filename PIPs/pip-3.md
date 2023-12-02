@@ -9,7 +9,7 @@ created: 2023-08-23
 
 ## Abstract
 
-This document propose to remove the `Sequence` field from the transactions.
+This document proposes to remove the `Sequence` field from the transactions.
 
 ## Motivation
 
@@ -22,16 +22,16 @@ This document proposes to remove the sequence field from transactions without co
 
 ## Specification
 
-To detect a replayed transaction, we can check if it has been confirmed before.
-This involves looking up confirmed transactions and checking for any with the same hash.
+To detect a replayed transaction, we can check if it has already been confirmed.
+This involves looking up confirmed transactions and checking for any with the same ID or hash.
 If a matching transaction is found, it means the transaction is replayed and should be rejected.
 
 ### Light client implementation
 
-A light client doesn't need to store the entire blockchain history.
-Since Pactus transactions have a limited lifespan, the light client can avoid keeping all transaction records.
-For example, with the current consensus parameters, the number of transactions in a single day is sufficient to detect replay attacks.
+A light client does not need to store all transaction IDs to verify new transactions.
+Since Pactus transactions have a limited lifespan[^1], the light client can avoid keeping all transaction records.
+For instance, with the current consensus parameters, storing the transactions for a single day is sufficient to detect replay attacks.
 
 ## References
 
-[^1]: [PIP-2: Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
+[^1]: [PIP-2: Lock Time Transactions](http://localhost:4000/PIPs/pip-2#time-to-live-interval)
