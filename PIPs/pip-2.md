@@ -28,6 +28,8 @@ Since each block is created every 10 seconds, users can schedule when their tran
 This field is similar to `nLockTime` [^1] in Bitcoin.
 However, in Pactus, it is mandatory for all transactions, and it only accepts block numbers as input.
 
+### Time-to-Live Interval
+
 In addition to the `LockTime`, transactions in Pactus have a "Time-to-Live Interval"[^2],
 which is the number of blocks that a transaction may remain unprocessed in the transaction pool before being discarded.
 Currently, this interval is set to 8640 blocks, equating to approximately one day.
