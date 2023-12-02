@@ -24,12 +24,7 @@ This document proposes to remove the sequence field from transactions without co
 
 To detect a replayed transaction, we can check if it has been confirmed before.
 This involves looking up confirmed transactions and checking for any with the same hash.
-If a matching transaction is found, it means the transaction is replayed and can be rejected.
-
-To ensure unique hashes for all transactions, relying solely on random stamp data is not enough.
-According to the Birthday Paradox [^1], a 32-bit hash has a more than 50% chance of collision after 80,000 blocks.
-A simple solution is to make the `LockTime` field mandatory for all transactions.
-The `LockTime` value should match the block number referenced by the Stamp.
+If a matching transaction is found, it means the transaction is replayed and should be rejected.
 
 ### Light client implementation
 
@@ -39,4 +34,4 @@ For example, with the current consensus parameters, the number of transactions i
 
 ## References
 
-[^1]: [https://en.wikipedia.org/wiki/Birthday_attack](https://en.wikipedia.org/wiki/Birthday_attack)
+[^1]: [PIP-2: Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
