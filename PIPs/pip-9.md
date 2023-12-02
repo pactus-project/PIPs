@@ -27,7 +27,7 @@ In this section, we argue that removing the stamp will not compromise security a
 
 ### LockTime vs. Stamp
 
-With the finalization of [PIP-2](https://pips.pactus.org/PIPs/pip-2), each transaction now includes the LockTime field. LockTime is mandatory and should be set to the block that the transaction can be committed. Now, LockTime can be used for the execution time. In this case, the need to set the stamp is no longer necessary, and users will tend to ignore it.
+With the finalization of [PIP-2](https://pips.pactus.org/PIPs/pip-2), each transaction now includes the LockTime field. LockTime is mandatory and should be set to the block number that the transaction can be committed. In this case, the need to set the stamp is no longer necessary, and users will likely ignore it.
 
 ### Long-Range Attack
 
