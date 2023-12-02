@@ -24,11 +24,17 @@ The current transaction structure in Pactus does not provide support for such sc
 To support lock-time transactions, a new field is added to the transaction structure: `LockTime`.
 
 By introducing the `LockTime` field, users can specify a block number at which a lock-time transaction can be unlocked and executed.
-With each block in Pactus having a fixed time interval of 10 seconds, users can ensure that their transactions are executed
-at nearly precise times in the future.
+Since each block is created every 10 seconds, users can schedule when their transactions will be executed in the future.
 This field is similar to `nLockTime` [^1] in Bitcoin.
 However, in Pactus, it is mandatory for all transactions, and it only accepts block numbers as input.
 
+In addition to the `LockTime`, transactions in Pactus have a "Time-to-Live Interval"[^2],
+which is the number of blocks that a transaction may remain unprocessed in the transaction pool before being discarded.
+Currently, this interval is set to 8640 blocks, equating to approximately one day.
+
+![PIP-2 - LockTime and TTL](../assets/pip-2/locktime-ttl.png)
+
 ## References:
 
-[^1]: [https://en.bitcoin.it/wiki/Protocol_documentation#tx](https://en.bitcoin.it/wiki/Protocol_documentation#tx)
+[^1]: [Bitcoin transaction format](https://en.bitcoin.it/wiki/Protocol_documentation#tx)
+[^2]: [Pactus consensus parameters](https://pactus.org/learn/consensus/parameters/)
