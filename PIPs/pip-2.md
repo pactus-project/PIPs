@@ -36,7 +36,7 @@ Currently, this interval is set to 8640 blocks, equating to approximately one da
 
 ![PIP-2 - LockTime and TTL](../assets/pip-2/locktime-ttl.png)
 
-## References:
+## References
 
 [^1]: [Bitcoin transaction format](https://en.bitcoin.it/wiki/Protocol_documentation#tx)
 [^2]: [Pactus consensus parameters](https://pactus.org/learn/consensus/parameters/)
