@@ -24,7 +24,7 @@ Currently, the type only indicates the cryptographic algorithm of the correspond
 It is defined as `1` for the BLS signature schema.
 However, there are some problems with this approach:
 
-1. It doesn't convey its intended usage.
+1. The address can be misused.
 For example, a user might use an account address as a validator address in a [Bond transaction](https://pactus.org/learn/transaction/bond/) (An issue regarding this problem is reported [here](https://github.com/pactus-project/pactus/issues/510)).
 2. For some usages, such as smart contracts, there isn't a dedicated public key, making the `type` inconsistent with its original definition.
 3. The address doesn't indicate its usage. This makes it challenging for both humans and machines to identify the purpose of each address, whether it belongs to an `account`, `validator`, or `contract`. This is particularly troublesome in applications like block explorers.
@@ -39,12 +39,10 @@ We propose to define address types as follows:
 2: BLS-Account address
 ```
 
-For the treasury address, the data is a string of zeros in 20-byte length: `000000000000000000000000000000000000000000`.
+For the treasury address, the data is a string of zeros in 21-byte length: `000000000000000000000000000000000000000000`.
 In both `Validator address` and `BLS-Account address`, the data is the hash of the corresponding public key.
 
-![PIP-8 - address types](../assets/pip-8/pip-8-address.png)
-
-### Examples:
+## Examples
 
  Examples of validator address:
 
@@ -60,7 +58,7 @@ Examples of BLS-account address:
 
 Note that validator addresses start with `pc1p`, and BLS account addresses start with `pc1z`.
 
-### Address derivation path
+## Address derivation path
 
 Currently, the wallet derivation path in Pactus is similar to [EIP-2334](https://eips.ethereum.org/EIPS/eip-2334).
 To align with this proposal, we suggest changing the derivation path to:
@@ -101,7 +99,7 @@ This number is similar to the child index in
 
 Non-Hardened derivation is used at this level.
 
-## References:
+## References
 
-- [BIP-44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
+- [BIP-0044](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
 - [EIP-2334](https://eips.ethereum.org/EIPS/eip-2334)
