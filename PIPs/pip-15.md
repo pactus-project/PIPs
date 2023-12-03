@@ -3,7 +3,7 @@ pip: 15
 title: In-Memory Cache for Stored Items
 status: Draft
 type: Standards Track
-author: Mostafa Sedaghat Joo (b00f)
+author: Mostafa Sedaghat Joo (@b00f)
 created: 2023-12-03
 ---
 
