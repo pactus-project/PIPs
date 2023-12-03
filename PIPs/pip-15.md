@@ -1,5 +1,5 @@
 ---
-pip: 6
+pip: 15
 title: In-Memory Cache for Stored Items
 status: Draft
 type: Standards Track
