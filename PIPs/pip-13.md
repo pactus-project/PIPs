@@ -3,7 +3,7 @@ pip: 13
 title: Import Private Keys
 description: Import private keys to wallet
 author: Amir Babazadeh (@amirvalhalla)
-status: Draft
+status: Final
 type: Standards Track
 category: Core
 created: 2023-11-27
