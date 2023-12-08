@@ -2,7 +2,7 @@
 pip: 14
 title: Client Agent Standard
 author: Javad Rajabzadeh <ja7ad@live.com>
-status: Accepted
+status: Final
 category: Network
 created: 2023-11-28
 ---
