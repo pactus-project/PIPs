@@ -49,13 +49,15 @@ Here are sample code snippets showcasing how one can interact with the event sec
 
 ```rust
 mod MyContract {
-    #[event]
+  #[derive(kelk_event)]
     struct TransferEvent {
-        from: String,
+      from: String,
         to: String,
         amount: u8,
     }
 }
 ```
+
+`kelk_event` trait MUST contain an emit function.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119 and RFC 8174.
