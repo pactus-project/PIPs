@@ -1,5 +1,5 @@
 ---
-title: PNS Pactus name service
+title: PNS Pactus name system
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 status: Draft
 type: Standards Track
@@ -9,87 +9,48 @@ created: 2023-12-17
 
 ## Abstract
 
-
+This proposal suggests adding a TLD registry to Pactus blockchain which people can register TLDs, pointing to a contract which manage them.
 
 ## Motivation
 
-<!--
-  This section is optional.
-
-  The motivation section should include a description of any nontrivial problems the PIP solves. It should not describe how the PIP solves those problems, unless it is not immediately obvious. It should not describe why the PIP should be made into a standard, unless it is not immediately obvious.
-
-  With a few exceptions, external links are not allowed. If you feel that a particular resource would demonstrate a compelling case for your PIP, then save it as a printer-friendly PDF, put it in the assets folder, and link to that copy.
-
-  TODO: Remove this comment before submitting
--->
+Adding possibility to point to some Pactus address, IP address or also other blockchains address to a humalreadable DNS like domain, can help people to share address and other stuff more safe and easier. also help everyone to have better and more secure web3 experience at Pactus.
 
 ## Specification
 
-<!--
-  The Specification section should describe the syntax and semantics of any new feature. The specification should be detailed enough to allow competing, interoperable implementations for any of the current Pactus platforms (besu, erigon, Pactusjs, go-Pactus, nethermind, or others).
+### TLDs
 
-  It is recommended to follow RFC 2119 and RFC 8170. Do not remove the key word definitions if RFC 2119 and RFC 8170 are followed.
+The PNS system is similar to DNS on internet, we have 2 main components in PNS. the first one is top level domains or TLDs. each TLD MUST be register by one address in Pactus. each TLD have 3 parts and nodes SHOULD keep track of them:
 
-  TODO: Remove this comment before submitting
--->
+* Owner (which is a Pactus address)
+* Name (which is the TLS itself like: `.pac`)
+* Registrar (a contact address, which manage subdomains and resolving)
+
+Submitting new TLD MUST follow a transfer transaction to treasury address, with this structure:
+
+* Memo: `TLD [name] [registrar]`
+* Amount should be 10000 PAC coins, we can make sure everyone won't register random TLDs. 
+
+The Owner MUST be able to change contract by submitting the same name with different contract address. Also some other address MUST NOT be able to register same TLD.
+
+### Registrars
+
+A registrar contract SHOULD implement 2 main functions:
+
+Register:
+
+```rs
+// This function provides a way to register new domains like: blockchain.pac, 🔥.pac and more. 
+// Calling this function can be Owner(s) only and it's OPTIONAL.
+fn register(name: String, Record: String) -> bool;
+```
+
+Resolve:
+
+```rs
+// This function provides a way to resolve PNS name to Record value. 
+// for example: blockchain.pac => pc1zwqxz2wmz5upuvxzj3kpgfq3k2are4s3ctqxtxy 
+// Calling this function can be Owner(s) only and it's OPTIONAL.
+fn resolve(name: String) -> String;
+```
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119 and RFC 8174.
-
-## Rationale
-
-<!--
-  The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made. It should describe alternate designs that were considered and related work, e.g. how the feature is supported in other languages.
-
-  The current placeholder is acceptable for a draft.
-
-  TODO: Remove this comment before submitting
--->
-
-TBD
-
-## Backwards Compatibility
-
-<!--
-
-  This section is optional.
-
-  All PIPs that introduce backwards incompatibilities must include a section describing these incompatibilities and their severity. The PIP must explain how the author proposes to deal with these incompatibilities. PIP submissions without a sufficient backwards compatibility treatise may be rejected outright.
-
-  The current placeholder is acceptable for a draft.
-
-  TODO: Remove this comment before submitting
--->
-
-No backward compatibility issues found.
-
-## Test Cases
-
-<!--
-  This section is optional for non-Core PIPs.
-
-  The Test Cases section should include expected input/output pairs, but may include a succinct set of executable tests. It should not include project build files. No new requirements may be be introduced here (meaning an implementation following only the Specification section should pass all tests here.)
-  If the test suite is too large to reasonably be included inline, then consider adding it as one or more files in `../assets/pip-####/`. External links will not be allowed
-
-  TODO: Remove this comment before submitting
--->
-
-## Reference Implementation
-
-<!--
-  This section is optional.
-
-  The Reference Implementation section should include a minimal implementation that assists in understanding or implementing this specification. It should not include project build files. The reference implementation is not a replacement for the Specification section, and the proposal should still be understandable without it.
-  If the reference implementation is too large to reasonably be included inline, then consider adding it as one or more files in `../assets/pip-####/`. External links will not be allowed.
-
-  TODO: Remove this comment before submitting
--->
-
-## Security Considerations
-
-<!--
-  All PIPs must contain a section that discusses the security implications/considerations relevant to the proposed change. Include information that might be important for security discussions, surfaces risks and can be used throughout the life cycle of the proposal. For example, include security-relevant design decisions, concerns, important discussions, implementation-specific guidance and pitfalls, an outline of threats and risks and how they are being addressed. PIP submissions missing the "Security Considerations" section will be rejected. An PIP cannot proceed to status "Final" without a Security Considerations discussion deemed sufficient by the reviewers.
-
-  The current placeholder is acceptable for a draft.
-
-  TODO: Remove this comment before submitting
--->
