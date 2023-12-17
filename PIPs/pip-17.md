@@ -1,11 +1,11 @@
 ---
 pip: 17
-Title: PNS Pactus Name System
-Author: Kayhan Alizadeh <kehiiiiya@gmail.com>
-Status: Draft
-Type: Standards Track
-Category: Core
-Created: 2023-12-17
+title: PNS Pactus Name System
+author: Kayhan Alizadeh <kehiiiiya@gmail.com>
+status: Draft
+type: Standards Track
+category: Core
+created: 2023-12-17
 ---
 
 ## Abstract
