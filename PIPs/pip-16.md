@@ -21,22 +21,16 @@ The Specification section below describes the syntax and semantics of the propos
 
 ### Syntax
 
-The event section MUST be added as a new field in contract call transactions. The syntax for this section is as follows:
+The event section MUST be added as a new field in contract call transactions payload. The syntax for this section is as follows:
 
 ```go
-type txData struct {
-  // existing transaction fields
-  ...
-
-  Events []Event
-}
-
 type Event struct {
   Name   string
   Data   map[string][32]byte
 }
 
 type Payload interface {
+  // other methods.
 	Events() []Event
 }
 ```
