@@ -1,4 +1,4 @@
-<img alt="pip" src="./assets/readme/pip.png" width="300" />
+![PIP](./assets/readme/pip.png) 
 
 # Pactus Improvement Proposals (PIPs)
 
@@ -13,7 +13,7 @@ The [status page](https://pips.pactus.org) tracks and lists PIPs, which can be d
 * Meta PIPs are miscellaneous improvements that nonetheless require some sort of consensus.
 * Informational PIPs are non-standard improvements that do not require any form of consensus.
 
-### Install prerequisites
+## Install prerequisites
 
 1. Open Terminal.
 
@@ -37,7 +37,7 @@ The [status page](https://pips.pactus.org) tracks and lists PIPs, which can be d
    bundle install
    ```
 
-### Build your local Jekyll site
+## Build your local Jekyll site
 
 1. Bundle assets and start the server:
 

@@ -47,8 +47,8 @@ A PIP must meet certain minimum criteria. It must be a clear and complete descri
 
 ![Status Workflow](../assets/pip-1/status-flow.jpg)
 
-- Draft - Proposal under active discussion and revision.
-- Accepted - Normative proposal accepted for implementation.
-- Final - Accepted and implementation complete, or no longer active.
-- Rejected - Formally declined and will not be accepted.
-- Withdrawn - Removed from consideration by sponsor or authors.
+* Draft - Proposal under active discussion and revision.
+* Accepted - Normative proposal accepted for implementation.
+* Final - Accepted and implementation complete, or no longer active.
+* Rejected - Formally declined and will not be accepted.
+* Withdrawn - Removed from consideration by sponsor or authors.
