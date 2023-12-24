@@ -30,10 +30,14 @@ The nodes SHOULD keep track of TLDs, and provide RPC for finding Registrars of e
 
 Submitting a new TLD requires a transfer transaction to the treasury address with this structure:
 
-* Memo: `TLD [name] [registrar]`
-* Amount should be 10000 PAC coins to prevent random TLD registrations. 
+* Memo: `TLD [name] [registrar]` (example: `TLD pac pc1zwqxz2wmz5upuvxzj3kpgfq3k2are4s3ctqxtxy`)
+* Amount should be 10000 PAC coins to prevent random spam TLD registrations. 
 
-The Owner MUST be able to change the contract by submitting the same name with a different contract address. Additionally, some other address MUST NOT be able to register the same TLD.
+> NOTE: memo limit is 64 characters in Pactus, and address contains 42 characters, so, we can define TLDs up to 17  characters.
+
+The Owner MUST be able to change the contract by submitting the same name with a different contract address. Additionally, some other address MUST NOT be able to register the same TLD. any transaction with different style and lower amount MUST be considered as a normal transfer transaction.
+
+The network/blockchain nodes SHOULD keep track of this PNS TLDs, index them (their owner, name and last registrar) and define RPC methods for resolving them.
 
 ### Registrars
 
