@@ -2,8 +2,9 @@
 pip: 3
 title: Removing sequence field from transactions
 author: Mostafa Sedaghat Joo (@b00f)
-status: Accepted
+status: Final
 type: Standards Track
+category: Core 
 created: 2023-08-23
 ---
 

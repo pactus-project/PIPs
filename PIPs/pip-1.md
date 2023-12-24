@@ -25,15 +25,19 @@ For Pactus implementers, PIPs are a convenient way to track the progress of thei
 
 There are three types of PIP:
 
-Standards Track PIP: Describes any change that affects most or all Pactus implementations, such as—a change to the network protocol, a change in block or transaction validity rules, proposed application standards/conventions, or any change or addition that affects the interoperability of applications using Pactus. Standards Track PIPs consist of three parts—a design document, an implementation, and (if warranted) an update to the formal specification. Furthermore, Standards Track PIPs can be broken down into the following categories:
+**Standards Track** PIP: Describes any change that affects most or all Pactus implementations, such as—a change to the network protocol, a change in block or transaction validity rules, proposed application standards/conventions, or any change or addition that affects the interoperability of applications using Pactus. Standards Track PIPs consist of three parts—a design document, an implementation, and (if warranted) an update to the formal specification. Furthermore, Standards Track PIPs can be broken down into the following categories:
 
-Core: Improvements requiring a consensus fork, as well as changes that are not necessarily consensus critical but may be relevant to "core dev" discussions.
-Networking: Includes improvements around Pactus networking protocol.
-Interface: Includes improvements around client API/RPC specifications and standards. The label "interface" aligns with the interfaces repo, and discussion should primarily occur in that repository before a PIP is submitted to the PIPs repository.
-PRC: Application-level standards and conventions, including contract standards such as token standards, name registries, URI schemes, library/package formats, and wallet formats.
-Meta PIP: Describes a process surrounding Pactus or proposes a change to (or an event in) a process. Process PIPs are like Standards Track PIPs but apply to areas other than the Pactus protocol itself. They may propose an implementation, but not to Pactus's codebase; they often require community consensus; unlike Informational PIPs, they are more than recommendations, and users are typically not free to ignore them. Examples include procedures, guidelines, changes to the decision-making process, and changes to the tools or environment used in Pactus development. Any meta-PIP is also considered a Process PIP.
+* *Core*: Improvements requiring a consensus fork, as well as changes that are not necessarily consensus critical but may be relevant to "core dev" discussions or any change to transaction, block, address or their new versions.
 
-Informational PIP: Describes a Pactus design issue, or provides general guidelines or information to the Pactus community, but does not propose a new feature. Informational PIPs do not necessarily represent Pactus community consensus or a recommendation, so users and implementers are free to ignore Informational PIPs or follow their advice.
+* *Networking*: Includes improvements around Pactus networking protocol.
+
+* *Interface*: Includes improvements around clients, API/RPCs specifications, and how users and applications interact with the blockchain. The label "interface" aligns with the interfaces repo, and discussion should primarily occur in that repository before a PIP is submitted to the PIPs repository.
+
+* *PRC*: Application-level standards and conventions, including contract standards such as token standards, name registries, URI schemes, library/package formats, and wallet formats.
+
+**Meta PIP**: Describes a process surrounding Pactus or proposes a change to (or an event in) a process. Process PIPs are like Standards Track PIPs but apply to areas other than the Pactus protocol itself. They may propose an implementation, but not to Pactus's codebase; they often require community consensus; unlike Informational PIPs, they are more than recommendations, and users are typically not free to ignore them. Examples include procedures, guidelines, changes to the decision-making process, and changes to the tools or environment used in Pactus development. Any meta-PIP is also considered a Process PIP.
+
+**Informational** PIP: Describes a Pactus design issue, or provides general guidelines or information to the Pactus community, but does not propose a new feature. Informational PIPs do not necessarily represent Pactus community consensus or a recommendation, so users and implementers are free to ignore Informational PIPs or follow their advice.
 
 It is highly recommended that a single PIP contain a single key proposal or new idea. The more focused the PIP, the more successful it tends to be. A change to one client doesn't require a PIP; a change that affects multiple clients, or defines a standard for multiple apps to use, does.
 

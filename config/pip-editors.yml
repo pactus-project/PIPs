@@ -1,36 +1,19 @@
 governance:
-  - lightclient
-  - axic
-  - gcolvin
-  - SamWilsn
-  - Pandapip1
+  - allahbakhsh
+  - Ja7ad
 core:
-  - lightclient
-  - axic
-  - gcolvin
-  - SamWilsn
-  - Pandapip1
-  - g11tech
+  - allahbakhsh
+  - Ja7ad
 networking:
-  - lightclient
-  - axic
-  - SamWilsn
+  - allahbakhsh
+  - Ja7ad
 interface:
-  - lightclient
-  - axic
-  - SamWilsn
-  - Pandapip1
+  - allahbakhsh
+  - Ja7ad
 meta:
-  - lightclient
-  - axic
-  - gcolvin
-  - SamWilsn
-  - Pandapip1
-  - xinbenlv
+  - allahbakhsh
+  - Ja7ad
 informational:
-  - lightclient
-  - axic
-  - gcolvin
-  - SamWilsn
-  - Pandapip1
-  - xinbenlv
+  - allahbakhsh
+  - Ja7ad
+  

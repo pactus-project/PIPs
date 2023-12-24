@@ -3,7 +3,8 @@ pip: 14
 title: Client Agent Standard
 author: Javad Rajabzadeh <ja7ad@live.com>
 status: Final
-category: Network
+type: Standards Track
+category: Networking
 created: 2023-11-28
 ---
 
