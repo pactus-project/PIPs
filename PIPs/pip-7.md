@@ -3,7 +3,7 @@ pip: 7
 title: Checking Timestamp Difference in Handshaking
 description: Check the timestamp difference between two peers during the Handshaking phase
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
-status: Draft
+status: Final
 type: Standards Track
 category: Networking
 created: 2023-09-12

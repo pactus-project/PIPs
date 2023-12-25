@@ -3,6 +3,7 @@ pip: 11
 title: Deterministic key hierarchy for BLS12-381 curve
 author: Mostafa Sedaghat Joo (@b00f)
 status: Draft
+type: Standards Track
 category: Core
 created: 2023-09-26
 ---

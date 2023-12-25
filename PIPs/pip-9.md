@@ -4,7 +4,7 @@ title: Removing Stamp
 description: Removing Stamp from Transactions
 author: Amir Babazadeh (@amirvalhalla)
 status: Final
-type: Standards
+type: Standards Track
 category: Core
 created: 2023-09-19
 requires: 2
