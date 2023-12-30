@@ -30,6 +30,6 @@ The implementation of this time check feature should not compromise security.
 
 ## References
 
-1. [PIP-7: Checking Timestamp Difference in Handshaking](https://pips.pactus.org/PIPs/pip-7)
-2. [Network Time Protocol (NTP)](https://en.wikipedia.org/wiki/Network_Time_Protocol)
-3. [NTP Pool Project](https://www.ntppool.org/)
+[^1] [PIP-7: Checking Timestamp Difference in Handshaking](https://pips.pactus.org/PIPs/pip-7)
+[^2] [Network Time Protocol (NTP)](https://en.wikipedia.org/wiki/Network_Time_Protocol)
+[^3] [NTP Pool Project](https://www.ntppool.org/)
