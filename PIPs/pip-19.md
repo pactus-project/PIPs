@@ -30,19 +30,20 @@ This proposal recommends implementing an Availability Score System that evaluate
 
 ### Availability Score Calculation
 
-Each validator calculates and assigns an "availability score" to other validators.
-The availability score is extracted from the last 60,000 block certificates, which is almost one week (with each block having a 10-second interval).
-The availability score is calculated by dividing the number of blocks that a validator has been inside the committee by the number of blocks that validators have signed:
+Each validator gives a score to other validators called the "availability score."
+To calculate this score, we look at the last 60,000 blocks, which covers almost a week (each block taking 10 seconds).
 
-$$
-S_i = \frac{N_i}{V_i}
-$$
+To calculate the score, we look at how many blocks a validator signed compared to how many times they were in the committee:
 
-Where:
+$$S_i = \frac{V_i}{N_i}$$
 
-- $S_i$ is the availability score of validator $i$.
-- $N_i$ is the number of blocks that validator $i$ has been inside the committee.
-- $V_i$ is the number of blocks that validator $i$ has signed the certificate.
+In this formula:
+
+- $S_i$ is the score for validator $i$.
+- $V_i$ is how many blocks validator $i$ signed.
+- $N_i$ is how many times validator $i$ was in the committee.
+
+The score is a number between 0 and 1. If a validator wasn't in the committee for the last 60,000 blocks, their score is set to 1.
 
 ### Penalties
 
