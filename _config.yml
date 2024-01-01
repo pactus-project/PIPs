@@ -64,11 +64,11 @@ jekyll-spaceship:
     config:
       tex:
         inlineMath:
-          - ['$','$']
-          - ['\(','\)']
+           - ['$', '$']
+           - ['\\(', '\\)']
         displayMath:
-          - ['$$','$$']
-          - ['\[','\]']
+           - ['$$', '$$']
+           - ['\\[', '\\]']
       svg:
         fontCache: 'global'
     optimize:
