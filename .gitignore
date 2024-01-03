@@ -19,5 +19,5 @@ tmp
 # obsidian
 .obsidian
 
-# devcontainer
-.devcontainer
+# vscode
+.vscode
