@@ -2,7 +2,7 @@
 pip: 19
 title: Availability Score for Validators
 author: B00F (@b00f)
-status: Accepted
+status: Final
 type: Standards
 category: Core
 created: 01-01-2024
