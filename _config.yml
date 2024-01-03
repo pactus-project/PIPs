@@ -46,7 +46,7 @@ exclude:
   - ISSUE_TEMPLATE.md
   - PULL_REQUEST_TEMPLATE.md
   - README.md
-  
+
 include:
   - LICENSE
 
@@ -65,10 +65,8 @@ jekyll-spaceship:
       tex:
         inlineMath:
            - ['$', '$']
-           - ['\\(', '\\)']
         displayMath:
            - ['$$', '$$']
-           - ['\\[', '\\]']
       svg:
         fontCache: 'global'
     optimize:
