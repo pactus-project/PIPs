@@ -21,12 +21,12 @@ Figure below shows the overview of the protocol.
 
 In practical scenarios, most validators in the network function correctly.
 However, occasional network delays can affect the timely receipt of messages.
-If a validator receives sufficient valid $\text{PREPARE}$ messages (specifically $3f+1$ of them in a timely manner,
+If a validator receives sufficient valid $\text{PREPARE}$ messages, specifically $3f+1$ of them in a timely manner,
 it can commit the proposed block during the Prepare step.
 
-This fast agreement path potentially decreases the number of network messages by approximately 50% and
-the block finalization time by about 30%, eliminating the need for the $\text{PRECOMMIT}$ step
-and broadcasting for $(n-1)^2$ messages in the Precommit phase.
+This fast agreement path potentially decreases the number of network messages and
+the block finalization time, eliminating the need for the $\text{PRECOMMIT}$ step
+and broadcasting for almost $n^2$ messages in the Precommit phase.
 
 ## Specification
 
