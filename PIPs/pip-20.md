@@ -81,6 +81,7 @@ func AuthInterceptor(authConfig AuthConfig) grpc.ServerOption {
     return handler(ctx, req)
   })
 }
+```
 
 ## Rationale
 
