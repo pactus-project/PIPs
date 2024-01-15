@@ -90,9 +90,15 @@ h1 a {
 }
 
 @media print {
-
-  header,
-  footer {
+  header, footer, aside, form, … {
     display: none;
   }
-}
+  article {
+    width:100%!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  svg, symbol { 
+    display:none; 
+ }
+  }
