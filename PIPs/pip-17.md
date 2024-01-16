@@ -51,7 +51,7 @@ Register:
 fn register(name: String, record: String) -> bool;
 ```
 
-### Clients Resolving
+### Resolving by clients
 
 The wallets, clients, and applications can use RPC nodes and resolve names by reading the registrar contract storage related to it.
 
