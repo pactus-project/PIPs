@@ -35,13 +35,13 @@ Submitting a new TLD requires a transfer transaction to the treasury address wit
 
 > NOTE: The memo limit is 64 characters in Pactus, and the address contains 42 characters, so, we can define TLDs up to 17  characters.
 
-The Owner MUST be able to change the contract by submitting the same name with a different contract address. Additionally, some other addresses MUST NOT be able to register the same TLD. any transaction with a different style and lower amount MUST be considered as a normal transfer transaction.
+The Owner MUST be able to change the contract by submitting the same name with a different contract address. Additionally, some other addresses MUST NOT be able to register the same TLD. any transaction with a different style and lower amount MUST be considered a normal transfer transaction.
 
 The network/blockchain nodes SHOULD keep track of these PNS TLDs, index them (their owner, name, and last registrar), and define RPC methods for resolving them.
 
 ### Registrars
 
-A registrar contract SHOULD implement two main functions:
+A registrar contract SHOULD implement one main function:
 
 Register:
 
@@ -51,14 +51,8 @@ Register:
 fn register(name: String, record: String) -> bool;
 ```
 
-Resolve:
+### Clients Resolving
 
-```rs
-// This function provides a way to resolve the PNS name to Record value. 
-// for example: blockchain.pac => pc1zwqxz2wmz5upuvxzj3kpgfq3k2are4s3ctqxtxy 
-//TTL or time-to-live is in milliseconds, and this is up to the registrar.
-// Calling this function can be Owner(s) only and it's OPTIONAL.
-fn resolve(name: String, ttl: u8) -> String;
-```
+The wallets, clients, and applications can use RPC nodes and resolve names by reading the registrar contract storage related to it.
 
 The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119 and RFC 8174.
