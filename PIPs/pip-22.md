@@ -1,7 +1,7 @@
 ---
 pip: 22
-title: The application name of the client agent. 
-author: nagaraj (@ragnarok87)
+title: Agent Node Defination
+author: Nagaraj (@ragnarok87)
 status: Draft
 type: Standards
 category: core
@@ -10,24 +10,18 @@ created: 29-01-2024
 
 ## Abstract
 
-The purpose of this proposal is a focus on improvement and specificity in the agent naming process.
+The purpose of this proposal is to redefine the node field as "application type" instead of "application name" in the agent string.
 
 ## Motivation
 
-Addressing the issue by removing the suffix from the GUI to uphold and maintain agent standards.
-The proposed rephrasing could be, In light of the client node's utilization of a GUI across various operating systems, 
-it's been observed that each agent node appends 'Agent: node=pactus-gui.exe' in its information. 
-To streamline this and ensure consistency, the proposal suggests removing 'pactus-gui' and 
-the additional '.exe' from the naming convention."
+Based on [PIP14](./pip-14.md), the node field is defined as "The application name of the agent." There are two problems with this definition:
 
-### Establishing a standardized suffix for the client agent.
-
-1. As observed `pactus-gui.exe` is observed in network Agent for windows client using GUI.
-
+* Depending on the operating system, the node field can change, e.g., `pactus-gui` & `pactus-gui.exe`.
+* Some users rename the application, for example, to `pdeamon`.
 
 ## Specification
 
-## Updating GUI for windows by removing suffix.
+This proposal suggests defining the node field as the application type of the agent, as defined below:
 
-1. The proposal involves eliminating the suffix portion from 'pactus-gui.exe', which is currently used in the Windows GUI and linked with the network agent. 
-
+1. `daemon`: If the client agent is a CLI or Daemon application.
+2. `gui`: If the client agent is a GUI application.
