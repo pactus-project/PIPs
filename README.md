@@ -9,7 +9,6 @@ The [status page](https://pips.pactus.org) tracks and lists PIPs, which can be d
 * Core PIPs are improvements to the Pactus consensus protocol.
 * Networking PIPs specify the peer-to-peer networking layer of Pactus.
 * Interface PIPs standardize interfaces to Pactus, which determine how users and applications interact with the blockchain.
-* PRCs specify application layer standards, which determine how applications running on Pactus can interact with each other.
 * Meta PIPs are miscellaneous improvements that nonetheless require some sort of consensus.
 * Informational PIPs are non-standard improvements that do not require any form of consensus.
 
