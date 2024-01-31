@@ -4,8 +4,9 @@ title: Agent Node Defination
 author: Nagaraj (@ragnarok87)
 status: Draft
 type: Standards
-category: core
+category: Interface
 created: 29-01-2024
+requires: 14
 ---
 
 ## Abstract
