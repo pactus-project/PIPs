@@ -33,9 +33,9 @@ htpasswd -bnBC 10 <username> <password>
 - -b: Use the bcrypt password encryption algorithm.
 - -n: Do not update the password file.
 - -B: Force bcrypt algorithm.
-- -C <cost>: Set the cost factor for the bcrypt algorithm (higher values mean slower hashing but more secure).
-- <username>: The username for which you want to generate the password.
-- <password>: The password you want to hash.
+- -C cost: Set the cost factor for the bcrypt algorithm (higher values mean slower hashing but more secure).
+- username: The username for which you want to generate the password.
+- password: The password you want to hash.
 
 For example:
 
