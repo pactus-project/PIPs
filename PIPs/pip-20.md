@@ -1,6 +1,6 @@
 ---
 pip: 20
-title: Enhanced Authentication Methodology for REST and GRPC APIs
+title: Basic Authentication for gRPC APIs
 author: Javad Rajabzadeh (@Ja7ad)
 status: Draft
 type: Standards
@@ -10,147 +10,101 @@ created: 14-01-2024
 
 ## Abstract
 
-This proposal outlines the introduction of a flexible authentication mechanism that supports multiple methods for both REST and gRPC interfaces in a given system. The goal is to enhance the security layer to accommodate varying client needs including the option for no authentication, basic authentication, and API key-based authentication.
+This proposal aims to enhance the security of gRPC APIs by implementing a Basic Authentication mechanism. The goal is to provide a simple yet effective way to authenticate clients accessing the APIs.
 
 ## Motivation
 
-As systems evolve, the need for varied and robust authentication mechanisms becomes critical to cater to a range of security requirements and client capabilities. Currently, the lack of a comprehensive, flexible authentication system in our API layer limits the ability to secure communications effectively. This proposal aims to standardize the authentication process across REST and gRPC interfaces to improve security, interoperability, and ease of use.
+Security is paramount in modern systems, and implementing a reliable authentication mechanism is essential to safeguard sensitive data and resources. Basic Authentication offers a straightforward approach to validate client credentials and control access to gRPC services.
 
 ## Specification
 
-The proposed authentication enhancement revolves around the implementation of a middleware in the gRPC server. This middleware will intercept requests before they reach the endpoint and determine the authentication method to be applied based on the configuration specified in the TOML file. The middleware will operate as follows:
+The proposed authentication enhancement involves implementing a middleware component within the gRPC server to handle Basic Authentication. The middleware will intercept incoming requests, validate the provided credentials, and allow or deny access based on the authentication outcome.
 
-1. Inspect incoming requests for authentication credentials.
-2. Validate credentials against the chosen authentication method, as detailed in the service configuration.
-3. Allow access to the endpoint for valid credentials or reject it with an appropriate error message for invalid or missing credentials.
+### Generate by using htpasswd Apache
 
-Below are the authentication control mechanisms for each supported method:
+1. Generate Bcrypt Hash with htpasswd[^1]:
+You can use the htpasswd command-line tool to generate a bcrypt-hashed password.
+Here's the general syntax:
 
-### None
+```shell
+htpasswd -bnBC 10 <username> <password>
+```
 
-When the method is set to `none`, the middleware allows all requests to pass through without any authentication checks.
+- -b: Use the bcrypt password encryption algorithm.
+- -n: Do not update the password file.
+- -B: Force bcrypt algorithm.
+- -C cost: Set the cost factor for the bcrypt algorithm (higher values mean slower hashing but more secure).
+- username: The username for which you want to generate the password.
+- password: The password you want to hash.
 
-### Basic Authentication
+For example:
 
-For basic authentication, the middleware extracts the `Authorization` header from the request, decodes the Base64 encoded username and password, and validates them against the credentials stored in the configuration.
+```shell
+htpasswd -bnBC 10 javad mypassword
+```
 
-### API Key Authentication
+This command will output the bcrypt-hashed password for the user javad.
 
-API key authentication requires the middleware to look for a predefined header (e.g., `X-Api-Key`) or query parameter in the request. The extracted key is then compared with the one specified in the configuration file.
+2. Store the Hashed Password in Configuration File:
+Once you have the bcrypt-hashed password, you can store it in your configuration file. It seems like you're using a TOML configuration file format.
+In your TOML configuration file, you would include the hashed password like this:
 
-The middleware also provides a flexible hook to integrate additional custom authentication methods in the future.
+```toml
+[grpc]
+  enable = true
+  listen = "[::]:50052"
+  auth = "javad:$2y$10$fOLKlFO0tOdSWcbMgGjbIerdF2wuaqOQd0//fNtkzpdj6LaId0rwO"  # Replace this with your username and hashed password
 
-### TOML Configuration Changes
+[grpc.gateway]
+  enable = true
+  listen = "[::]:8080"
+  enable_cors = false
+```
 
-To support these features, the following configurations must be added to the TOML file:
+Replace "javad:$2y$10$fOLKlFO0tOdSWcbMgGjbIerdF2wuaqOQd0//fNtkzpdj6LaId0rwO" with the bcrypt-hashed password you generated using htpasswd.
 
-- An authentication section with a method definition.
-- Credentials' definitions for Basic and API Key methods, which the middleware will use for verification.
+Remember to keep your configuration file secure, especially if it contains sensitive information like passwords.
+
+By following these steps, you can generate a bcrypt-hashed password using htpasswd and store it in your configuration file for use in your gRPC server's authentication middleware.
+
+### Basic Authentication Middleware
+
+The Basic Authentication middleware operates as follows:
+
+1. Extract the `Authorization` header from incoming requests.
+2. Decode the Base64-encoded username and password from the header.
+3. Validate the credentials against the predefined username and password stored in the server configuration.
+4. Allow access to the endpoint for valid credentials or reject the request with an appropriate error message for invalid or missing credentials.
 
 ### Example Middleware Implementation
 
-Here is a pseudocode example of what the middleware might look like for a gRPC server:
-
 ```go
-func AuthInterceptor(authConfig AuthConfig) grpc.ServerOption {
+func BasicAuthInterceptor(username, password string) grpc.ServerOption {
   return grpc.UnaryInterceptor(func(ctx context.Context, req interface{},
     info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 
-    // Check if authentication has been enabled
-    if authConfig.Method != "none" {
-
-      // Authenticate based on the method
-      switch authConfig.Method {
-      case "basic":
-        // Perform basic auth check (example function call)
-        if err := checkBasicAuth(ctx, authConfig.Credentials); err != nil {
-          return nil, err
-        }
-      case "apikey":
-        // Perform API key check (example function call)
-        if err := checkAPIKey(ctx, authConfig.ApiKey); err != nil {
-          return nil, err
-        }
-      default:
-        // If the method is not recognized, deny the request
-        return nil, status.Error(codes.Unauthenticated, "Invalid authentication method")
-      }
+    // Extract Authorization header from the context
+    authHeader, ok := metadata.FromIncomingContext(ctx)
+    if !ok {
+      return nil, status.Error(codes.Unauthenticated, "Missing authentication credentials")
     }
 
-    // Call the handler if authentication was successful or not required
-    return handler(ctx, req)
+    // Extract and decode username and password from the Authorization header
+    // Perform Basic Authentication
+    // If authentication fails, return an Unauthenticated error
+    // If authentication succeeds, proceed to the next handler
   })
 }
 ```
 
 ## Rationale
 
-The proposed authentication methods cover a broad range of use cases:
-
-- **None** for development and testing environments where security is not a concern.
-- **Basic Auth** for scenarios where simplicity and basic access control are sufficient.
-- **API Key** for production environments where a single, revocable key is preferred.
-
-This approach ensures that the system can be used in different contexts without imposing a one-size-fits-all solution.
+Basic Authentication provides a simple yet effective way to control access to gRPC APIs. It is widely supported by client libraries and can be easily integrated into existing systems without significant overhead.
 
 ## Backward Compatibility
 
-The proposal ensures backward compatibility as the default method can retain 'none' for existing implementations until an explicit change is made.
+This proposal ensures backward compatibility by allowing existing implementations to retain their authentication method configurations. The Basic Authentication method can be selectively enabled for specific APIs or endpoints without impacting the overall system behavior.
 
-## Security Considerations
+## References
 
-Each authentication method comes with its security implications. While basic auth over SSL/TLS could be sufficient for certain cases, API keys provide a more secure alternative. However, it is essential to implement additional security measures like key rotation and HTTPS enforcement.
-
-
-## Example
-
-- Without Authentication
-
-```toml
-[grpc]
-  enable = true
-  listen = "[::]:50052"
-
-  [grpc.auth]
-    method = "none"
-
-  [grpc.gateway]
-    enable = true
-    listen = "[::]:8080"
-    enable_cors = false
-```
-
-- Basic Auth Authentication
-
-```toml
-[grpc]
-  enable = true
-  listen = "[::]:50052"
-
-  [grpc.auth]
-    method = "basic"
-    username = "foo"
-    password = "bar"
-
-  [grpc.gateway]
-    enable = true
-    listen = "[::]:8080"
-    enable_cors = false
-```
-
-- API Key Authentication
-
-```toml
-[grpc]
-  enable = true
-  listen = "[::]:50052"
-
-  [grpc.auth]
-    method = "apikey"
-    key = "foobar"
-
-  [grpc.gateway]
-    enable = true
-    listen = "[::]:8080"
-    enable_cors = false
-```
+[^1]: [htpasswd - Manage user files for basic authentication](https://httpd.apache.org/docs/2.4/programs/htpasswd.html)
