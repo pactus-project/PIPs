@@ -2,7 +2,7 @@
 pip: 20
 title: Basic Authentication for gRPC APIs
 author: Javad Rajabzadeh (@Ja7ad)
-status: Draft
+status: Accepted
 type: Standards
 category: Interface
 created: 14-01-2024
