@@ -26,8 +26,7 @@ However, there are some problems with this approach:
 
 1. The address can be misused.
 For example, a user might use an account address as a validator address in a [Bond transaction](https://pactus.org/learn/transaction/bond/) (An issue regarding this problem is reported [here](https://github.com/pactus-project/pactus/issues/510)).
-2. For some usages, such as smart contracts, there isn't a dedicated public key, making the `type` inconsistent with its original definition.
-3. The address doesn't indicate its usage. This makes it challenging for both humans and machines to identify the purpose of each address, whether it belongs to an `account`, `validator`, or `contract`. This is particularly troublesome in applications like block explorers.
+2. The address doesn't indicate its usage. This makes it challenging for both humans and machines to identify the purpose of each address, whether it belongs to an `Account` or `Validator`. This is particularly troublesome in applications like block explorers.
 
 ## Specification
 
