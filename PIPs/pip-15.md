@@ -41,9 +41,9 @@ Once a new block is committed, the expired transactions can be removed from the 
 ### Recent Sortition Seed
 
 The most recent sortition seeds can be stored using the PairSlice [^5].
-It is It's important to retain all sortition seeds up to the Sortition Interval[^4] once the store is initialized.
+A PairSlice is a slice where each item is a pair of a key and a value. The first item in the PairSlice represents the block height, and the second item represents the sortition seed.
+It is important to retain all sortition seeds up to the Sortition Interval[^4] once the store is initialized.
 If the slice reaches its maximum size, upon committing a new block, the oldest item in the slice can be removed to maintain the slice's fixed size.
-The first item in PairSlice is the block height, and the second item is the sortition seed.
 
 ## References
 
