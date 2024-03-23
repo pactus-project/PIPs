@@ -41,8 +41,8 @@ $S_i = \frac{V_i}{N_i}$
 In this formula:
 
 - $S_i$ is the score for validator $i$.
-- $V_i$ is the number of blocks signed by validator $i$.
-- $N_i$ indicates how many times validator $i$ was in the committee.
+- $V_i$ is how many blocks validator $i$ signed.
+- $N_i$ is how many times validator $i$ was in the committee.
 
 The score is a number between 0 and 1. If a validator wasn't in the committee for the last 60,000 blocks, their score defaults to 1.
 
