@@ -1,6 +1,6 @@
 ---
 pip: 23
-title: Sign and Verify message by Public and Private key account
+title: Sign and verify message by public and private key account
 author: Javad Rajabzadeh (@ja7ad)
 status: Draft
 type: Standards
