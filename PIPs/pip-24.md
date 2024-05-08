@@ -28,17 +28,15 @@ The motivation behind this proposal is to:
 
 The Snap mode synchronization feature will be implemented as follows:
 
-1. Centralized storage: A centralized storage location will be set up to host compressed blockchain data files.
+1. Centralized storage: A centralized storage location will be set up to host original blockchain data files.
 
-2. Download link generation: A script or service will generate unique download links for users to access the blockchain data files stored in the centralized storage.
+2. Checksum hash generation: Alongside the download link, a checksum hash will be provided to ensure data integrity during the download process.
 
-3. Checksum hash generation: Alongside the download link, a checksum hash will be provided to ensure data integrity during the download process.
+3. Node setup command: Users can initiate the synchronization process by running the command `./pactus-daemon import` start to download last blockchain data very fast from the server closest to you.
 
-4. Node setup command: Users can initiate the synchronization process by running the command `./pactus-daemon import` start to download last blockchain data very fast from the server closest to you.
+4. Data verification: Upon completion of the download every blockchain data, the node will verify the integrity of the downloaded data using the provided checksum hash.
 
-5. Data verification: Upon completion of the download every blockchain data, the node will verify the integrity of the downloaded data using the provided checksum hash.
-
-6. Synchronization: The node will import the downloaded blockchain data and synchronize with the Pactus network.
+5. Synchronization: The node will import the downloaded blockchain data and synchronize with the Pactus network.
 
 ## Backward Compatibility
 
