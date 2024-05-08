@@ -38,6 +38,20 @@ The Snap mode synchronization feature will be implemented as follows:
 
 5. Synchronization: The node will import the downloaded blockchain data and synchronize with the Pactus network.
 
+### Example
+
+Example metadata of blockchain data:
+
+```json
+[
+    {
+        "filename": "008149.ldb",
+        "path": "store.db/008149.ldb",
+        "hash": "07cd0dbdc4f6d0f677e0f2f3c47b9f4d6c112f507198a84ac38ed5389f5de0b2"
+    }
+]
+```
+
 ## Backward Compatibility
 
 This improvement proposal maintains backward compatibility with existing Pactus blockchain infrastructure and protocols. Users who prefer to sync data via the traditional P2P network can continue to do so without any disruption. The Snap mode synchronization feature provides an alternative method for syncing blockchain data and does not require any changes to the underlying blockchain protocol.
