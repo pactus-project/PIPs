@@ -39,12 +39,12 @@ To ensure a high degree of resilience against network errors, the routine should
 
 In case the check on all servers encounters errors, the "ClockOffset" should be set to `maxDuration` as defined below:
 
-
 ```
 maxDuration time.Duration = 1<<63 - 1
 ```
 
-The "ClockOffset" updates every minute; in the meantime, the "ClockOffset" can be shown in different parts of the software, like GUI, Logs, NodeInfo API, and logs.
+The "ClockOffset" updates every minute; in the meantime,
+the "ClockOffset" value can be obtained and shown in different parts of the software, like GUI, Logs, NodeInfo API, and logs.
 If it deviates by one second, the user can see an alert in the GUI or logs, and they may check their system time to fix it.
 
 ## Security Considerations
