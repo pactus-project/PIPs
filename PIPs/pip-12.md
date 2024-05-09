@@ -2,7 +2,7 @@
 pip: 12
 title: Automated Version Updates and Announcements in GUI and Daemon Client
 author: Javad Rajabzadeh <ja7ad@live.com>
-status: Reject
+status: Rejected
 type: Standards Track
 category: Interface
 created: 2023-11-26
