@@ -2,7 +2,7 @@
 pip: 22
 title: Agent Node Defination
 author: Nagaraj (@ragnarok87)
-status: Draft
+status: Accepted
 type: Standards
 category: Interface
 created: 29-01-2024
@@ -26,3 +26,7 @@ This proposal suggests defining the node field as the application type of the ag
 
 1. `daemon`: If the client agent is a CLI or Daemon application.
 2. `gui`: If the client agent is a GUI application.
+
+## Security Considerations
+
+The implementation of this time check feature should not compromise security.
