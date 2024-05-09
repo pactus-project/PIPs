@@ -1,8 +1,8 @@
 ---
 pip: 21
-title: unbond token can rebond at any time. 
-author: hui (@laosiji-io)
-status: Draft
+title: unbond token can rebond at any time.
+author: Hui (@laosiji-io)
+status: Rejected
 type: Standards
 category: core
 created: 15-01-2024
@@ -23,14 +23,14 @@ If it is possible to immediately change to a new staking address, So there's no 
 
 ### Fully leverage the role of tokens at any time
 
-The current pledged tokens will not play any role within 21 days after unbond. 
+The current pledged tokens will not play any role within 21 days after unbond.
 If you want to re-stake, you need to wait 21 days before doing so.
 
 ## Specification
 
 ### Keep current withdraw rules
 
-1. The current withdraw rules are still retained. 
+1. The current withdraw rules are still retained.
 2. If you need to withdraw token after unstaking, you still need to wait for 21 days.
 
 ### can be rebond any time.
