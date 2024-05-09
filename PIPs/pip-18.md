@@ -1,9 +1,11 @@
 ---
 pip: 18
-title: Time Check Proposal
-description: Implement Time Check on Node Startup
-author: Mr. HoDL (@Mr-HoDL58)
-status: Draft
+title: Clock Offset Proposal
+description: Check if Time of the Node is synced with the Network Time
+author: |
+    Mr. HoDL (@Mr-HoDL58)
+    Mostafa Sedaghat Joo (@b00f)
+status: Accepted
 type: Standards
 category: Core
 created: 28-12-2023
@@ -11,18 +13,39 @@ created: 28-12-2023
 
 ## Abstract
 
-This proposal suggests the implementation of a time check feature during node startup.
+This proposal suggests adding a time check feature to the Pactus blockchain.
+This feature would alert users if their node's time is not synchronized with the network time.
+Time is considered not synchronized if it deviates by one second or more from the network time.
 
 ## Motivation
 
-Some users experience time discrepancies of more than 10 seconds in their system clocks, leading to handshake[^1] rejections by the network and preventing their nodes from syncing.
+Pactus nodes reject handshakes with nodes that have time discrepancies of more than 10 seconds in their system clocks [^1].
+This can help nodes diagnose if their time is misaligned by more than 10 seconds.
+However, we currently lack a mechanism to alert users if their node's time is misaligned by less than 10 seconds.
+
+Some users notice their "Availability Scores" [^2] decreasing gradually.
+One potential reason is that their system time is ahead of the network time.
+Therefore, the timers within the consensus expire later, potentially causing users to sign blocks too late.
+This delay could cause their signatures to arrive late compared to other validators.
 
 ## Specification
 
-We propose the addition of a time check feature to the software that verifies the system time at the node's startup.
-If the time is inaccurate by more than +-10 seconds, it will issue a warning log in the command-line interface (CLI) and provide an on-screen alert in the graphical user interface (GUI).
+The proposal suggests adding a time check routine that repeats every minute.
+This routine calculates the "ClockOffset" in each run,
+which is defined as the estimated offset of the local system clock relative to the network's clock.
+The network clock can be obtained using Network Time Protocol (NTP) [^3] and a set of NTP servers from the NTP Pool Project [^4].
+The NTP Pool Project is a globally distributed network of volunteer-operated time servers, ensuring precise time synchronization across various geographic locations.
+To ensure a high degree of resilience against network errors, the routine should iterate through the list of NTP servers.
 
-To accomplish this, the time deviation between the local host and a randomly selected NTP[^2] server from the NTP Pool Project[^3] should be used. The NTP Pool Project is a globally distributed network of volunteer-operated time servers, ensuring precise time synchronization across various geographic locations.
+In case the check on all servers encounters errors, the "ClockOffset" should be set to `maxDuration` as defined below:
+
+```
+maxDuration time.Duration = 1<<63 - 1
+```
+
+The "ClockOffset" updates every minute; in the meantime,
+the "ClockOffset" value can be obtained and shown in different parts of the software, like GUI, Logs, NodeInfo API, and logs.
+If it deviates by one second, the user can see an alert in the GUI or logs, and they may check their system time to fix it.
 
 ## Security Considerations
 
@@ -31,5 +54,6 @@ The implementation of this time check feature should not compromise security.
 ## References
 
 [^1]: [PIP-7: Checking Timestamp Difference in Handshaking](https://pips.pactus.org/PIPs/pip-7)
-[^2]: [Network Time Protocol (NTP)](https://en.wikipedia.org/wiki/Network_Time_Protocol)
-[^3]: [NTP Pool Project](https://www.ntppool.org/)
+[^2]: [Availability Score for Validators](https://pips.pactus.org/PIPs/pip-19)
+[^3]: [Network Time Protocol (NTP)](https://en.wikipedia.org/wiki/Network_Time_Protocol)
+[^4]: [NTP Pool Project](https://www.ntppool.org/)
