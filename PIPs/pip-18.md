@@ -1,7 +1,7 @@
 ---
 pip: 18
-title: Clock Offset Proposal
-description: Check if Time of the Node is synced with the Network Time
+title: Clock Offset Calculation
+description: Calculate the difference between System Time and Network Time
 author: |
     Mr. HoDL (@Mr-HoDL58)
     Mostafa Sedaghat Joo (@b00f)
@@ -44,7 +44,7 @@ maxDuration time.Duration = 1<<63 - 1
 ```
 
 The "ClockOffset" updates every minute; in the meantime,
-the "ClockOffset" value can be obtained and shown in different parts of the software, like GUI, Logs, NodeInfo API, and logs.
+the "ClockOffset" value can be obtained and shown in different parts of the software, like GUI, Logs and NodeInfo API.
 If it deviates by one second, the user can see an alert in the GUI or logs, and they may check their system time to fix it.
 
 ## Security Considerations
