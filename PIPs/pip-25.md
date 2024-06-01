@@ -32,10 +32,10 @@ The Pactus blockchain, which operates on a Proof of Stake (PoS) committee-based 
 
 Define algorithms that adjust transaction fees and burn amounts dynamically. The fees will be calculated using the following formula:
 
-\[ \text{Adjusted Fee} = \text{Base Fee} \times (1 + \alpha \times \frac{\text{Current Transaction Volume}}{\text{Average Transaction Volume}}) \]
+$\[ \text{Adjusted Fee} = \text{Base Fee} \times (1 + \alpha \times \frac{\text{Current Transaction Volume}}{\text{Average Transaction Volume}}) \]$
 
 - **Base Fee**: Standard fee under normal conditions.
-- **\(\alpha\)**: Coefficient determining fee sensitivity to volume changes.
+- **$\(\alpha\)$**: Coefficient determining fee sensitivity to volume changes.
 - **Current Transaction Volume**: Number of transactions in the current observation window.
 - **Average Transaction Volume**: Historical average transactions in a typical observation window.
 
