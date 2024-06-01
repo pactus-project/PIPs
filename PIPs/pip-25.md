@@ -1,6 +1,6 @@
 ---
 pip: 25
-title: Dynamic fees
+title: Dynamic fees structure
 author: Javad Rajabzadeh (@b00f)
 status: Draft
 type: Standards
