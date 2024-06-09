@@ -21,19 +21,15 @@ Therefore, it is essential to set a fair and effective minimum threshold to ensu
 
 ## Specification
 
-The Availability Score is calculated using the following formula:
+The Availability Score is calculated by dividing the number of blocks that a validator has signed
+by the number of times a validator could sign a block.
 
-$$S_i = \frac{V_i}{N_i}$$
-
-Where:
-
-- $S_i$ is the Availability Score for validator $i$.
-- $V_i$ is the number of blocks signed by validator $i$.
-- $N_i$ is the number of times validator $i$ was in the committee.
-
-Let's assume a worst-case scenario where up to 1/3 of validators may be faulty (e.g., due to poor internet connections, out-of-sync machines, selfish behavior, etc.).
 When a block is created, non-faulty validators should include all the signatures they receive in the block certificate.
 However, faulty validators may fail to do so, either intentionally or unintentionally.
+
+Let's assume a worst-case scenario where up to 1/3 of validators may be faulty
+(e.g., due to poor internet connections, time not synced with the network, selfish behavior, etc.).
+
 As a result, a validator's signature might only be included in 2/3 of the blocks they are supposed to sign:
 
 $$
