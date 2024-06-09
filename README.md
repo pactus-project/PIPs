@@ -1,8 +1,10 @@
 # Pactus Improvement Proposals (PIPs)
 
-![PIP](./assets/readme/pip.png) 
+![PIP](./assets/readme/pip.png)
 
-The goal of the PIP project is to standardize and provide high-quality documentation for Pactus itself and conventions built upon it. This repository tracks past and ongoing improvements to Ethereum in the form of Pactus Improvement Proposals (PIPs). PIP-1 governs how PIPs are published.
+The goal of the PIP project is to standardize and provide high-quality documentation for [Pactus](https://pactus.org/) itself and conventions built upon it.
+This repository tracks past and ongoing improvements to Pactus in the form of Pactus Improvement Proposals (PIPs).
+[PIP-1](https://pips.pactus.org/PIPs/pip-1) governs how PIPs are published.
 
 The [status page](https://pips.pactus.org) tracks and lists PIPs, which can be divided into the following categories:
 
