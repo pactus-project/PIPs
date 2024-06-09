@@ -26,3 +26,5 @@ gem "html-proofer", '>=4.0'
 gem "webrick", '>= 1.8'
 
 gem 'jekyll-spaceship', group: :jekyll_plugins
+
+gem 'kramdown', '>= 2.3'
