@@ -17,7 +17,7 @@ jobs:
   save-pr:
     name: Save PR Number
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Save PR number
         env:
@@ -63,11 +63,11 @@ jobs:
   link-check:
     name: Link Check
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout PIP Repository
         uses: actions/checkout@47fbe2df0ad0e27efb67a70beac3555f192b062f
-        
+
       - name: Link Checker
         uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
@@ -123,10 +123,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Lint
-        uses: DavidAnson/markdownlint-cli2-action@f5cf187ef11bd3a68a127321b794aa252ff23019
+        uses: DavidAnson/markdownlint-cli2-action@v16
         if: steps.changed.outcome == 'success'
         with:
           command: config
           globs: |
             config/.markdownlint.yaml
             ${{ env.CHANGED_FILES }}
+
+      - markdown-link-check:
+        - uses: gaurav-nelson/github-action-markdown-link-check@v1
