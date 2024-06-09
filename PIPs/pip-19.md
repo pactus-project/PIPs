@@ -36,7 +36,9 @@ To calculate this score, we look at the last 60,000 blocks, which covers almost 
 
 To calculate the score, we look at how many blocks a validator signed compared to how many times they were in the committee:
 
-$S_i = \frac{V_i}{N_i}$
+$$
+S_i = \frac{V_i}{N_i}
+$$
 
 In this formula:
 
