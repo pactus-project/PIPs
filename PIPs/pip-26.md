@@ -2,7 +2,7 @@
 pip: 26
 title: Minimum Availability Score
 author: Mostafa Sedaghat Joo (@b00f)
-status: Accepted
+status: Final
 type: Standards
 category: Core
 created: 09-06-2024
