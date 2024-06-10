@@ -10,7 +10,7 @@ created: 09-06-2024
 
 ## Abstract
 
-This proposal suggests setting the Minimum Availability Score to 0.667 for validators in the Pactus network.
+This proposal suggests setting the Minimum Availability Score to 0.666667 for validators in the Pactus network.
 This score ensures that validators who fail to meet this threshold cannot propose a block,
 thereby maintaining the network's stability and reliability.
 
@@ -39,7 +39,7 @@ $$
 Therefore, the Minimum Availability Score $S_{min}$ is calculated as:
 
 $$
-S_{min} = \frac{\frac{2}{3} \times N_i}{N_i} = \frac{2}{3} \approx 0.667
+S_{min} = \frac{\frac{2}{3} \times N_i}{N_i} = \frac{2}{3} \approx 0.666667
 $$
 
 ## Backward Compatibility
