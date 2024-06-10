@@ -131,5 +131,5 @@ jobs:
             config/.markdownlint.yaml
             ${{ env.CHANGED_FILES }}
 
-      - markdown-link-check:
-        - uses: gaurav-nelson/github-action-markdown-link-check@v1
+      - name: Markdown link check
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
