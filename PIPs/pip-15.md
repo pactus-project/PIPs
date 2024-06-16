@@ -52,5 +52,5 @@ the oldest item in the slice can be removed to maintain the slice's fixed size.
 [^1]: [Cache replacement policies](https://en.wikipedia.org/wiki/Cache_replacement_policies)
 [^2]: [Hash table](https://en.wikipedia.org/wiki/Hash_table)
 [^3]: [Implementation of LinkedMap in Pactus](https://github.com/pactus-project/pactus/blob/main/util/linkedmap/linkedmap.go)
-[^4]: [Consensus parameters in Pactus](https://pactus.org/learn/consensus/parameters/)
+[^4]: [Consensus parameters in Pactus](https://docs.pactus.org/protocol/consensus/parameters/)
 [^5]: [Implementation of PairSlice in Pactus](https://github.com/pactus-project/pactus/blob/main/util/pairslice/pairslice.go)

@@ -62,4 +62,4 @@ and the validator won't receive any reward.
 
 ## References
 
-[^1]: [Pactus consensus protocol](https://pactus.org/learn/consensus/protocol/)
+[^1]: [Pactus consensus protocol](https://docs.pactus.org/protocol/consensus/protocol/)

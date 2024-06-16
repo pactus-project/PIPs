@@ -51,4 +51,4 @@ By doing so, validators will have no incentive to run duplicated nodes.
 
 ## References
 
-[^1]: [Change Proposer phase](https://pactus.org/learn/consensus/protocol/#change-proposer)
+[^1]: [Change Proposer phase](https://docs.pactus.org/protocol/consensus/protocol/#change-proposer)

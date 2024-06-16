@@ -41,4 +41,4 @@ Currently, this interval is set to 8640 blocks, equating to approximately one da
 ## References
 
 [^1]: [Bitcoin transaction format](https://en.bitcoin.it/wiki/Protocol_documentation#tx)
-[^2]: [Pactus consensus parameters](https://pactus.org/learn/consensus/parameters/)
+[^2]: [Pactus consensus parameters](https://docs.pactus.org/protocol/consensus/parameters/)

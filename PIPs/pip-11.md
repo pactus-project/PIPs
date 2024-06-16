@@ -179,7 +179,7 @@ Seed (hex): 000102030405060708090a0b0c0d0e0f
 
 ## Implementation
 
-* [Python implementation to generate test vectors](/assets/pip-11/testvectors.py)
+* [Python implementation to generate test vectors](https://pips.pactus.org/assets/pip-11/testvectors.py)
 * [Go implementation](https://github.com/pactus-project/pactus/tree/main/crypto/bls/hdkeychain)
 
 ## References
