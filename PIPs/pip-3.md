@@ -36,4 +36,4 @@ storing the transactions for a single day is sufficient to detect replay attacks
 
 ## References
 
-[^1]: [PIP-2: Lock Time Transactions](http://localhost:4000/PIPs/pip-2#time-to-live-interval)
+[^1]: [PIP-2: Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2#time-to-live-interval)

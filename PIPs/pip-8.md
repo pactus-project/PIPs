@@ -26,7 +26,7 @@ However, there are some problems with this approach:
 
 1. The address can be misused.
    For example, a user might use an account address as a validator address in a
-   [Bond transaction](https://pactus.org/learn/transaction/bond/)
+   [Bond transaction](https://docs.pactus.org/protocol/transaction/bond/)
    (An issue regarding this problem is reported [here](https://github.com/pactus-project/pactus/issues/510)).
 
 1. The address doesn't indicate its usage.
