@@ -19,9 +19,11 @@ Time is considered not synchronized if it deviates by one second or more from th
 
 ## Motivation
 
-Pactus nodes reject handshakes with nodes that have time discrepancies of more than 10 seconds in their system clocks [^1].
+Pactus nodes reject handshakes with nodes that have time discrepancies of
+more than 10 seconds in their system clocks [^1].
 This can help nodes diagnose if their time is misaligned by more than 10 seconds.
-However, we currently lack a mechanism to alert users if their node's time is misaligned by less than 10 seconds.
+However, we currently lack a mechanism to alert users if
+their node's time is misaligned by less than 10 seconds.
 
 Some users notice their "Availability Scores" [^2] decreasing gradually.
 One potential reason is that their system time is ahead of the network time.
@@ -31,21 +33,21 @@ This delay could cause their signatures to arrive late compared to other validat
 ## Specification
 
 The proposal suggests adding a time check routine that repeats every minute.
-This routine calculates the "ClockOffset" in each run,
+This routine calculates the "Clock Offset" in each run,
 which is defined as the estimated offset of the local system clock relative to the network's clock.
-The network clock can be obtained using Network Time Protocol (NTP) [^3] and a set of NTP servers from the NTP Pool Project [^4].
-The NTP Pool Project is a globally distributed network of volunteer-operated time servers, ensuring precise time synchronization across various geographic locations.
-To ensure a high degree of resilience against network errors, the routine should iterate through the list of NTP servers.
+The network clock can be obtained using the Network Time Protocol (NTP) and a set of NTP servers from the NTP Pool Project.
+The NTP Pool Project is a globally distributed network of volunteer-operated time servers,
+ensuring precise time synchronization across various geographic locations.
 
-In case the check on all servers encounters errors, the "ClockOffset" should be set to `maxDuration` as defined below:
+To ensure a high degree of resilience against network errors,
+the routine should iterate through the list of NTP servers.
+In case all servers encounter errors, an error should be logged,
+and the user should be notified that the "Clock Offset" is unavailable.
 
-```
-maxDuration time.Duration = 1<<63 - 1
-```
-
-The "ClockOffset" updates every minute; in the meantime,
-the "ClockOffset" value can be obtained and shown in different parts of the software, like GUI, Logs and NodeInfo API.
-If it deviates by one second, the user can see an alert in the GUI or logs, and they may check their system time to fix it.
+The "Clock Offset" value can be obtained and shown in different parts of the software,
+such as the GUI, logs, and NodeInfo API.
+If it deviates by one second, an alert will appear in the GUI or logs,
+prompting the user to check and fix their system time.
 
 ## Security Considerations
 

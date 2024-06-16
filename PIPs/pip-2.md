@@ -24,7 +24,8 @@ The current transaction structure in Pactus does not provide support for such sc
 
 To support lock-time transactions, a new field is added to the transaction structure: `LockTime`.
 
-By introducing the `LockTime` field, users can specify a block number at which a lock-time transaction can be unlocked and executed.
+By introducing the `LockTime` field, users can specify a block number at which a
+lock-time transaction can be unlocked and executed.
 Since each block is created every 10 seconds, users can schedule when their transactions will be executed in the future.
 This field is similar to `nLockTime` [^1] in Bitcoin.
 However, in Pactus, it is mandatory for all transactions, and it only accepts block numbers as input.

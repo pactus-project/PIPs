@@ -4,7 +4,7 @@ title: Removing sequence field from transactions
 author: Mostafa Sedaghat Joo (@b00f)
 status: Final
 type: Standards Track
-category: Core 
+category: Core
 created: 2023-08-23
 ---
 
@@ -31,7 +31,8 @@ If a matching transaction is found, it means the transaction is replayed and sho
 
 A light client does not need to store all transaction IDs to verify new transactions.
 Since Pactus transactions have a limited lifespan[^1], the light client can avoid keeping all transaction records.
-For instance, with the current consensus parameters, storing the transactions for a single day is sufficient to detect replay attacks.
+For instance, with the current consensus parameters,
+storing the transactions for a single day is sufficient to detect replay attacks.
 
 ## References
 

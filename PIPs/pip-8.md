@@ -25,8 +25,13 @@ It is defined as `1` for the BLS signature schema.
 However, there are some problems with this approach:
 
 1. The address can be misused.
-For example, a user might use an account address as a validator address in a [Bond transaction](https://pactus.org/learn/transaction/bond/) (An issue regarding this problem is reported [here](https://github.com/pactus-project/pactus/issues/510)).
-2. The address doesn't indicate its usage. This makes it challenging for both humans and machines to identify the purpose of each address, whether it belongs to an `Account` or `Validator`. This is particularly troublesome in applications like block explorers.
+   For example, a user might use an account address as a validator address in a
+   [Bond transaction](https://pactus.org/learn/transaction/bond/)
+   (An issue regarding this problem is reported [here](https://github.com/pactus-project/pactus/issues/510)).
+
+1. The address doesn't indicate its usage.
+   This makes it challenging for both humans and machines to identify the purpose of each address,
+   whether it belongs to an `Account` or `Validator`. This is particularly troublesome in applications like block explorers.
 
 ## Specification
 
@@ -62,7 +67,7 @@ Note that validator addresses start with `pc1p`, and BLS account addresses start
 Currently, the wallet derivation path in Pactus is similar to [EIP-2334](https://eips.ethereum.org/EIPS/eip-2334).
 To align with this proposal, we suggest changing the derivation path to:
 
-```
+```text
 m / purpose' / coin_type' / address_type' / address_index
 ```
 
@@ -72,7 +77,8 @@ Each level is defined as follows:
 
 ### Purpose
 
-The purpose is set to `12381`, representing the BLS12-381 curve. This indicates the use of the BLS subtree for the derivation path.
+The purpose is set to `12381`, representing the BLS12-381 curve.
+This indicates the use of the BLS subtree for the derivation path.
 
 Hardened derivation is used at this level.
 

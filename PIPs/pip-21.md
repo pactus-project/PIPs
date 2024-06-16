@@ -33,7 +33,7 @@ If you want to re-stake, you need to wait 21 days before doing so.
 1. The current withdraw rules are still retained.
 2. If you need to withdraw token after unstaking, you still need to wait for 21 days.
 
-### can be rebond any time.
+### Can be rebond any time
 
 1. Tokens can also be bonded during the waiting period.
 2. Tokens from validator can also be bonded.
