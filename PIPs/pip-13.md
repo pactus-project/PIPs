@@ -33,9 +33,12 @@ For the imported private key all level are hardened and defined as follows:
 - Purpose: Set to 65535 (0xFFFF).
 - Coin Type: As defined at PIP-8[^2].
 - Address Type: As defined at PIP-8[^2].
-- Import Index: This is a fixed and hardened number that starts at zero. It indicates the position of a key in the list of imported keys. When new private keys are added, they are placed at the end of this list. This list must be securely encrypted using the wallet's password.
+- Import Index: This is a fixed and hardened number that starts at zero.
+  It indicates the position of a key in the list of imported keys. When new private keys are added,
+  they are placed at the end of this list. This list must be securely encrypted using the wallet's password.
 
-This structure is particularly useful for determining if an address is imported, based on the address path. It also helps to sort the addresses better.
+This structure is particularly useful for determining if an address is imported, based on the address path.
+It also helps to sort the addresses better.
 
 ## Example
 

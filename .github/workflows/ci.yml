@@ -2,12 +2,8 @@ name: Continuous Integration
 
 on:
   pull_request:
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - ready_for_review
-      - edited
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -36,7 +32,7 @@ jobs:
           name: pr_number
           path: pr/
 
-  htmlproofer:
+  html-proofer:
     name: HTMLProofer
     runs-on: ubuntu-20.04
 
@@ -77,7 +73,7 @@ jobs:
           check-modified-files-only: yes
           base-branch: main
 
-  codespell:
+  code-spell:
     name: CodeSpell
     runs-on: ubuntu-latest
 
@@ -105,31 +101,20 @@ jobs:
           skip: .git,Gemfile.lock,**/*.png,**/*.gif,**/*.jpg,**/*.svg,.codespell-whitelist,vendor,_site,_config.yml,style.css
 
 
-  markdownlint:
-    name: Markdown Linter
+  markdown-lint:
+    name: Lining Markdown files
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PIP Repository
-        uses: actions/checkout@47fbe2df0ad0e27efb67a70beac3555f192b062f
+      - name: Clone repository
+        uses: actions/checkout@v4
 
-      - name: Get Changed Files
-        id: changed
-        continue-on-error: true
-        run: |
-          echo "CHANGED_FILES<<EOF" >> $GITHUB_ENV
-          gh pr diff ${{ github.event.number }} --name-only | grep -E -x '[^/]+\.md|PIPs/pip-[0-9]+\.md' >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Lint
-        uses: DavidAnson/markdownlint-cli2-action@v16
-        if: steps.changed.outcome == 'success'
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          command: config
-          globs: |
-            config/.markdownlint.yaml
-            ${{ env.CHANGED_FILES }}
+          ruby-version: '3.0'
 
-      - name: Markdown link check
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
+      - name: Install mdl
+        run: gem install mdl
+
+      - name: Linting markdowns
+        run: mdl --style=./config/.mdlrc.rb ./PIPs

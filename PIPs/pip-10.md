@@ -30,8 +30,10 @@ and broadcasting for almost $n^2$ messages in the Precommit phase.
 
 ## Specification
 
-In each height, the consensus protocol is executed by $3f+1$ validators, and execution is organized into a sequence of rounds.
-Within a round, a single validator is designated as the proposer responsible for collecting transactions and creating a proposal block.
+In each height, the consensus protocol is executed by $3f+1$ validators,
+and execution is organized into a sequence of rounds.
+Within a round, a single validator is designated as the proposer responsible for collecting transactions and
+creating a proposal block.
 The proposer then broadcasts a proposal message that includes the proposal block to other validators.
 Other validators, once they receive the proposal message, validate it and broadcast the $PREPARE$ message to other validators.
 
@@ -74,7 +76,7 @@ If the most significant bit of the round number is set to 1, the certificate is 
 It should then be validated with $3f+1$ votes from the validators in the Prepare step.
 If set to zero, it should be validated with $2f+1$ votes from the validators in the Precommit step.
 
-## References:
+## References
 
 1. [Zyzzyva: Speculative Byzantine Fault Tolerance](https://www.cs.cornell.edu/lorenzo/papers/kotla07Zyzzyva.pdf)
 2. [Bosco: One-Step Byzantine Asynchronous Consensus](https://link.springer.com/chapter/10.1007/978-3-540-87779-0_30)

@@ -40,15 +40,17 @@ Once a new block is committed, the expired transactions can be removed from the 
 
 ### Recent Sortition Seed
 
-The most recent sortition seeds can be stored using the PairSlice [^5].
-A PairSlice is a slice where each item is a pair of a key and a value. The first item in the PairSlice represents the block height, and the second item represents the sortition seed.
+The most recent sortition seeds can be stored using the `PairSlice` [^5].
+A `PairSlice` is a slice where each item is a pair of a key and a value.
+The first item in the `PairSlice` represents the block height, and the second item represents the sortition seed.
 It is important to retain all sortition seeds up to the Sortition Interval[^4] once the store is initialized.
-If the slice reaches its maximum size, upon committing a new block, the oldest item in the slice can be removed to maintain the slice's fixed size.
+If the slice reaches its maximum size, upon committing a new block,
+the oldest item in the slice can be removed to maintain the slice's fixed size.
 
 ## References
 
 [^1]: [Cache replacement policies](https://en.wikipedia.org/wiki/Cache_replacement_policies)
 [^2]: [Hash table](https://en.wikipedia.org/wiki/Hash_table)
 [^3]: [Implementation of LinkedMap in Pactus](https://github.com/pactus-project/pactus/blob/main/util/linkedmap/linkedmap.go)
-[^4]: [Consensus parameters in Pactus](https://pactus.org/learn/consensus/parameters/)
+[^4]: [Consensus parameters in Pactus](https://docs.pactus.org/protocol/consensus/parameters/)
 [^5]: [Implementation of PairSlice in Pactus](https://github.com/pactus-project/pactus/blob/main/util/pairslice/pairslice.go)

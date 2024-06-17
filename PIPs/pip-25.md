@@ -10,11 +10,18 @@ created: 1-06-2024
 
 ## Abstract
 
-A dynamic fee structure adjusts the required transaction fees and burn amounts in response to real-time network conditions. This approach helps deter spam transactions by making it more expensive to flood the network during times of high activity
+A dynamic fee structure adjusts the required transaction fees and
+burn amounts in response to real-time network conditions.
+This approach helps deter spam transactions by making it more expensive to
+flood the network during times of high activity.
 
 ## Motivation
 
-The Pactus blockchain, which operates on a Proof of Stake (PoS) committee-based consensus protocol, faces the challenge of spam attacks that can clog the network and degrade performance. Spam transactions can flood the blockchain, causing delays and increasing the cost for legitimate users. To address this issue, we propose the implementation of a dynamic fee structure that adjusts transaction fees and burn amounts based on real-time network conditions. This adaptive mechanism aims to:
+The Pactus blockchain, which operates on a Proof of Stake (PoS) committee-based consensus protocol,
+faces the challenge of spam attacks that can clog the network and degrade performance.
+Spam transactions can flood the blockchain, causing delays and increasing the cost for legitimate users.
+To address this issue, we propose the implementation of a dynamic fee structure that adjusts transaction fees and
+burn amounts based on real-time network conditions. This adaptive mechanism aims to:
 
 1. Deter spam transactions by making it economically unfeasible to flood the network.
 2. Ensure smooth operation of the blockchain during periods of high and low activity.
@@ -30,9 +37,13 @@ The Pactus blockchain, which operates on a Proof of Stake (PoS) committee-based 
 
 ### 2. Fee Adjustment Algorithms
 
-Define algorithms that adjust transaction fees and burn amounts dynamically. The fees will be calculated using the following formula:
+Define algorithms that adjust transaction fees and burn amounts dynamically.
+The fees will be calculated using the following formula:
 
-$\text{Adjusted Fee} = \text{Base Fee} \times (1 + \alpha \times \frac{\text{Current Transaction Volume}}{\text{Average Transaction Volume}}) \$
+$$
+\text{Adjusted Fee} =
+\text{Base Fee} \times (1 + \alpha \times \frac{\text{Current Transaction Volume}}{\text{Average Transaction Volume}})
+$$
 
 - **Base Fee**: Standard fee under normal conditions.
 - **$\(\alpha\)$**: Coefficient determining fee sensitivity to volume changes.
@@ -57,14 +68,26 @@ $\text{Adjusted Fee} = \text{Base Fee} \times (1 + \alpha \times \frac{\text{Cur
 
 ## Backward Compatibility
 
-- **Seamless Transition**: Ensure the dynamic fee structure is backward compatible with existing transactions and network operations. Users should not need to change their current practices, and all existing functionalities should remain intact.
-- **Legacy Support**: Ensure that legacy transactions continue to function without modification. The system will integrate with the current protocol without requiring significant changes to the existing infrastructure.
-- **Comprehensive Documentation**: Provide comprehensive documentation and support to help users and developers understand and adapt to the new fee structure.
+- **Seamless Transition**: Ensure the dynamic fee structure is backward compatible with existing transactions and
+  network operations. Users should not need to change their current practices,
+  and all existing functionalities should remain intact.
+- **Legacy Support**: Ensure that legacy transactions continue to function without modification.
+  The system will integrate with the current protocol without requiring significant changes to
+  the existing infrastructure.
+- **Comprehensive Documentation**: Provide comprehensive documentation and support to help users and
+  developers understand and adapt to the new fee structure.
 
 ## Security
 
-- **Manipulation Resistance**: Implement robust algorithms and validation mechanisms to prevent manipulation of the fee adjustment process. Ensure that no single entity can influence the dynamic fee calculations unfairly.
-- **Data Integrity**: Secure the data collection and monitoring tools to ensure the accuracy and integrity of the network metrics used for fee adjustments.
-- **Protocol Security**: Conduct thorough security reviews of the core protocol modifications to identify and mitigate potential vulnerabilities.
-- **Economic Security**: Carefully calibrate the fee adjustment algorithms to avoid creating economic imbalances. Ensure that the cost of legitimate transactions remains reasonable while effectively deterring spam.
-- **Transparency and Accountability**: Maintain transparency in the fee adjustment process by making the algorithms and data publicly available for review. Establish accountability mechanisms to address any issues or concerns raised by the community.
+- **Manipulation Resistance**: Implement robust algorithms and validation mechanisms to
+  prevent manipulation of the fee adjustment process.
+  Ensure that no single entity can influence the dynamic fee calculations unfairly.
+- **Data Integrity**: Secure the data collection and monitoring tools to ensure the accuracy and
+  integrity of the network metrics used for fee adjustments.
+- **Protocol Security**: Conduct thorough security reviews of the core protocol modifications to
+  identify and mitigate potential vulnerabilities.
+- **Economic Security**: Carefully calibrate the fee adjustment algorithms to avoid creating economic imbalances.
+  Ensure that the cost of legitimate transactions remains reasonable while effectively deterring spam.
+- **Transparency and Accountability**: Maintain transparency in the fee adjustment process by making the algorithms and
+  data publicly available for review. Establish accountability mechanisms to address any
+  issues or concerns raised by the community.
