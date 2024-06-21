@@ -24,44 +24,50 @@ layout: default
   <span class="h5">
     {% if page.status == "Draft" %}
     <span class="badge text-light bg-secondary" data-bs-toggle="tooltip"
-      data-bs-title="Draft: The initial state of a proposal when it is merged into the PIP repository.">📌 {{
+      data-bs-title="The PIP is in the initial stage and is being actively worked on.">📌 {{
       page.status }}</span>
-    {% endif %}
-    {% if page.status == "Living" %}
-    <span class="badge text-light bg-secondary" data-bs-toggle="tooltip" data-bs-title="">🌱 {{ page.status }}</span>
-    {% endif %}
-    {% if page.status == "Review" %}
-    <span class="badge text-light bg-success" data-bs-toggle="tooltip"
-      data-bs-title="Review: Proposal under active discussion and revision.">💬 Review</span>
     {% endif %}
     {% if page.status == "Accepted" %}
     <span class="badge text-light bg-success" data-bs-toggle="tooltip"
-      data-bs-title="Normative proposal accepted for implementation.">✅ Accepted</span>
+      data-bs-title="The PIP has been reviewed and accepted for implementation.">✅ Accepted</span>
     {% endif %}
     {% if page.status == "Final" %}
     <span class="badge text-light bg-primary" data-bs-toggle="tooltip"
-      data-bs-title="Accepted and implementation completed.">🔰 Final</span>
+      data-bs-title="The PIP has been fully implemented and is now part of the Pactus protocol.">🔰 Final</span>
     {% endif %}
-    {% if page.status == "Rejected" %}
-    <span class="badge text-light bg-danger" data-bs-toggle="tooltip" data-bs-title=".">🗃️ Rejected</span>
+    {% if page.status == "Replaced" %}
+    <span class="badge text-light bg-danger"
+      data-bs-toggle="tooltip" data-bs-title="The PIP has been replaced by a newer PIP.">🔄 Replaced</span>
+    {% endif %}
+    {% if page.status == "Deferred" %}
+    <span class="badge text-light bg-danger" data-bs-toggle="tooltip"
+      data-bs-title="The PIP is on hold and not currently being considered for implementation.">🗃️ Deferred</span>
     {% endif %}
     {% if page.status == "Withdrawn" %}
     <span class="badge text-light bg-warning" data-bs-toggle="tooltip"
-      data-bs-title="This PIP has been withdrawn, and should not be used.">⚠️ Withdrawn</span>
+      data-bs-title="The PIP has been withdrawn by the author.">🚫 Withdrawn</span>
+    {% endif %}
+    {% if page.status == "Rejected" %}
+    <span class="badge text-light bg-warning" data-bs-toggle="tooltip"
+      data-bs-title="The PIP has been reviewed and rejected.">❌ Rejected</span>
+    {% endif %}
+    {% if page.status == "Active" %}
+    <span class="badge text-light bg-secondary" data-bs-toggle="tooltip"
+      data-bs-title="The PIP is continually being updated and has not reached a state of finality.">🌱 Active</span>
     {% endif %}
 
-    {% if page.type == "Standard" %}
-    <a class="badge text-light bg-primary" data-bs-toggle="tooltip"
-      data-bs-title="Improvements requiring a consensus fork, as well as changes that are not necessarily consensus critical but may be relevant to “core dev” discussions."
-      href="../standard">Standard</a>
+    {% if page.type == "Standards Track" %}
+    <span class="badge text-light bg-primary" data-bs-toggle="tooltip"
+      data-bs-title="Standards Track PIPs propose changes to the Pactus blockchain's protocols,
+      including improvements to the core protocol, network, or any other standards.">Standard</span>
     {% elsif page.type == "Informational" %}
-    <a class="badge text-light bg-primary" data-bs-toggle="tooltip"
-      data-bs-title="Describes an Pactus design issue, or provides general guidelines or information to the Pactus community, but does not propose a new feature. Informational PIPs do not necessarily represent Pactus community consensus or a recommendation, so users and implementers are free to ignore Informational PIPs or follow their advice."
-      href="../informational">Informational</a>
-    {% elsif page.type == "Meta" %}
-    <a class="badge text-light bg-primary" data-bs-toggle="tooltip"
-      data-bs-title="Describes a process surrounding Pactus or proposes a change to (or an event in) a process. "
-      href="../meta">Meta</a>
+    <span class="badge text-light bg-primary" data-bs-toggle="tooltip"
+      data-bs-title="Informational PIPs describe Pactus design issues, guidelines, or general information
+      that is not suitable for the Standards Track.">Informational</span>
+    {% elsif page.type == "Process" %}
+    <span class="badge text-light bg-primary" data-bs-toggle="tooltip"
+      data-bs-title="Process PIPs propose changes to the PIP process itself or suggest improvements to
+      the decision-making process within the Pactus community.">Process</span>
     {% endif %}
   </span>
   <h1 class="page-heading">
@@ -79,7 +85,7 @@ layout: default
     </a>
     <a href="javascript:if(window.print)window.print()" class="no-underline">
       <svg role="img" aria-label="Print" class="inline-svg" xmlns="https://www.w3.org/2000/svg" viewBox="0 0 16 16">
-        <use xlink:href="#bi-print" />
+        <use xlink:href="#bi-printer" />
       </svg>
     </a>
   </h1>
@@ -105,13 +111,7 @@ layout: default
         <td>{{ page.created }}</td>
       </tr>
       {% endif %}
-      {% if page.last-call-deadline != undefined %}
-      <tr>
-        <th scope="row">Last Call Deadline</th>
-        <td>{{ page.last-call-deadline }}</td>
-      </tr>
-      {% endif %}
-      {% if page.status != "Accepted" and page.status != "Final" and page.discussions-to != undefined %}
+      {% if page.discussions-to != undefined %}
       <tr>
         <th scope="row">Discussion Link</th>
         <td><a href="{{ page.discussions-to | uri_escape }}" target="__blank">{{ page.discussions-to | xml_escape }}</a>

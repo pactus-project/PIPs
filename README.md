@@ -2,50 +2,58 @@
 
 ![PIP](./assets/readme/pip.png)
 
-The goal of the PIP project is to standardize and provide high-quality documentation for [Pactus](https://pactus.org/) itself and conventions built upon it.
-This repository tracks past and ongoing improvements to Pactus in the form of Pactus Improvement Proposals (PIPs).
-[PIP-1](https://pips.pactus.org/PIPs/pip-1) governs how PIPs are published.
+PIPs, or Pactus Improvement Proposals, define standards and guidelines to
+improve the Pactus project.
+PIPs are designed to be a transparent and collaborative way to propose and
+discuss changes to the Pactus network.
+The [PIP-1](https://pips.pactus.org/PIPs/pip-1) defines the proposal workflows.
 
-The [status page](https://pips.pactus.org) tracks and lists PIPs, which can be divided into the following categories:
+The [status page](https://pips.pactus.org) tracks and lists all PIPs in this repository.
 
-* Core PIPs are improvements to the Pactus consensus protocol.
-* Networking PIPs specify the peer-to-peer networking layer of Pactus.
-* Interface PIPs standardize interfaces to Pactus, which determine how users and applications interact with the blockchain.
-* Meta PIPs are miscellaneous improvements that nonetheless require some sort of consensus.
-* Informational PIPs are non-standard improvements that do not require any form of consensus.
+## Running Locally
 
-## Install prerequisites
+To get started, install [Jekyll](https://jekyllrb.com/docs/installation/), first.
+Additionally, make sure to install [Yarn](https://yarnpkg.com/)
+for efficient dependency management, including [Bootstrap](https://getbootstrap.com/).
 
-1. Open Terminal.
+Now, clone this repository and run it locally using the following commands:
 
-2. Check whether you have Ruby 3.1.4 installed. Later [versions are not supported](https://stackoverflow.com/questions/14351272/undefined-method-exists-for-fileclass-nomethoderror).
+```zsh
+git clone https://github.com/pactus-project/pactus.org.git
+cd pactus.org
+yarn install ## To install bootstrap
+bundle install
+bundle exec jekyll serve
+```
 
-   ```sh
-   ruby --version
-   ```
+## Markdown
 
-3. If you don't have Ruby installed, install Ruby 3.1.4.
+Markdown is a lightweight markup language that uses plain text formatting syntax to convert text into HTML,
+making it easy to read and write for web content.
 
-4. Install Bundler:
+### Linting
 
-   ```sh
-   gem install bundler
-   ```
+Markdown linting helps ensure consistent style and formatting, detects syntax errors, improves readability,
+and maintains best practices in Markdown documents.
 
-5. Install dependencies:
+To lint Markdown files, you can use the `mdl` ([MarkdownLint](https://github.com/DavidAnson/markdownlint)) command-line tool.
+This tool checks your Markdown files against a set of rules and provides feedback on any issues found.
 
-   ```sh
-   bundle install
-   ```
+To install `mdl`, first you need to install [Ruby](https://www.ruby-lang.org/en/documentation/installation/).
+Once you ensure Ruby installed on your system, you can install `mdl` by running:
 
-## Build your local Jekyll site
+```sh
+gem install mdl
+```
 
-1. Bundle assets and start the server:
+Then you can lint your Markdown files with the following command:
 
-   ```sh
-   bundle exec jekyll serve
-   ```
+```sh
+mdl --style=.mdlrc.rb ./content
+```
 
-2. Preview your local Jekyll site in your web browser at `http://localhost:4000`.
+This command will check all documents in the `content` folder for any linting issues and output them in the terminal.
 
-More information on Jekyll and GitHub Pages [here](https://docs.github.com/en/enterprise/2.14/user/articles/setting-up-your-github-pages-site-locally-with-jekyll).
+## Deployment
+
+Updating the main branch will automatically deploy this repository through [deploy](.github/workflows/deploy.yml) Github action.
