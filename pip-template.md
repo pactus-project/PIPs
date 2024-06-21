@@ -4,28 +4,23 @@ description: <Description is one full (short) sentence>
 author: <a comma separated list of the author's or authors' name + GitHub username (in parenthesis), or name and email (in angle brackets).  Example, FirstName LastName (@GitHubUsername), FirstName LastName <foo@bar.com>, FirstName (@GitHubUsername) and GitHubUsername (@GitHubUsername)>
 discussions-to: <URL>
 status: Draft
-type: <Standards Track, Meta, or Informational>
-category: <Core, Networking, Interface or PRC> # Only required for Standards Track. Otherwise, remove this field.
+type: <Standard, Meta, or Informational>
 created: <date created on, in ISO 8601 (yyyy-mm-dd) format>
-requires: <PIP number(s)> # Only required when you reference an PIP in the `Specification` section. Otherwise, remove this field, example: 2,3 or 2.
 ---
 
 <!--
   READ PIP-1 (https://pips.pactus.org/PIPS/pip-1) BEFORE USING THIS TEMPLATE!
 
-  This is the suggested template for new PIPs. After you have filled in the requisite fields, please delete these comments.
-
-  Note that an PIP number will be assigned by an editor. When opening a pull request to submit your PIP, please use an abbreviated title in the filename, `PIP-draft_title_abbrev.md`.
-
-  The title should be 44 characters or less. It should not repeat the PIP number in title, irrespective of the category.
-
-  TODO: Remove this comment before submitting
+  This is the suggested template for new PIPs.
+  After you have filled in the requisite fields, please delete these comments.
+  The title should be 44 characters or less. It should not repeat the PIP number in title.
 -->
 
 ## Abstract
 
 <!--
-  The Abstract is a multi-sentence (short paragraph) technical summary. This should be a very terse and human-readable version of the specification section. Someone should be able to read only the abstract to get the gist of what this specification does.
+  The Abstract is a multi-sentence (short paragraph) technical summary.
+  This should be a very terse and human-readable version of the specification section. Someone should be able to read only the abstract to get the gist of what this specification does.
 
   TODO: Remove this comment before submitting
 -->

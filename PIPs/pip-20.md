@@ -3,7 +3,7 @@ pip: 20
 title: Basic Authentication for gRPC APIs
 author: Javad Rajabzadeh (@Ja7ad)
 status: Final
-type: Standards
+type: Standards Tracks
 category: Interface
 created: 14-01-2024
 ---
@@ -63,7 +63,7 @@ Once the bcrypt-hashed password is obtained, it can be stored in the configurati
 [grpc]
   enable = true
   listen = "[::]:50052"
-  auth = "foo:$2y$05$3DdFhI74T5PwNyxFdh9wiOttWZCzmVEcI2GoTfNh4b1YubZgyZadS"
+  basic_auth = "foo:$2y$05$3DdFhI74T5PwNyxFdh9wiOttWZCzmVEcI2GoTfNh4b1YubZgyZadS"
 ```
 
 ### Basic Authentication Middleware

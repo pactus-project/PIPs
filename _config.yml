@@ -1,18 +1,18 @@
 title: Pactus Improvement Proposals
 description: >-
-  PIPs define standards, promoting Pactus platform's growth, interoperation, and developer efficiency.
+  PIPs, or Pactus Improvement Proposals, define standards and guidelines to
+  improve the Pactus project.
+  PIPs are designed to be a transparent and collaborative way to propose and
+  discuss changes to the Pactus network.
 url: "https://pips.pactus.org"
 baseurl: ""
 github_username:  pactus-project
 repository: pactus-project/PIPs
 
 header_pages:
- - all.html
  - core.html
- - networking.html
+ - network.html
  - interface.html
- - pip.html
- - meta.html
  - informational.html
 
 highlighter: rouge

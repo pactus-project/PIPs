@@ -1,84 +1,69 @@
 ---
 pip: 1
 title: PIP Purpose and Guidelines
-status: Living
-type: Meta
-author: Javad Rajabzadeh <ja7ad@live.com>
+status: Active
+type: Process
+author: Pactus Development Team <info@pactus.org>
 created: 2023-07-10
 ---
 
 ## What is an PIP?
 
-Pactus Improvement Proposals (PIPs) serve as a comprehensive framework for outlining and defining the standards
-for the Pactus platform's ongoing development and enhancement. These proposals cover various aspects of the platform,
-including core protocol specifications and client application programming interfaces (APIs). By establishing a clear
-and consistent set of guidelines, PIPs ensure seamless interoperability and extensibility across the Pactus ecosystem,
-fostering a robust and efficient environment for developers and users alike.
-
-## PIP Rationale
-
-We intend PIPs to be the primary mechanisms for proposing new features, for collecting community technical input on an issue,
-and for documenting the design decisions that have gone into Pactus.
-Because the PIPs are maintained as text files in a versioned repository,
-their revision history is the historical record of the feature proposal.
-
-For Pactus implementers, PIPs are a convenient way to track the progress of their implementation.
-Ideally, each implementation maintainer would list the PIPs that they have implemented.
-This will give end users a convenient way to know the current status of a given implementation or library.
+A Pactus Improvement Proposal, or PIP, is a design document that provides information or
+describes a new feature for the Pactus blockchain.
+The primary goal of a PIP is to encourage the development team to document ideas before implementation and
+invite the community to contribute their thoughts.
+This process helps to review ideas and identify potential issues before they can impact the production environment.
 
 ## PIP Types
 
-There are three types of PIP:
+There are types of a PIP:
 
-**Standards Track** PIP:
-Describes any change that affects most or all Pactus implementations, such as—a change to the network protocol,
-a change in block or transaction validity rules, proposed application standards/conventions,
-or any change or addition that affects the interoperability of applications using Pactus.
-Standards Track PIPs consist of three parts—a design document, an implementation, and
-(if warranted) an update to the formal specification.
-Furthermore, Standards Track PIPs can be broken down into the following categories:
+### Standards Track
 
-* *Core*: Improvements requiring a consensus fork, as well as changes that are not necessarily consensus critical but
-  may be relevant to "core dev" discussions or any change to transaction, block, address or their new versions.
+Standards Track PIPs propose changes to the Pactus blockchain's protocols,
+including improvements to the core protocol, network, or any other standards.
 
-* *Networking*: Includes improvements around Pactus networking protocol.
+### Informational
 
-* *Interface*: Includes improvements around clients, API/RPCs specifications, and how users and
-  applications interact with the blockchain.
-  The label "interface" aligns with the interfaces repo, and discussion should primarily occur
-  in that repository before a PIP is submitted to the PIPs repository.
+Informational PIPs describe Pactus design issues, guidelines, or general information
+that is not suitable for the Standards Track.
+They may also propose features or ideas for further discussion within the community.
 
-* *PRC*: Application-level standards and conventions, including contract standards such as
-* token standards, name registries, URI schemes, library/package formats, and wallet formats.
+### Process
 
-**Meta PIP**: Describes a process surrounding Pactus or proposes a change to (or an event in) a process.
-Process PIPs are like Standards Track PIPs but apply to areas other than the Pactus protocol itself.
-They may propose an implementation, but not to Pactus's codebase; they often require community consensus;
-unlike Informational PIPs, they are more than recommendations, and users are typically not free to ignore them.
-Examples include procedures, guidelines, changes to the decision-making process,
-and changes to the tools or environment used in Pactus development.
-Any meta-PIP is also considered a Process PIP.
+Process PIPs propose changes to the PIP process itself or suggest improvements to
+the decision-making process within the Pactus community.
 
-**Informational** PIP: Describes a Pactus design issue, or provides general guidelines or
-information to the Pactus community, but does not propose a new feature.
-Informational PIPs do not necessarily represent Pactus community consensus or a recommendation,
-so users and implementers are free to ignore Informational PIPs or follow their advice.
+## PIP Categories
 
-It is highly recommended that a single PIP contain a single key proposal or new idea.
-The more focused the PIP, the more successful it tends to be.
-A change to one client doesn't require a PIP; a change that affects multiple clients,
-or defines a standard for multiple apps to use, does.
+Standards PIPs are categorized into the following layers:
 
-A PIP must meet certain minimum criteria. It must be a clear and complete description of the proposed enhancement.
-The enhancement must represent a net improvement. The proposed implementation,
-if applicable, must be solid and must not complicate the protocol unduly.
+### Core
+
+Core PIPs propose changes to the fundamental aspects of the Pactus protocol.
+These changes are critical and require careful consideration due to their potential impact on the entire network.
+
+### Networ
+
+Network PIPs focus on changes related to network communication.
+This includes improvements to the peer-to-peer protocol, network topology, and related networking functionalities.
+
+### Interface
+
+Interface PIPs propose changes to the external interfaces of the Pactus protocol, such as APIs.
+These changes impact how developers interact with the Pactus blockchain.
 
 ## PIP Status Terms
 
-![Status Workflow](../assets/pip-1/status-flow.jpg)
+![Status Workflow](../assets/pip-1/pactus-pip-workflow.png)
 
-* Draft - Proposal under active discussion and revision.
-* Accepted - Normative proposal accepted for implementation.
-* Final - Accepted and implementation complete, or no longer active.
-* Rejected - Formally declined and will not be accepted.
-* Withdrawn - Removed from consideration by sponsor or authors.
+Got it. Here is the revised description for "Living" along with the other steps:
+
+- **Draft**: The initial state of a proposal when it is first created and submitted to the PIP repository.
+- **Review**: The PIP is being evaluated for feasibility, accuracy, and completeness. Feedback and revisions occur during this stage.
+- **Accepted**: The proposal has passed the review process and is formally accepted as a valid proposal.
+- **Final**: The proposal has been implemented and is considered complete. No further changes are expected.
+- **Living**: The proposal remains open for continuous updates and improvements, typically including documents like PIP-1 that evolve over time.
+- **Withdrawn**: The proposal is officially removed from consideration or development by the author.
+- **Stagnant**: The proposal is not progressing and is not actively being developed, often due to lack of interest or inactivity.

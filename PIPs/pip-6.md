@@ -4,6 +4,7 @@ title: In-Memory Storage of Public Keys, Validators, and Accounts using LRU Cach
 status: Withdraw
 type: Standards Track
 author: Javad Rajabzadeh <ja7ad@live.com>
+category: Core
 created: 2023-09-9
 ---
 ## Abstract

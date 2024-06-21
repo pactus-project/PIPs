@@ -3,8 +3,8 @@ pip: 5
 title: Adding Different HRP For Validator, Account And Contract Address
 status: Withdrawn
 type: Standards Track
-category: Interface
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
+category: Core
 created: 2023-08-27
 ---
 
@@ -17,7 +17,7 @@ such as `validator` and `account`, to make their roles more understandable.
 
 Currently, Pactus addresses are identified by a `pc` prefix, regardless of their type.
 This makes it hard for both humans and machines to identify the role of each address,
-whether it belongs to an `account` خق `validator`.
+whether it belongs to an `account` or `validator`.
 By adding appropriate prefixes, we can quickly and easily identify the purpose of each address.
 
 ## Specification

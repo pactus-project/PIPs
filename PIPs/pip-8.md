@@ -3,10 +3,10 @@ pip: 8
 title: Defining address type based on the address usage
 status: Final
 type: Standards Track
-category: Core
 author: |
     Kayhan Alizadeh <kehiiiiya@gmail.com>,
     Mostafa Sedaghat Joo (@b00f)
+category: Core
 created: 2023-09-17
 ---
 

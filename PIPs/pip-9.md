@@ -5,8 +5,8 @@ description: Removing Stamp from Transactions
 author: Amir Babazadeh (@amirvalhalla)
 status: Final
 type: Standards Track
-category: Core
 created: 2023-09-19
+category: Core
 requires: 2
 ---
 
@@ -17,7 +17,8 @@ This document proposes simplifying transactions by removing the `Stamp` field.
 ## Specification
 
 Currently, transactions in `Pactus` are stamped.
-"Stamping a transaction" refers to adding a piece of information from a previously committed block to the transaction's header.
+"Stamping a transaction" refers to adding a piece of information from a previously
+committed block to the transaction's header.
 In `Pactus`, stamps are represented by the first 4 bytes of a block hash.
 
 Stamping transactions serve two primary purposes:

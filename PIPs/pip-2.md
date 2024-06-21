@@ -4,7 +4,7 @@ title: Lock Time Transactions
 author: Mostafa Sedaghat Joo (@b00f)
 status: Final
 type: Standards Track
-category: Interface
+category: Core
 created: 2023-08-23
 ---
 

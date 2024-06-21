@@ -3,8 +3,8 @@ pip: 21
 title: unbond token can rebond at any time.
 author: Hui (@laosiji-io)
 status: Rejected
-type: Standards
-category: core
+type: Standards Tracks
+category: Core
 created: 15-01-2024
 ---
 

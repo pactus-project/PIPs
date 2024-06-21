@@ -3,7 +3,7 @@ pip: 19
 title: Availability Score for Validators
 author: Mostafa Sedaghat Joo (@b00f)
 status: Final
-type: Standards
+type: Standards Tracks
 category: Core
 created: 01-01-2024
 ---

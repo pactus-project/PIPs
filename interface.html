@@ -3,5 +3,5 @@ layout: page
 title: Interface
 ---
 
-{% assign pips=site.pages|where:"type","Standards Track"|where:"category","Interface" %}
+{% assign pips=site.pages|where:"category","Interface" %}
 {% include piptable.html pips=pips %}
