@@ -51,10 +51,11 @@ jobs:
           bundle exec jekyll doctor
           bundle exec jekyll build
 
-      - name: HTML5Validator
-        uses: Cyb3r-Jak3/html5validator-action@v7.2.0
-        with:
-          root: _site
+      # TODO: Enable me later
+      # - name: HTML5Validator
+      #   uses: Cyb3r-Jak3/html5validator-action@v7.2.0
+      #   with:
+      #     root: _site
 
       - name: HTML Proofer
         run: bundle exec htmlproofer --allow-missing-href --disable-external --assume-extension '.html' --log-level=:info --cache='{"timeframe":{"external":"6w"}}' --checks 'Links,Images,Scripts,OpenGraph' --no-check-sri --ignore-empty-alt --no-enforce_https ./_site

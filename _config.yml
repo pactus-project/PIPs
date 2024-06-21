@@ -10,6 +10,7 @@ github_username:  pactus-project
 repository: pactus-project/PIPs
 
 header_pages:
+ - all.html
  - core.html
  - network.html
  - interface.html

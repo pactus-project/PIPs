@@ -2,7 +2,7 @@
 pip: 22
 title: Agent Node Defination
 author: Nagaraj (@ragnarok87)
-status: Accepted
+status: Final
 type: Standards Tracks
 category: Network
 created: 29-01-2024

@@ -5,7 +5,7 @@ description: Calculate the difference between System Time and Network Time
 author: |
     Mr. HoDL (@Mr-HoDL58),
     Mostafa Sedaghat Joo (@b00f)
-status: Accepted
+status: Final
 type: Standards Tracks
 category: Network
 created: 28-12-2023
