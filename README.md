@@ -53,7 +53,3 @@ mdl --style=.mdlrc.rb ./content
 ```
 
 This command will check all documents in the `content` folder for any linting issues and output them in the terminal.
-
-## Deployment
-
-Updating the main branch will automatically deploy this repository through [deploy](.github/workflows/deploy.yml) Github action.
