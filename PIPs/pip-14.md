@@ -4,7 +4,7 @@ title: Client Agent Standard
 author: Javad Rajabzadeh <ja7ad@live.com>
 status: Final
 type: Standards Track
-category: Networking
+category: Network
 created: 2023-11-28
 ---
 

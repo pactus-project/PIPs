@@ -5,7 +5,7 @@ description: Import private keys to wallet
 author: Amir Babazadeh (@amirvalhalla)
 status: Final
 type: Standards Track
-category: Core
+category:
 created: 2023-11-27
 ---
 

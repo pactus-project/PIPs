@@ -5,7 +5,7 @@ description: Check the timestamp difference between two peers during the Handsha
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 status: Final
 type: Standards Track
-category: Networking
+category: Network
 created: 2023-09-12
 ---
 

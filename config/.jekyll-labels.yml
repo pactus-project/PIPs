@@ -1,26 +1,21 @@
-#### PIP Type / Category ####
+#### PIP Type / Category / Status ####
 
 # Type
-t-informational: this?.new?.type == "Informational" && this?.old?.status != "Living"
-t-meta: this?.new?.type == "Meta" && this?.old?.status != "Living"
+t-standard: this?.new?.type == "Standards Track"
+t-informational: this?.new?.type == "Informational"
+t-process: this?.new?.type == "Process"
 
 # Categories
-t-core: this?.new?.category == "Core" && this?.old?.status != "Living"
-t-networking: this?.new?.category == "Networking" && this?.old?.status != "Living"
-t-interface: this?.new?.category == "Interface" && this?.old?.status != "Living"
-
-# Living PIPs & PIP Template
-t-process: this?.old?.status == "Living" || this?.old?.title == "<The PIP title is a few words, not a complete sentence>"
+c-core: this?.new?.category == "Core"
+c-network: this?.new?.category == "Network"
+c-interface: this?.new?.category == "Interface"
 
 # Status
 s-draft: this?.new?.status == "Draft"
+s-deferred: this?.new?.status == "Deferred"
 s-accepted: this?.new?.status == "Accepted"
-s-final: this?.new?.status == "Final"
 s-rejected: this?.new?.status == "Rejected"
 s-withdrawn: this?.new?.status == "Withdrawn"
-
-#### PR Classification ####
-
-c-new: this?.new?.status && !this?.old?.status
-c-update: this?.new?.status && this?.old?.status && this?.new?.status == this?.old?.status
-c-status: this?.new?.status && this?.old?.status && this?.new?.status != this?.old?.status
+s-final: this?.new?.status == "Final"
+s-replaced: this?.new?.status == "Replaced"
+s-Active: this?.new?.status == "active"

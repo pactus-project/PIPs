@@ -3,7 +3,7 @@ pip: 25
 title: Dynamic fees structure
 author: Javad Rajabzadeh (@b00f)
 status: Draft
-type: Standards
+type: Standards Tracks
 category: Core
 created: 1-06-2024
 ---

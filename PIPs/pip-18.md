@@ -3,11 +3,11 @@ pip: 18
 title: Clock Offset Calculation
 description: Calculate the difference between System Time and Network Time
 author: |
-    Mr. HoDL (@Mr-HoDL58)
+    Mr. HoDL (@Mr-HoDL58),
     Mostafa Sedaghat Joo (@b00f)
-status: Accepted
-type: Standards
-category: Core
+status: Final
+type: Standards Tracks
+category: Network
 created: 28-12-2023
 ---
 

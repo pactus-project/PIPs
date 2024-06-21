@@ -3,8 +3,8 @@ pip: 15
 title: In-Memory Cache for Stored Items
 status: Final
 type: Standards Track
-category: Interface
 author: Mostafa Sedaghat Joo (@b00f)
+category: Core
 created: 2023-12-03
 ---
 

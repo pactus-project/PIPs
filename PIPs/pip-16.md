@@ -4,7 +4,7 @@ title: Adding events in Pactus transactions
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 status: Draft
 type: Standards Track
-category: Core
+category:
 created: 2023-12-17
 ---
 
