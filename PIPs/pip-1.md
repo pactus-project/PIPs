@@ -95,7 +95,7 @@ Standards PIPs are categorized into the following layers:
 Core PIPs propose changes to the fundamental aspects of the Pactus protocol.
 These changes are critical and require careful consideration due to their potential impact on the entire network.
 
-### Networ
+### Network
 
 Network PIPs focus on changes related to network communication.
 This includes improvements to the peer-to-peer protocol, network topology, and related networking functionalities.
