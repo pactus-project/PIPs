@@ -1,7 +1,7 @@
 ---
 pip: 24
 title: Change Proposer on Double Proposing
-author: Mostafa Sedaghat (@b00f)
+author: B00f (@b00f)
 status: Draft
 type: Standards Track
 category: Core

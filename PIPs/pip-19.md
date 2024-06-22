@@ -1,7 +1,7 @@
 ---
 pip: 19
 title: Availability Score for Validators
-author: Mostafa Sedaghat Joo (@b00f)
+author: B00f (@b00f)
 status: Final
 type: Standards Track
 category: Core

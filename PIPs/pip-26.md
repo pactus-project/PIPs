@@ -1,7 +1,7 @@
 ---
 pip: 26
 title: Minimum Availability Score
-author: Mostafa Sedaghat Joo (@b00f)
+author: B00f (@b00f)
 status: Final
 type: Standards Track
 category: Core
