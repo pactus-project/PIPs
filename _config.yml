@@ -9,6 +9,9 @@ baseurl: ""
 github_username:  pactus-project
 repository: pactus-project/PIPs
 
+plugins:
+  - jekyll-sitemap
+
 header_pages:
  - all.html
  - core.html
