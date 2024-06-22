@@ -4,7 +4,7 @@ title: Clock Offset Calculation
 description: Calculate the difference between System Time and Network Time
 author: |
     Mr. HoDL (@Mr-HoDL58),
-    Mostafa Sedaghat Joo (@b00f)
+    B00f (@b00f)
 status: Final
 type: Standards Tracks
 category: Network

@@ -1,7 +1,7 @@
 ---
 pip: 10
 title: Fast agreement consensus protocol
-author: Mostafa Sedaghat Joo (@b00f)
+author: B00f (@b00f)
 status: Accepted
 type: Standards Track
 category: Core

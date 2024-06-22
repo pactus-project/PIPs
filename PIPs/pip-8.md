@@ -5,7 +5,7 @@ status: Final
 type: Standards Track
 author: |
     Kayhan Alizadeh <kehiiiiya@gmail.com>,
-    Mostafa Sedaghat Joo (@b00f)
+    B00f (@b00f)
 category: Core
 created: 2023-09-17
 ---

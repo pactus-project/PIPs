@@ -1,7 +1,7 @@
 ---
 pip: 2
 title: Lock Time Transactions
-author: Mostafa Sedaghat Joo (@b00f)
+author: B00f (@b00f)
 status: Final
 type: Standards Track
 category: Core
