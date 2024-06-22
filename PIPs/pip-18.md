@@ -6,7 +6,7 @@ author: |
     Mr. HoDL (@Mr-HoDL58),
     Mostafa Sedaghat Joo (@b00f)
 status: Final
-type: Standards Tracks
+type: Standards Track
 category: Network
 created: 28-12-2023
 ---

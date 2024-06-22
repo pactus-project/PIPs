@@ -3,7 +3,7 @@ pip: 24
 title: Change Proposer on Double Proposing
 author: Mostafa Sedaghat (@b00f)
 status: Draft
-type: Standards Tracks
+type: Standards Track
 category: Core
 created: 10-05-2024
 ---
