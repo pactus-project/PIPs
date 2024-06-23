@@ -24,23 +24,20 @@ speeding up the syncing process compared to downloading the entire blockchain hi
 
 ## Specification
 
-### Pruning Parameters
+### Pruning Config
 
 To support the Pruned Node feature, two questions should be answered:
 
 1. Is this node a Pruned Node or a Full Node?
 2. If it is a Pruned Node, how many blocks does the node need to keep or retain?
 
-For the first question, we store a one-byte boolean `IsPruned` in the database.
-This boolean indicates whether the store is pruned or not.
-If `IsPruned` is not set yet or is set to `false`, the node is a "Full Node"; otherwise, it is a "Pruned Node".
-Once the `IsPruned` value is set to `true`, it cannot be changed back to `false`.
-This restriction makes sense because a "Pruned Node" cannot be changed to a "Full Node", though the reverse is possible.
+To answer the first question, we can check if the genesis block or block number one exists.
+If it exists, the node is a "Full Node"; otherwise, the node is a "Pruned Node".
 
 For the second question, we introduce a new parameter in the `Config` and name it `RetentionDays`.
 This parameter indicates the number of days for which the node should keep or retain the blocks before pruning them.
 It is only applicable if the node is in Prune Mode.
-The minimum and default value should be set to `10`.
+The minimum and default value is `10`.
 This means blocks older than 10 days will be removed from the store.
 There is no restriction for the maximum value.
 
@@ -48,82 +45,83 @@ The config should have a private method to calculate the `RetentionBlocks` based
 The `RetentionBlocks` are the number of blocks that should be kept and not pruned.
 Given that each day has almost 8640 blocks, the number of blocks to keep is `RetentionBlocks = RetentionDays * 8640`.
 
-With these two parameters, we can implement the Pruned Node.
+### PruneBlock Function
 
-### PruneBlocks Function
-
-First, we need to implement the `PruneBlocks` function for the store.
+The `PruneBlock` function removes a block and all transactions inside the block from the database.
 It is a private function and can't be accessed from outside the store.
-The `PruneBlocks` function iterates over all blocks less than `CurrentHeight - RetentionBlocks`.
-If a block doesn't exist, it breaks the loop;
-otherwise, it removes the block and all transactions inside the block from the database.
+It accepts a `Batch` pointer and a block height, and returns a boolean indicating whether
+a block at the given height exists, and an error if there is any.
+The `PruneBlock` function first tries to retrieve the block at the given height and decode it.
+Once it is decoded, it iterates over all transactions and updates the batch
+by deleting the associated keys from the database.
 
 ### Pruning Database
 
 A Full Node can convert to a Pruned Node by pruning the database and removing old blocks.
-To do this, we add a public function `Prune` to the store, and it functions as below:
+Pruning the database is a time and resource-consuming process and should not be performed while the node is running.
+We need to add a new command named `prune` to `pactus-daemon` to prune an offline node.
+In the attachment to this proposal, there is a batch file for Windows users that can be used for pruning the node.
 
-1. If `IsPruned` is set to `true`, no action is needed.
-2. If `IsPruned` is set to `false`, then the value will turn to `true` and call the `PruneBlocks` function.
+Pruning the database works as follows:
+
+1. It checks if the `.pruning` file exists inside the database folder.
+   If it doesn't exist, it creates a `.pruning` file and
+   sets the content of the file to `LastBlockHeight - RetentionBlocks + 1`.
+2. It reads the content of the `.pruning` file and sets the pruning height to the content of the file minus 1.
+3. If the pruning height is less than or equal to zero, it exits.
+4. It updates the `.pruning` file and sets the pruning height.
+5. It calls the `PruneBlock` function and commits the batch.
+6. It repeats from step 2.
 
 ### Pruning on New Block
 
-Once a new block is committed, the following operation should be done:
+Once a new block is committed, the following operations should be performed:
 
-1. If `IsPruned` is set to `false`, no action is needed.
-2. If `IsPruned` is set to `true`, then call the `PruneBlocks` function.
+1. If the node is a Full Node, no action is needed.
+2. If the node is a Pruned Node, call the `PruneBlocks` function
+   with the block number equal to `LastBlockHeight - RetentionBlocks`.
 
-This process ensures that for each new block added, one old block will be removed,
-keeping the store blocks number the same as the `RetentionBlocks` number.
+This process ensures that for each new block added,
+one old block will be removed, keeping the store blocks up to the `RetentionBlocks` number.
 
-<!--
-  The Specification section should describe the syntax and semantics of any new feature.
-  The specification should be detailed enough to allow competing,
-  interoperable implementations for any of the current Pactus platforms.
+### Importing Data
 
-  TODO: Remove this comment before submitting
--->
+Once a new node is initialized and before starting to sync with the network,
+it can download and import pruned data from a centralized server.
+This helps a pruned node sync faster.
+
+### Import Data in Pactus Daemon
+
+We need to add a new command named `import` to `pactus-daemon`.
+The `import` command shows a list of available databases that can be imported from a centralized server.
+Once the user chooses a database, it downloads and extracts it into the working directory.
+If a database already exists, it should show an error before downloading.
+
+### Import Data in Pactus GUI
+
+The GUI can import data once the node initialization is done and before syncing.
+It can ask users if they want to run a Full Node or a Pruned Node.
+If they want to run a Full Node, the procedure is the same as before.
+If they want to run a Pruned Node,
+a dialog will be shown with the server address and a list of available files to download.
+Once the file is selected and downloaded, it can be imported in the same manner as the `import` command.
+
+## Exporting Data
+
+To export data to a centralized server, we need to follow these procedures:
+
+1. The server needs to run a Pactus Pruned Node with `RetentionDays` set to `10`.
+2. At regular intervals, such as every week, the node will be stopped,
+   a copy of the `RetentionDays` folder will be obtained and compressed.
+3. The server will keep only the last 3 databases available for download and delete the rest.
+4. It will update a JSON object to show the available databases for download.
 
 ## Backwards Compatibility
 
-<!--
-
-  This section is optional.
-
-  All PIPs that introduce backwards incompatibilities must include a section describing these incompatibilities and their severity.
-  The PIP must explain how the author proposes to deal with these incompatibilities.
-  PIP submissions without a sufficient backwards compatibility treatise may be rejected outright.
-
-  The current placeholder is acceptable for a draft.
-
-  TODO: Remove this comment before submitting
--->
-
 No backward compatibility issues found.
-
-## Reference Implementation
-
-<!--
-  This section is optional.
-
-  The Reference Implementation section should include a minimal implementation that assists in understanding or implementing this specification.
-  It should not include project build files.
-  The reference implementation is not a replacement for the Specification section, and the proposal should still be understandable without it.
-  If the reference implementation is too large to reasonably be included inline, then consider adding it as one or more files in `../assets/pip-####/`. External links will not be allowed.
-
-  TODO: Remove this comment before submitting
--->
 
 ## Security Considerations
 
-<!--
-  All PIPs must contain a section that discusses the security implications/considerations relevant to the proposed change.
-  Include information that might be important for security discussions, surfaces risks and can be used throughout the life cycle of the proposal.
-  For example, include security-relevant design decisions, concerns, important discussions, implementation-specific guidance and pitfalls, an outline of threats and risks and how they are being addressed.
-  PIP submissions missing the "Security Considerations" section will be rejected.
-  A PIP cannot proceed to status "Final" without a Security Considerations discussion deemed sufficient by the reviewers.
-
-  The current placeholder is acceptable for a draft.
-
-  TODO: Remove this comment before submitting
--->
+A pruned node can fully verify new blocks without any issues.
+It retains more than 60,000 blocks, allowing it to calculate availability scores.
+Additionally, it can verify transaction lock-times since it has access to the last day's transactions.
