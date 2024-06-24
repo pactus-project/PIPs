@@ -1,0 +1,43 @@
+name: Restrict Discussions
+
+on:
+  discussion:
+    types: [created]
+
+jobs:
+  restrict_discussions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check discussion author
+        id: check_author
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const { data: discussion } = await github.rest.discussions.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              discussion_number: context.payload.discussion.number
+            });
+
+            // Check if the user is an admin
+            const { data: user } = await github.rest.orgs.checkMembershipForUser({
+              org: context.repo.owner,
+              username: discussion.user.login
+            });
+
+            if (user.role !== 'admin') {
+              core.setFailed('Only admins can create discussions');
+            } else {
+              core.setOutput('admin', true);
+            }
+
+      - name: Lock or delete discussion
+        if: failure()
+        uses: actions/github-script@v5
+        with:
+          script: |
+            await github.rest.discussions.lock({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              discussion_number: context.payload.discussion.number
+            });
