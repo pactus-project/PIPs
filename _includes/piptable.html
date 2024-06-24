@@ -31,7 +31,7 @@
           <td>{{ page.category | default: "-" }}</td>
           <td>{% include authorlist.html authors=page.author %}</td>
           <td><a href="https://github.com/pactus-project/PIPs/discussions/{{ page.discussion-no | append: '' | uri_escape }}" 
-            target="__blank">View</a></td>
+            target="new">View</a></td>
         </tr>
       {% endfor %}
     </table>
