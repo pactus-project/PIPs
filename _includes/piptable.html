@@ -21,6 +21,7 @@
           <th style="width:50%">Title</th>
           <th>Category</th>
           <th>Author</th>
+          <th>Discussion</th>
         </tr>
       </thead>
       {% for page in pips %}
@@ -29,6 +30,8 @@
           <td>{{ page.title | xml_escape }}</td>
           <td>{{ page.category | default: "-" }}</td>
           <td>{% include authorlist.html authors=page.author %}</td>
+          <td><a href="https://github.com/pactus-project/PIPs/discussions/{{ page.discussion-no | append: '' | uri_escape }}" 
+            target="__blank">View</a></td>
         </tr>
       {% endfor %}
     </table>
