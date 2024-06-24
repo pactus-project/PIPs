@@ -24,8 +24,6 @@ speeding up the syncing process compared to downloading the entire blockchain hi
 
 ## Specification
 
-### Pruning Config
-
 To support the Pruned Node feature, two questions should be answered:
 
 1. Is this node a Pruned Node or a Full Node?
@@ -64,14 +62,11 @@ In the attachment to this proposal, there is a batch file for Windows users that
 
 Pruning the database works as follows:
 
-1. It checks if the `.pruning` file exists inside the database folder.
-   If it doesn't exist, it creates a `.pruning` file and
-   sets the content of the file to `LastBlockHeight - RetentionBlocks + 1`.
-2. It reads the content of the `.pruning` file and sets the pruning height to the content of the file minus 1.
-3. If the pruning height is less than or equal to zero, it exits.
-4. It updates the `.pruning` file and sets the pruning height.
-5. It calls the `PruneBlock` function and commits the batch.
-6. It repeats from step 2.
+1. Set the pruning height to `LastBlockHeight - RetentionBlocks`.
+2. If the pruning height is less than or equal to zero, it exits.
+3. If the block exists, `PruneBlock`.
+4. Decrease pruning height by 1.
+5. Repeat from step 2.
 
 ### Pruning on New Block
 
@@ -84,27 +79,34 @@ Once a new block is committed, the following operations should be performed:
 This process ensures that for each new block added,
 one old block will be removed, keeping the store blocks up to the `RetentionBlocks` number.
 
+
 ### Importing Data
 
 Once a new node is initialized and before starting to sync with the network,
 it can download and import pruned data from a centralized server.
 This helps a pruned node sync faster.
+After downloading the data, the data can be verified:
 
-### Import Data in Pactus Daemon
+- All blocks should be valid and have a valid certificate.
+- All transactions should have a valid signature.
+- The state hash in the last block should be the same as the state hash of the downloaded data.
+- The last certificate should also be valid.
+
+#### Import Data in Pactus Daemon
 
 We need to add a new command named `import` to `pactus-daemon`.
 The `import` command shows a list of available databases that can be imported from a centralized server.
-Once the user chooses a database, it downloads and extracts it into the working directory.
+Once the file is selected and downloaded, it can be imported.
 If a database already exists, it should show an error before downloading.
 
-### Import Data in Pactus GUI
+#### Import Data in Pactus GUI
 
 The GUI can import data once the node initialization is done and before syncing.
 It can ask users if they want to run a Full Node or a Pruned Node.
 If they want to run a Full Node, the procedure is the same as before.
 If they want to run a Pruned Node,
 a dialog will be shown with the server address and a list of available files to download.
-Once the file is selected and downloaded, it can be imported in the same manner as the `import` command.
+Once the file is selected and downloaded, it can be imported.
 
 ## Exporting Data
 
@@ -124,4 +126,11 @@ No backward compatibility issues found.
 
 A pruned node can fully verify new blocks without any issues.
 It retains more than 60,000 blocks, allowing it to calculate availability scores.
-Additionally, it can verify transaction lock-times since it has access to the last day's transactions.
+Additionally, it can verify transaction lock-times [^2] since it has access to the last day's transactions.
+An adversary may take control of the centralized server and manipulate all blocks and transactions.
+However, the corrupted state can't be synced with the rest of the network.
+
+## References
+
+1- [State hash](https://docs.pactus.org/protocol/blockchain/state-hash/)
+2- [Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
