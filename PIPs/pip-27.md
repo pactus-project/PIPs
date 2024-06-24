@@ -56,24 +56,20 @@ by deleting the associated keys from the database.
 ### Pruning Database
 
 A Full Node can convert to a Pruned Node by pruning the database and removing old blocks.
-Pruning the database is a time and resource-consuming process and should not be performed while the node is running.
+Pruning the database is a time and resource consuming process and should not be performed while the node is running.
 We need to add a new command named `prune` to `pactus-daemon` to prune an offline node.
 In the attachment to this proposal, there is a batch file for Windows users that can be used for pruning the node.
 
-Pruning the database works as follows:
-
-1. Set the pruning height to `LastBlockHeight - RetentionBlocks`.
-2. If the pruning height is less than or equal to zero, it exits.
-3. If the block exists, `PruneBlock`.
-4. Decrease pruning height by 1.
-5. Repeat from step 2.
+To prune the database, we define a public method `Prune` for the store.
+This method iterates over all blocks from the pruning height to the genesis block and prunes them.
+The pruning height is the `LastBlockHeight - RetentionBlocks`.
 
 ### Pruning on New Block
 
 Once a new block is committed, the following operations should be performed:
 
 1. If the node is a Full Node, no action is needed.
-2. If the node is a Pruned Node, call the `PruneBlocks` function
+2. If the node is a Pruned Node, call the `PruneBlock` function
    with the block number equal to `LastBlockHeight - RetentionBlocks`.
 
 This process ensures that for each new block added,
@@ -88,7 +84,7 @@ After downloading the data, the data can be verified:
 
 - All blocks should be valid and have a valid certificate.
 - All transactions should have a valid signature.
-- The state hash in the last block should be the same as the state hash of the downloaded data.
+- The state hash in the last block should be the same as the state hash [^1] of the downloaded data.
 - The last certificate should also be valid.
 
 #### Import Data in Pactus Daemon
@@ -124,12 +120,13 @@ No backward compatibility issues found.
 ## Security Considerations
 
 A pruned node can fully verify new blocks without any issues.
-It retains more than 60,000 blocks, allowing it to calculate availability scores.
-Additionally, it can verify transaction lock-times [^2] since it has access to the last day's transactions.
+It retains more than 60,000 blocks, allowing it to calculate availability scores [^2].
+Additionally, it can verify transaction lock-times [^3] since it has access to the last day's transactions.
 An adversary may take control of the centralized server and manipulate all blocks and transactions.
 However, the corrupted state can't be synced with the rest of the network.
 
 ## References
 
-1- [State hash](https://docs.pactus.org/protocol/blockchain/state-hash/)
-2- [Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
+[^1]: [State hash](https://docs.pactus.org/protocol/blockchain/state-hash/)
+[^2]: [Availability Score for Validators](http://127.0.0.1:4000/PIPs/pip-19)
+[^3]: [Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
