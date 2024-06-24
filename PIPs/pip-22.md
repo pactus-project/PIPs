@@ -4,6 +4,7 @@ title: Agent Node Defination
 author: Nagaraj (@ragnarok87)
 status: Final
 type: Standards Track
+discussion-no: 94
 category: Network
 created: 29-01-2024
 requires: 14

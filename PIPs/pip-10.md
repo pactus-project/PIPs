@@ -4,6 +4,7 @@ title: Fast agreement consensus protocol
 author: B00f (@b00f)
 status: Accepted
 type: Standards Track
+discussion-no: 36
 category: Core
 created: 2023-09-25
 ---

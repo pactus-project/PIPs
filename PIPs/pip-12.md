@@ -4,6 +4,7 @@ title: Automated Version Updates and Announcements in GUI and Daemon Client
 author: Javad Rajabzadeh <ja7ad@live.com>
 status: Rejected
 type: Standards Track
+discussion-no: 51
 category:
 created: 2023-11-26
 ---

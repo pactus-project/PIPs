@@ -4,6 +4,7 @@ title: Deterministic key hierarchy for BLS12-381 curve
 author: B00f (@b00f)
 status: Final
 type: Informational
+discussion-no: 42
 created: 2023-09-26
 ---
 

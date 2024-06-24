@@ -4,6 +4,7 @@ title: PNS Pactus Name System
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 status: Draft
 type: Standards Track
+discussion-no: 75
 category: Network
 created: 2023-12-17
 ---

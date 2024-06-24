@@ -4,6 +4,7 @@ title: Lock Time Transactions
 author: B00f (@b00f)
 status: Final
 type: Standards Track
+discussion-no: 20
 category: Core
 created: 2023-08-23
 ---

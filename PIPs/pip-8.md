@@ -3,6 +3,7 @@ pip: 8
 title: Defining address type based on the address usage
 status: Final
 type: Standards Track
+discussion-no: 28
 author: |
     Kayhan Alizadeh <kehiiiiya@gmail.com>,
     B00f (@b00f)

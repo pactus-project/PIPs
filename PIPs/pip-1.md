@@ -3,6 +3,7 @@ pip: 1
 title: PIP Purpose and Guidelines
 status: Active
 type: Process
+discussion-no: 135
 author: Pactus Development Team <info@pactus.org>
 created: 2023-07-10
 ---
