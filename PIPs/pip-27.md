@@ -79,7 +79,6 @@ Once a new block is committed, the following operations should be performed:
 This process ensures that for each new block added,
 one old block will be removed, keeping the store blocks up to the `RetentionBlocks` number.
 
-
 ### Importing Data
 
 Once a new node is initialized and before starting to sync with the network,
