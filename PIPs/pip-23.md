@@ -4,6 +4,7 @@ title: Sign and verify message by public and private key account
 author: Javad Rajabzadeh (@ja7ad)
 status: Draft
 type: Standards Track
+discussion-no: 102
 category:
 created: 14-04-2024
 ---

@@ -3,6 +3,7 @@ pip: 6
 title: In-Memory Storage of Public Keys, Validators, and Accounts using LRU Cache
 status: Withdraw
 type: Standards Track
+discussion-no: 17
 author: Javad Rajabzadeh <ja7ad@live.com>
 category: Core
 created: 2023-09-9

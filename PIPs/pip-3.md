@@ -4,6 +4,7 @@ title: Removing sequence field from transactions
 author: B00f (@b00f)
 status: Final
 type: Standards Track
+discussion-no: 19
 category: Core
 created: 2023-08-23
 ---

@@ -2,7 +2,7 @@
 pip: 27
 title: Pruned Node
 author: Pactus Development Team <info@pactus.org>
-discussions-to:
+discussion-no: 134
 status: Draft
 type: Standards Track
 category: Core

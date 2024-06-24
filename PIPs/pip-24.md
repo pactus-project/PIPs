@@ -4,6 +4,7 @@ title: Change Proposer on Double Proposing
 author: B00f (@b00f)
 status: Draft
 type: Standards Track
+discussion-no: 114
 category: Core
 created: 10-05-2024
 ---

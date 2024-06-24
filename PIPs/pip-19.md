@@ -4,6 +4,7 @@ title: Availability Score for Validators
 author: B00f (@b00f)
 status: Final
 type: Standards Track
+discussion-no: 82
 category: Core
 created: 01-01-2024
 ---

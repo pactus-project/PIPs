@@ -4,6 +4,7 @@ title: unbond token can rebond at any time.
 author: Hui (@laosiji-io)
 status: Rejected
 type: Standards Track
+discussion-no: 90
 category: Core
 created: 15-01-2024
 ---

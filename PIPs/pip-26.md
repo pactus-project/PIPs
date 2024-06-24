@@ -3,6 +3,7 @@ pip: 26
 title: Minimum Availability Score
 author: B00f (@b00f)
 status: Final
+discussion-no: 120
 type: Standards Track
 category: Core
 created: 09-06-2024

@@ -3,6 +3,7 @@ pip: 4
 title: Indexing Public Keys
 status: Final
 type: Standards Track
+discussion-no: 18
 author: Kayhan Alizadeh <kehiiiiya@gmail.com>
 category: Core
 created: 2023-08-27
