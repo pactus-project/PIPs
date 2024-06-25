@@ -2,7 +2,7 @@
 pip: 10
 title: Fast agreement consensus protocol
 author: B00f (@b00f)
-status: Accepted
+status: Withdrawn
 type: Standards Track
 discussion-no: 36
 category: Core
