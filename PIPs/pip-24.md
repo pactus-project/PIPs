@@ -2,7 +2,7 @@
 pip: 24
 title: Change Proposer on Double Proposing
 author: B00f (@b00f)
-status: Draft
+status: Withdrawn
 type: Standards Track
 discussion-no: 114
 category: Core
