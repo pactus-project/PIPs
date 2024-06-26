@@ -2,10 +2,10 @@
 pip: 23
 title: Sign and verify message by public and private key account
 author: Javad Rajabzadeh (@ja7ad)
-status: Draft
+status: Accepted
 type: Standards Track
 discussion-no: 102
-category:
+category: Interface
 created: 14-04-2024
 ---
 
