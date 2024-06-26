@@ -43,7 +43,8 @@ The proposed method for signing and verifying messages shall follow the followin
 3. **SignMessage**
    - Input: Message as string, Password for wallet (optional), Public key associated with Pactus account
    - Output: Signature as hex
-   - Procedure: Use the private key specific account address in wallet to generate a cryptographic signature for the input message.
+   - Procedure: Use the private key specific account address in wallet to generate a cryptographic 
+   signature for the input message.
 
 ## Example
 
