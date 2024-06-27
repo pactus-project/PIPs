@@ -72,7 +72,7 @@ layout: default
   </span>
   <h1 class="page-heading">
     PIP-{{ page.pip | xml_escape }}: {{ page.title | xml_escape }}
-    <a href="https://github.com/pactus-project/PIPs/discussions?discussions_q=PIP-{{ page.pip | xml_escape }}"
+    <a href="https://github.com/pactus-project/PIPs/discussions/{{ page.discussion-no | append: '' | uri_escape }}"
       class="no-underline">
       <svg role="img" aria-label="Discuss" class="inline-svg" xmlns="https://www.w3.org/2000/svg" viewBox="0 0 16 16">
         <use xlink:href="#bi-chat" />
@@ -101,8 +101,8 @@ layout: default
       <tr>
         <th scope="row">Discussion</th>
         <td><a
-            href="https://github.com/pactus-project/PIPs/discussions/{{ page.discussion-no | append: '' | uri_escape }}" 
-            target="new">View
+            href="https://github.com/pactus-project/PIPs/discussions/{{ page.discussion-no | append: '' | uri_escape }}"
+            target="_new">View
             Discussion PIP-{{ page.pip | xml_escape }}</a></td>
       </tr>
       {% endif %}
