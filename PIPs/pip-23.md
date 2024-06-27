@@ -5,7 +5,7 @@ author: Javad Rajabzadeh (@ja7ad)
 status: Draft
 type: Standards Track
 discussion-no: 102
-category:
+category: Interface
 created: 14-04-2024
 ---
 
@@ -30,15 +30,21 @@ and data integrity verification on the Pactus blockchain.
 
 The proposed method for signing and verifying messages shall follow the following steps:
 
-1. **Sign Message:**
-   - Input: Message as string, Private key associated with Pactus account
-   - Output: Signature as bytes
+1. **SignMessageWithPrivateKey**
+   - Input: Message as string, Private key associated with Pactus account as hex.
+   - Output: Signature as hex
    - Procedure: Use the private key to generate a cryptographic signature for the input message.
 
-2. **Verify Signature:**
-   - Input: Message as string, Signature as bytes, Public key associated with Pactus account
+2. **VerifyMessage**
+   - Input: Message as string, Signature as hex, Public key associated with Pactus account
    - Output: Boolean indicating the validity of the signature
    - Procedure: Use the public key to verify the authenticity of the signature for the input message.
+
+3. **SignMessage**
+   - Input: Message as string, Password for wallet (optional), Public key associated with Pactus account
+   - Output: Signature as hex
+   - Procedure: Use the private key specific account address in wallet to generate a cryptographic
+   signature for the input message.
 
 ## Example
 
