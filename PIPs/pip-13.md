@@ -6,7 +6,7 @@ author: Amir Babazadeh (@amirvalhalla)
 status: Final
 type: Standards Track
 discussion-no: 50
-category:
+category: Wallet
 created: 2023-11-27
 ---
 
