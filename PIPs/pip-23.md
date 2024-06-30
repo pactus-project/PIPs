@@ -30,35 +30,21 @@ and data integrity verification on the Pactus blockchain.
 
 The proposed method for signing and verifying messages shall follow the following steps:
 
-1. **SignMessageWithPrivateKey**
-   - Input: Message as string, Private key associated with Pactus account as hex.
+1. **SignMessageWithPrivateKey** (Util Service)
+   - Input: Message as string, Private key associated with Pactus account as string.
    - Output: Signature as hex
    - Procedure: Use the private key to generate a cryptographic signature for the input message.
 
-2. **VerifyMessage**
+2. **VerifyMessage** (Util Service)
    - Input: Message as string, Signature as hex, Public key associated with Pactus account
    - Output: Boolean indicating the validity of the signature
    - Procedure: Use the public key to verify the authenticity of the signature for the input message.
 
-3. **SignMessage**
+3. **SignMessage** (Wallet Service)
    - Input: Message as string, Password for wallet (optional), Public key associated with Pactus account
    - Output: Signature as hex
    - Procedure: Use the private key specific account address in wallet to generate a cryptographic
    signature for the input message.
-
-## Example
-
-- Create signature:
-
-```javascript
-function(message string, private_key []bytes) []bytes
-```
-
-- Verify sigature:
-
-```javascript
-function(message string, signature []bytes, public_key string) bool
-```
 
 ## Backward Compatibility
 
