@@ -45,24 +45,23 @@ Given that each day has almost 8640 blocks, the number of blocks to keep is `Ret
 
 ### PruneBlock Function
 
-The `PruneBlock` function removes a block and all transactions inside the block from the database.
+The `PruneBlock` function removes a block and all transactions inside the block from the store.
 It is a private function and can't be accessed from outside the store.
 It accepts a `Batch` pointer and a block height, and returns a boolean indicating whether
 a block at the given height exists, and an error if there is any.
 The `PruneBlock` function first tries to retrieve the block at the given height and decode it.
 Once it is decoded, it iterates over all transactions and updates the batch
-by deleting the associated keys from the database.
+by deleting the associated keys from the store.
+Using a batch ensures atomicity [^1] and improves performance by executing multiple delete operations as a single unit.
 
-### Pruning Database
+### Pruning Store
 
-A Full Node can convert to a Pruned Node by pruning the database and removing old blocks.
-Pruning the database is a time and resource consuming process and should not be performed while the node is running.
+A Full Node can convert to a Pruned Node by pruning the store and removing old blocks.
+Pruning the store is a time and resource consuming process and should not be performed while the node is running.
 We need to add a new command named `prune` to `pactus-daemon` to prune an offline node.
-In the attachment to this proposal, there is a batch file for Windows users that can be used for pruning the node.
-
-To prune the database, we define a public method `Prune` for the store.
+A public method `Prune` should be defined in the store.
 This method iterates over all blocks from the pruning height to the genesis block and prunes them.
-The pruning height is the `LastBlockHeight - RetentionBlocks`.
+The pruning height is `LastBlockHeight - RetentionBlocks`.
 
 ### Pruning on New Block
 
@@ -82,10 +81,10 @@ it can download and import pruned data from a centralized server.
 This helps a pruned node sync faster.
 After downloading the data, the data can be verified:
 
-- All blocks should be valid and have a valid certificate.
+- All blocks should have a valid certificate.
 - All transactions should have a valid signature.
-- The state hash in the last block should be the same as the state hash [^1] of the downloaded data.
-- The last certificate should also be valid.
+- The state hash in the last block should be the same as the calculated state hash [^2] of the downloaded data.
+- The last certificate should have a valid signature.
 
 #### Import Data in Pactus Daemon
 
@@ -120,13 +119,14 @@ No backward compatibility issues found.
 ## Security Considerations
 
 A pruned node can fully verify new blocks without any issues.
-It retains more than 60,000 blocks, allowing it to calculate availability scores [^2].
-Additionally, it can verify transaction lock-times [^3] since it has access to the last day's transactions.
+It retains more than 60,000 blocks, allowing it to calculate availability scores [^3].
+Additionally, it can verify transaction lock-times [^4] since it has access to the last day's transactions.
 An adversary may take control of the centralized server and manipulate all blocks and transactions.
 However, the corrupted state can't be synced with the rest of the network.
 
 ## References
 
-[^1]: [State hash](https://docs.pactus.org/protocol/blockchain/state-hash/)
-[^2]: [Availability Score for Validators](http://pips.pactus.org/PIPs/pip-19)
-[^3]: [Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
+[^1]: [Database Atomicity](https://en.wikipedia.org/wiki/Atomicity_(database_systems))
+[^2]: [State hash](https://docs.pactus.org/protocol/blockchain/state-hash/)
+[^3]: [Availability Score for Validators](http://pips.pactus.org/PIPs/pip-19)
+[^4]: [Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
