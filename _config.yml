@@ -18,6 +18,7 @@ header_pages:
  - network.html
  - interface.html
  - informational.html
+ - wallet.html
 
 highlighter: rouge
 markdown: kramdown

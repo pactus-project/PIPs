@@ -19,8 +19,8 @@ for efficient dependency management, including [Bootstrap](https://getbootstrap.
 Now, clone this repository and run it locally using the following commands:
 
 ```zsh
-git clone https://github.com/pactus-project/pactus.org.git
-cd pactus.org
+git clone https://github.com/pactus-project/pips.git
+cd PIPs
 yarn install ## To install bootstrap
 bundle install
 bundle exec jekyll serve

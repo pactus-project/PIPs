@@ -9,6 +9,7 @@ t-process: this?.new?.type == "Process"
 c-core: this?.new?.category == "Core"
 c-network: this?.new?.category == "Network"
 c-interface: this?.new?.category == "Interface"
+c-wallet: this?.new?.category == "Wallet"
 
 # Status
 s-draft: this?.new?.status == "Draft"
@@ -18,4 +19,4 @@ s-rejected: this?.new?.status == "Rejected"
 s-withdrawn: this?.new?.status == "Withdrawn"
 s-final: this?.new?.status == "Final"
 s-replaced: this?.new?.status == "Replaced"
-s-Active: this?.new?.status == "active"
+s-Active: this?.new?.status == "Active"
