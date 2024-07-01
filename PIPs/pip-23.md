@@ -2,7 +2,7 @@
 pip: 23
 title: Sign and verify message by public and private key account
 author: Javad Rajabzadeh (@ja7ad)
-status: Draft
+status: Accepted
 type: Standards Track
 discussion-no: 102
 category: Interface
@@ -36,12 +36,12 @@ The proposed method for signing and verifying messages shall follow the followin
    - Procedure: Use the private key to generate a cryptographic signature for the input message.
 
 2. **VerifyMessage** (Util Service)
-   - Input: Message as string, Signature as hex, Public key associated with Pactus account
+   - Input: Message as string, Signature as hex, Public key as string
    - Output: Boolean indicating the validity of the signature
    - Procedure: Use the public key to verify the authenticity of the signature for the input message.
 
 3. **SignMessage** (Wallet Service)
-   - Input: Message as string, Password for wallet (optional), Public key associated with Pactus account
+   - Input: Wallet Name as string, Password for wallet (optional), Message as string, Account address as string
    - Output: Signature as hex
    - Procedure: Use the private key specific account address in wallet to generate a cryptographic
    signature for the input message.
