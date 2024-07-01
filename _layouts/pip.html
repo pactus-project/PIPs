@@ -105,6 +105,10 @@ layout: default
             target="_new">View
             Discussion PIP-{{ page.pip | xml_escape }}</a></td>
       </tr>
+      <tr>
+        <th scope="row">Category</th>
+        <td>{{ page.category }}</td>
+      </tr>
       {% endif %}
       {% if page.created != undefined %}
       <tr>
