@@ -41,7 +41,7 @@ There is no restriction for the maximum value.
 
 The config should have a private method to calculate the `RetentionBlocks` based on `RetentionDays`.
 The `RetentionBlocks` are the number of blocks that should be kept and not pruned.
-Given that each day has almost 8640 blocks, the number of blocks to keep is `RetentionBlocks = RetentionDays * 8640`.
+Given that each day has almost 86400 blocks, the number of blocks to keep is `RetentionBlocks = RetentionDays * 86400`.
 
 ### PruneBlock Function
 
