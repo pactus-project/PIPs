@@ -12,6 +12,11 @@ repository: pactus-project/PIPs
 plugins:
   - jekyll-sitemap
 
+jekyll-spaceship:
+  mathjax-processor:
+    src:
+      - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
 header_pages:
  - all.html
  - core.html
