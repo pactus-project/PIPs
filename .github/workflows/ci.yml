@@ -58,7 +58,7 @@ jobs:
       #     root: _site
 
       - name: HTML Proofer
-        run: bundle exec htmlproofer --allow-missing-href --disable-external --assume-extension '.html' --log-level=:info --cache='{"timeframe":{"external":"6w"}}' --checks 'Links,Images,Scripts,OpenGraph' --no-check-sri --ignore-empty-alt --no-enforce_https ./_site
+        run: bundle exec htmlproofer --allow-missing-href --disable-external --assume-extension '.html' --log-level=:info --cache='{"timeframe":{"external":"6w"}}' --checks 'Links,Images,Scripts,OpenGraph' --ignore-empty-alt --no-enforce_https ./_site
 
       - name: DNS Validator
         run: bundle exec github-pages
