@@ -34,7 +34,7 @@ jobs:
 
   html-proofer:
     name: HTMLProofer
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout PIP Repository
@@ -43,7 +43,7 @@ jobs:
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2
+          ruby-version: '3.2'
           bundler-cache: true
 
       - name: Build Website
@@ -118,7 +118,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.0'
+          ruby-version: '3.2'
 
       - name: Install mdl
         run: gem install mdl
