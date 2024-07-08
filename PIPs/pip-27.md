@@ -47,9 +47,11 @@ Given that each day has almost 8640 blocks, the number of blocks to keep is `Ret
 
 The `PruneBlock` function removes a block and all transactions inside the block from the store.
 It is a private function and can't be accessed from outside the store.
-It accepts a `Batch` pointer and a block height as parameters, returning a boolean to indicate whether the block at the specified height existed and pruned, or did not exist, along with any encountered errors.
+It accepts a `Batch` pointer and a block height as parameters, returning a boolean to indicate
+whether the block at the specified height existed and pruned, or did not exist, along with any encountered errors.
 
-The `PruneBlock` function retrieves and decodes the block at the given height. Once decoded, it deletes all transactions and associated keys related to the block from the store.
+The `PruneBlock` function retrieves and decodes the block at the given height.
+Once decoded, it deletes all transactions and associated keys related to the block from the store.
 Using a batch ensures atomicity[^1] and improves performance by executing multiple delete operations as a single unit.
 
 ### Pruning Store
