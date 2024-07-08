@@ -128,5 +128,5 @@ However, the corrupted state can't be synced with the rest of the network.
 
 [^1]: [Database Atomicity](https://en.wikipedia.org/wiki/Atomicity_(database_systems))
 [^2]: [State hash](https://docs.pactus.org/protocol/blockchain/state-hash/)
-[^3]: [Availability Score for Validators](http://pips.pactus.org/PIPs/pip-19)
+[^3]: [Availability Score for Validators](https://pips.pactus.org/PIPs/pip-19)
 [^4]: [Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
