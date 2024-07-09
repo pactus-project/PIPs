@@ -11,11 +11,8 @@ created: 06-07-2024
 
 ## Abstract
 
-PIP-28 proposes a protocol change to prevent validators from shutting down their nodes while actively
-serving in a committee. This measure aims to ensure continuous network stability and reliability by
-maintaining the availability of validators during critical periods. By disallowing node shutdowns for
-active committee members, the proposal seeks to mitigate potential disruptions and enhance the robustness
-of the Pactus blockchain consensus mechanism.
+PIP-28 proposes to enhance Pactus blockchain stability by preventing active committee validators from shutting 
+down their nodes.
 
 ## Motivation
 
