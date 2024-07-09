@@ -11,7 +11,7 @@ created: 06-07-2024
 
 ## Abstract
 
-PIP-28 proposes to enhance Pactus blockchain stability by preventing active committee validators from shutting 
+PIP-28 proposes to enhance Pactus blockchain stability by preventing active committee validators from shutting
 down their nodes.
 
 ## Motivation
