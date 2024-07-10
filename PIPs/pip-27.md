@@ -43,14 +43,14 @@ The config should have a private method to calculate the `RetentionBlocks` based
 The `RetentionBlocks` are the number of blocks that should be kept and not pruned.
 Given that each day has almost 8640 blocks, the number of blocks to keep is `RetentionBlocks = RetentionDays * 8640`.
 
-### PruneBlock Function
+### pruneBlock Function
 
-The `PruneBlock` function removes a block and all transactions inside the block from the store.
+The `pruneBlock` function removes a block and all transactions inside the block from the store.
 It is a private function and can't be accessed from outside the store.
 It accepts a block height to prune, and returns a boolean that indicate
 whether the block at the specified height existed and pruned, or did not exist, along with any encountered errors.
 
-The `PruneBlock` function retrieves and decodes the block at the given height.
+The `pruneBlock` function retrieves and decodes the block at the given height.
 Once decoded, it deletes all transactions and associated keys related to the block from the store.
 
 ### Pruning Store
@@ -67,7 +67,7 @@ The pruning height is `LastBlockHeight - RetentionBlocks`.
 Once a new block is committed, the following operations should be performed:
 
 1. If the node is a Full Node, no action is needed.
-2. If the node is a Pruned Node, call the `PruneBlock` function
+2. If the node is a Pruned Node, call the `pruneBlock` function
    with the block number equal to `LastBlockHeight - RetentionBlocks`.
 
 This process ensures that for each new block added,
