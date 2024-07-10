@@ -29,6 +29,27 @@ the user should be warn that specific validators are in the committee and inform
 result in penalties and a decrease in the validator's score. This check-and-warn mechanism will help prevent
 unintentional disruptions and maintain validator performance during their committee duties.
 
+### Check and Warn mechanism
+
+In the check and warn mechanism, we need to track validators and know which
+validator is currently in the committee. We should also monitor the interrupt
+signal (Ctrl + C) from user input.
+
+If some validators are in the committee, we show a confirmation warning before
+shutting down the node; otherwise, we stop the node without a confirmation
+request.
+
+```shell
+Warning: this validators currently in committee, if stop node make decrease
+your availalility score.
+
+- pc1z...1
+- pc1z...2
+- pc1z...n
+
+Do you want to continue? [y/N]
+```
+
 ## Backwards Compatibility
 
 No backward compatibility issues found.
