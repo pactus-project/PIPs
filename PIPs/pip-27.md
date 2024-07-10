@@ -126,5 +126,5 @@ However, the corrupted state can't be synced with the rest of the network.
 ## References
 
 [^1]: [State hash](https://docs.pactus.org/protocol/blockchain/state-hash/)
-[^2]: [Availability Score for Validators](http://pips.pactus.org/PIPs/pip-19)
+[^2]: [Availability Score for Validators](https://pips.pactus.org/PIPs/pip-19)
 [^3]: [Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
