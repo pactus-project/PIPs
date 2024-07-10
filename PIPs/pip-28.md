@@ -40,12 +40,8 @@ shutting down the node; otherwise, we stop the node without a confirmation
 request.
 
 ```shell
-Warning: These validators are currently in the committee. Stopping the node
+Warning: Some your validators are currently in the committee. Stopping the node
 will decrease your availability score.
-
-- pc1z...1
-- pc1z...2
-- pc1z...n
 
 Do you want to continue? [y/N]
 ```
