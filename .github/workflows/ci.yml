@@ -34,7 +34,7 @@ jobs:
 
   html-proofer:
     name: HTMLProofer
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout PIP Repository
@@ -43,7 +43,7 @@ jobs:
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2
+          ruby-version: '3.2'
           bundler-cache: true
 
       - name: Build Website
@@ -58,7 +58,7 @@ jobs:
       #     root: _site
 
       - name: HTML Proofer
-        run: bundle exec htmlproofer --allow-missing-href --disable-external --assume-extension '.html' --log-level=:info --cache='{"timeframe":{"external":"6w"}}' --checks 'Links,Images,Scripts,OpenGraph' --no-check-sri --ignore-empty-alt --no-enforce_https ./_site
+        run: bundle exec htmlproofer ./_site
 
       - name: DNS Validator
         run: bundle exec github-pages
@@ -118,7 +118,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.0'
+          ruby-version: '3.2'
 
       - name: Install mdl
         run: gem install mdl
