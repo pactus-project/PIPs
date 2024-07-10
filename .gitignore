@@ -20,3 +20,4 @@ tmp
 
 # vscode
 .vscode
+Gemfile.lock
