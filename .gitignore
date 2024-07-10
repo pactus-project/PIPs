@@ -3,7 +3,6 @@ _site
 .sass-cache
 .jekyll-metadata
 vendor
-Gemfile.lock
 
 # Editor files
 .gitpod.yml

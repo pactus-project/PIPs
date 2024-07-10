@@ -28,7 +28,7 @@ and data integrity verification on the Pactus blockchain.
 
 ## Specification
 
-The proposed method for signing and verifying messages shall follow the following steps:
+The gRPC server should support following methods:
 
 1. **SignMessageWithPrivateKey** (Util Service)
    - Input: Message as string, Private key associated with Pactus account as string.
@@ -49,14 +49,11 @@ The proposed method for signing and verifying messages shall follow the followin
 ## Backward Compatibility
 
 This proposal introduces a new feature to the Pactus blockchain and does not impact existing functionalities or
-data structures within the network. Existing applications and systems operating on the Pactus blockchain
-can seamlessly adopt the proposed message signing and verification mechanism without requiring any modifications.
+data structures within the network.
 
 ## Security
 
-The security of this proposal hinges on the strength and reliability of the cryptographic algorithms employed for
-signing and verifying messages. It is imperative to utilize well-established cryptographic standards and
-libraries to mitigate the risk of signature forgery and unauthorized access.
-Furthermore, stringent measures should be implemented to safeguard private keys and prevent unauthorized disclosure,
-as the compromise of a private key could lead to unauthorized message signing and
-potential security vulnerabilities within the Pactus blockchain network.
+These APIs provide the ability to securely sign messages using cryptographic techniques.
+To enhance security, developers using these APIs should adhere to best practices such as
+using strong passwords for wallets, restricting API calls to localhost,
+and employing SSL/TLS for secure communications.
