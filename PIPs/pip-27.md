@@ -43,16 +43,15 @@ The config should have a private method to calculate the `RetentionBlocks` based
 The `RetentionBlocks` are the number of blocks that should be kept and not pruned.
 Given that each day has almost 8640 blocks, the number of blocks to keep is `RetentionBlocks = RetentionDays * 8640`.
 
-### PruneBlock Function
+### pruneBlock Function
 
-The `PruneBlock` function removes a block and all transactions inside the block from the store.
+The `pruneBlock` function removes a block and all transactions inside the block from the store.
 It is a private function and can't be accessed from outside the store.
-It accepts a `Batch` pointer and a block height, and returns a boolean indicating whether
-a block at the given height exists, and an error if there is any.
-The `PruneBlock` function first tries to retrieve the block at the given height and decode it.
-Once it is decoded, it iterates over all transactions and updates the batch
-by deleting the associated keys from the store.
-Using a batch ensures atomicity [^1] and improves performance by executing multiple delete operations as a single unit.
+It accepts a block height to prune, and returns a boolean that indicate
+whether the block at the specified height existed and pruned, or did not exist, along with any encountered errors.
+
+The `pruneBlock` function retrieves and decodes the block at the given height.
+Once decoded, it deletes all transactions and associated keys related to the block from the store.
 
 ### Pruning Store
 
@@ -68,7 +67,7 @@ The pruning height is `LastBlockHeight - RetentionBlocks`.
 Once a new block is committed, the following operations should be performed:
 
 1. If the node is a Full Node, no action is needed.
-2. If the node is a Pruned Node, call the `PruneBlock` function
+2. If the node is a Pruned Node, call the `pruneBlock` function
    with the block number equal to `LastBlockHeight - RetentionBlocks`.
 
 This process ensures that for each new block added,
@@ -83,7 +82,7 @@ After downloading the data, the data can be verified:
 
 - All blocks should have a valid certificate.
 - All transactions should have a valid signature.
-- The state hash in the last block should be the same as the calculated state hash [^2] of the downloaded data.
+- The state hash in the last block should be the same as the calculated state hash [^1] of the downloaded data.
 - The last certificate should have a valid signature.
 
 #### Import Data in Pactus Daemon
@@ -119,14 +118,13 @@ No backward compatibility issues found.
 ## Security Considerations
 
 A pruned node can fully verify new blocks without any issues.
-It retains more than 60,000 blocks, allowing it to calculate availability scores [^3].
-Additionally, it can verify transaction lock-times [^4] since it has access to the last day's transactions.
+It retains more than 60,000 blocks, allowing it to calculate availability scores [^2].
+Additionally, it can verify transaction lock-times [^3] since it has access to the last day's transactions.
 An adversary may take control of the centralized server and manipulate all blocks and transactions.
 However, the corrupted state can't be synced with the rest of the network.
 
 ## References
 
-[^1]: [Database Atomicity](https://en.wikipedia.org/wiki/Atomicity_(database_systems))
-[^2]: [State hash](https://docs.pactus.org/protocol/blockchain/state-hash/)
-[^3]: [Availability Score for Validators](https://pips.pactus.org/PIPs/pip-19)
-[^4]: [Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
+[^1]: [State hash](https://docs.pactus.org/protocol/blockchain/state-hash/)
+[^2]: [Availability Score for Validators](https://pips.pactus.org/PIPs/pip-19)
+[^3]: [Lock Time Transactions](https://pips.pactus.org/PIPs/pip-2)
