@@ -2,7 +2,7 @@
 pip: 28
 title: Prevent Node Shutdowns for Validators in Committee
 author: Javad Rajabzadeh (@ja7ad)
-discussion-no:
+discussion-no: 163
 status: Draft
 type: Standards Track
 category: Core
