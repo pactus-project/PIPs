@@ -78,12 +78,6 @@ one old block will be removed, keeping the store blocks up to the `RetentionBloc
 Once a new node is initialized and before starting to sync with the network,
 it can download and import pruned data from a centralized server.
 This helps a pruned node sync faster.
-After downloading the data, the data can be verified:
-
-- All blocks should have a valid certificate.
-- All transactions should have a valid signature.
-- The state hash in the last block should be the same as the calculated state hash [^1] of the downloaded data.
-- The last certificate should have a valid signature.
 
 #### Import Data in Pactus Daemon
 
@@ -113,15 +107,18 @@ To export data to a centralized server, we need to follow these procedures:
 
 ## Backwards Compatibility
 
-No backward compatibility issues found.
+This proposal has no backward compatibility issues.
 
 ## Security Considerations
 
 A pruned node can fully verify new blocks without any issues.
-It retains more than 60,000 blocks, allowing it to calculate availability scores [^2].
-Additionally, it can verify transaction lock-times [^3] since it has access to the last day's transactions.
-An adversary may take control of the centralized server and manipulate all blocks and transactions.
-However, the corrupted state can't be synced with the rest of the network.
+The state hash for the last block should be the same as the calculated state hash[^1] of the downloaded data;
+otherwise, the new block can't be validated.
+It retains more than 60,000 blocks, allowing it to calculate availability scores[^2].
+Additionally, it can verify transaction lock-times[^3] since it has access to the last day's transactions.
+An adversary may take control of the centralized server and manipulate all blocks and transactions up to the last block.
+However, these blocks are subject to pruning, and after 10 days, the corrupted block will be pruned,
+giving no advantage to the adversary.
 
 ## References
 
