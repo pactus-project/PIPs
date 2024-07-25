@@ -1,7 +1,7 @@
 ---
 pip: 17
 title: PNS Pactus Name System
-author: Kayhan Alizadeh <kehiiiiya@gmail.com>
+author: Kayhan Alizadeh <me@kehiy.net>
 status: Draft
 type: Standards Track
 discussion-no: 75

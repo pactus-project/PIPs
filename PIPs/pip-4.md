@@ -4,7 +4,7 @@ title: Indexing Public Keys
 status: Final
 type: Standards Track
 discussion-no: 18
-author: Kayhan Alizadeh <kehiiiiya@gmail.com>
+author: Kayhan Alizadeh <me@kehiy.net>
 category: Core
 created: 2023-08-27
 ---
