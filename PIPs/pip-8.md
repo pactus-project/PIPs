@@ -5,7 +5,7 @@ status: Final
 type: Standards Track
 discussion-no: 28
 author: |
-    Kayhan Alizadeh <kehiiiiya@gmail.com>,
+    Kayhan Alizadeh <me@kehiy.net>,
     B00f (@b00f)
 category: Core
 created: 2023-09-17
