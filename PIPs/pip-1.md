@@ -87,8 +87,10 @@ They may also propose features or ideas for further discussion within the commun
 Process PIPs propose changes to the PIP process itself or suggest improvements to
 the decision-making process within the Pactus community.
 
+### Implementation and Protocol details
 
-The Standards Track and Informational PIPs must contain general changes applied to the Pactus protocol or define interfaces for it which can be mandatory or not, for implementations to properly implement Pactus or its on-chain program interfaces and standards. They must not point to implementation specific changes.
+The Standards Track and Informational PIPs must contain general changes applied to the Pactus protocol or define interfaces for it which can be mandatory or not, for implementations to properly implement Pactus or its on-chain program interfaces and standards.
+They must not point to implementation specific changes.
 
 ## PIP Categories
 
