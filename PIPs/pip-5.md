@@ -4,7 +4,7 @@ title: Adding Different HRP For Validator, Account And Contract Address
 status: Withdrawn
 type: Standards Track
 discussion-no: 16
-author: Kayhan Alizadeh <kehiiiiya@gmail.com>
+author: Kayhan Alizadeh <me@kehiy.net>
 category: Core
 created: 2023-08-27
 ---
