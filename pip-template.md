@@ -3,8 +3,8 @@ title: <The PIP title is a few words, not a complete sentence>
 description: <Description is one full (short) sentence>
 author: <a comma separated list of the author's or authors' name + GitHub username (in parenthesis), or name and email (in angle brackets).  Example, FirstName LastName (@GitHubUsername), FirstName LastName <foo@bar.com>, FirstName (@GitHubUsername) and GitHubUsername (@GitHubUsername)>
 status: Draft
-type: <Standard, Meta, or Informational>
-category: <Core, Network, Interface, Wallet> # Only required for Standards Track. Otherwise, remove this field.
+type: <Standard Track, Informational, or Process>
+category: <Core, Network, Interface> # Only required for Standards Track. Otherwise, remove this field.
 created: <date created on, in ISO 8601 (yyyy-mm-dd) format>
 requires: <PIP number(s)> # Only required when you reference an PIP in the `Specification` section. Otherwise, remove this field, example: 2,3 or 2.
 ---
