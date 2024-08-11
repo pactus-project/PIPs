@@ -71,7 +71,7 @@ The default value for `daily_limit` is proposed to be **set at 300 bytes?**
 The unit_price would define the fee per byte in PAC. This parameter would be part of the node configuration,
 allowing each validator to set their preferred value.
 
-The default value for `unit_price `is proposed to be **set at 0.01 PAC?**
+The default value for `unit_price` is proposed to be **set at 0.01 PAC?**
 
 ### Account Creation Fee
 
