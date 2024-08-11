@@ -3,7 +3,7 @@ pip: 27
 title: Pruned Node
 author: Pactus Development Team <info@pactus.org>
 discussion-no: 134
-status: Accepted
+status: Final
 type: Standards Track
 category: Core
 created: 22-06-2024
