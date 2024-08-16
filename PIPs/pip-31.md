@@ -28,7 +28,7 @@ but transactions with higher fees are accepted and kept in the transaction pool.
 Each validator can independently calculate the fee for each transaction based on the following formula:
 
 $$
-\text{fee} = \text{fixed\_fee} + ( \text{coefficient} \times \text{consumption} \times \text{unit\_price} )
+\text{fee} = \text{fixed_fee} + ( \text{coefficient} \times \text{consumption} \times \text{unit_price} )
 $$
 
 Let's explain the parameters:
@@ -53,7 +53,7 @@ The coefficient is a unitless number that starts at zero and grows exponentially
 The coefficient would be calculated as follows:
 
 $$
-n = \frac{\text{consumption}}{\text{daily\_limit}}
+n = \frac{\text{consumption}}{\text{daily_limit}}
 $$
 
 $$
