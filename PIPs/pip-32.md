@@ -83,7 +83,7 @@ Community = 0.025
 
 The revision to the coin allocation are to be as follows:
 
-Validators = 31,500,500
+Validator Rewards = 31,500,500
 
 Foundation = 4,200,000
 
