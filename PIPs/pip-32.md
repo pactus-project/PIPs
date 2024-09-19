@@ -1,6 +1,6 @@
 ---
-title: 32
-description: Reallocation of Reserve Funds
+pip: 32
+title: Reallocation of Reserve Funds
 author: Mr. HoDL (@Mr-HoDL58)
 status: Draft
 type: Standards Track
