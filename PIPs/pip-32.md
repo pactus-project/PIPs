@@ -31,7 +31,7 @@ Several actions need to take place for the implementation of this PIP.
   1. Reallocation of reserve funds back to the treasury account.
   2. Revisal of block rewards and recipients.
   3. Coin allocation revisal.
-  4. Implemenation.
+  4. Implementation.
      
 
 ### Reserve Wallets
