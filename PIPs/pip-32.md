@@ -79,13 +79,9 @@ Community = 0.025
 The revision to the coin allocation we be as follows:
 
 Validators = 31,500,500
-
 Foundation = 4,200,000
-
 VC Allocation = 3,150,000
-
 Team & Operations = 2,100,000 (420,000 already recieved to hot wallet 1) (1,680,000 remains from treasury)
-
 Community = 1,050,000 (210,000 already recieved to hot wallet 2) (840,000 remains from treasury)
 
 ![PIP-32 - Revised Supply Allocation](../assets/pip-32/revised-supply-allocation.png)
