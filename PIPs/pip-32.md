@@ -44,7 +44,7 @@ The team currently holds 4 reserve and 2 hot wallets, they are described below w
   3. Team & Operations - Address - pc1znn2qxsugfrt7j4608zvtnxf8dnz8skrxguyf45 - Balance = 3,779,999.999010000
   4. Community - Address - pc1zs64vdggjcshumjwzaskhfn0j9gfpkvche3kxd3 - Balance = 1,889,999.999010000
 
-_The complete balance of the reserve wallets should be transferred to the treasury account._
+_The complete balances of the reserve wallets should be transferred to the treasury account._
 
 #### Hot Wallets: (Recieved 640,000 from reserve.)
   1. Team & Operations - Address - pc1zuavu4sjcxcx9zsl8rlwwx0amnl94sp0el3u37g - Balance 155,999.857000000
