@@ -80,7 +80,7 @@ Community = 0.025
 
 ### Coin Allocation Revision
 
-The revision to the coin allocation we be as follows:
+The revision to the coin allocation are to be as follows:
 
 Validators = 31,500,500
 
