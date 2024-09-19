@@ -69,7 +69,7 @@ Community = 0.025
 
 ### Coin Allocation Revision
 
-![PIP-8 - address format](../assets/pip-8/pactus_address.png)
+![PIP-32 - Revised Supply Allocation](../assets/pip-32/revised-supply-allocation.png)
 
 
 
