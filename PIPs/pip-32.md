@@ -96,8 +96,14 @@ Community = 1,050,000 (210,000 already recieved to hot wallet 2) (840,000 remain
 
 _Changes will not be made to the total supply, only the allocation._
 
+### Blocks needed for reserve allocation
 
+The total number of blocks needed to supply the reserve wallets are as follows:
 
+Foundation = 42,000,000
+VC Allocation = 42,000,000
+Team & Operations = 33,600,000
+Community = 33,600,000
 
 
 ## Backwards Compatibility
