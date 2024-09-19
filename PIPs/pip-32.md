@@ -13,6 +13,7 @@ created: 2024-09-19
 This document suggests reallocating the held reserve back to the treasury account, incorporating a reserve 
 fund into the block rewards system, and revising the coin allocation to better benefit the community.
 
+
 ## Motivation
 
 Pactus is currently responsible for holding the reserve funds for the project. However, due to limitations 
@@ -22,6 +23,7 @@ could raise concerns about their potential negative impact on both the project a
 were to be introduced to the market. By adopting this proposal, we can gradually release the reserve funds
 into the supply, thereby empowering the community and reinforcing trust among our investors.
 
+
 ## Specification
 
 Several actions need to take place for the implementation of this PIP.
@@ -29,6 +31,7 @@ Several actions need to take place for the implementation of this PIP.
   1. Reallocation of reserve funds back to the treasury account.
   2. Revisal of block rewards and recipients.
   3. Coin allocation revisal.
+     
 
 ### Reserve Wallets
 
@@ -48,14 +51,17 @@ Hot: Recieved 640,000 from reserves
 
 The complete balance of the hot wallets should remain in teams custody for immediate operational funds.
 
+
 ### Validator Considerations
 
 This proposal should not affect validators in any way, they will continue to receive 1 coin per block as a reward.
+
 
 ### Block Rewards 
 
 Block rewards are to increase from 1 coin per block to a rate 1.25 coins per block. 1 coin to be sent to the block proposer
 and the remaining 0.25 to be divided among the reserve wallets.
+
 
 ### Block Rewards Allocation
 
@@ -66,6 +72,7 @@ Foundation = 0.1
 VC Funds = 0.075
 Team & Operation = 0.05
 Community = 0.025
+
 
 ### Coin Allocation Revision
 
