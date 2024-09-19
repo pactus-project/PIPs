@@ -59,8 +59,8 @@ This proposal should not affect validators in any way, they will continue to rec
 
 ### Block Rewards 
 
-Block rewards are to increase from 1 coin per block to a rate 1.25 coins per block. 1 coin to be sent to the block proposer
-and the remaining 0.25 to be divided among the reserve wallets.
+Block rewards will increase from 1 coin per block to 1.25 coins per block. Of this amount, 1 coin will be allocated 
+to the block proposer, while the remaining 0.25 coins will be distributed among the reserve wallets.
 
 
 ### Block Rewards Allocation
