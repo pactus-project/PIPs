@@ -30,15 +30,6 @@ Several actions need to take place for the implementation of this PIP.
   2. Revisal of block rewards and recipients.
   3. Coin allocation revisal.
 
-### Validator Considerations
-
-This proposal should not affect validators in any way, they will continue to receive 1 coin per block as a reward.
-
-### Block Rewards 
-
-Block rewards are to increase from 1 coin per block to 1.2 coins per block. 1 coin to be sent to the block proposer
-and the remaining 0.2 to be divided among the reserve wallets.
-
 ### Reserve Wallets
 
 The team currently holds 4 reserve and 2 hot wallets, they are described below with balances.
@@ -56,6 +47,17 @@ Hot:
   2. Community - Address - pc1zf0gyc4kxlfsvu64pheqzmk8r9eyzxqvxlk6s6t - Balance 5998.971900000
 
 The complete balance of the hot wallets should remain in teams custody for immediate operational funds.
+
+### Validator Considerations
+
+This proposal should not affect validators in any way, they will continue to receive 1 coin per block as a reward.
+
+### Block Rewards 
+
+Block rewards are to increase from 1 coin per block to 1.2 coins per block. 1 coin to be sent to the block proposer
+and the remaining 0.2 to be divided among the reserve wallets.
+
+
 
 ### Coin Allocation Revision
 
