@@ -43,13 +43,13 @@ Reserve:
   3. Team & Operations - Address - pc1znn2qxsugfrt7j4608zvtnxf8dnz8skrxguyf45 - Balance = 3,779,999.999010000
   4. Community - Address - pc1zs64vdggjcshumjwzaskhfn0j9gfpkvche3kxd3 - Balance = 1,889,999.999010000
 
-The complete balance of the reserve wallets should be transferred to the treasury account.
+_The complete balance of the reserve wallets should be transferred to the treasury account._
 
 Hot: Recieved 640,000 from reserves
   1. Team & Operations - Address - pc1zuavu4sjcxcx9zsl8rlwwx0amnl94sp0el3u37g - Balance 155,999.857000000
   2. Community - Address - pc1zf0gyc4kxlfsvu64pheqzmk8r9eyzxqvxlk6s6t - Balance 5998.971900000
 
-The complete balance of the hot wallets should remain in teams custody for immediate operational funds.
+_The complete balance of the hot wallets should remain in teams custody for immediate operational funds._
 
 
 ### Validator Considerations
@@ -94,7 +94,7 @@ Community = 1,050,000 (210,000 already recieved to hot wallet 2) (840,000 remain
 
 ![PIP-32 - Revised Supply Allocation](../assets/pip-32/revised-supply-allocation.png)
 
-Changes will not be made to the total supply, only the allocation.
+_Changes will not be made to the total supply, only the allocation._
 
 
 
