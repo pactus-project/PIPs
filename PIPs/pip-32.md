@@ -101,8 +101,11 @@ _Changes will not be made to the total supply, only the allocation._
 The total number of blocks needed to supply the reserve wallets are as follows:
 
 Foundation = 42,000,000
+
 VC Allocation = 42,000,000
+
 Team & Operations = 33,600,000
+
 Community = 33,600,000
 
 
