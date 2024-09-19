@@ -36,13 +36,13 @@ The team currently holds 4 reserve and 2 hot wallets, they are described below w
 
 Reserve:
   1. Foundation - Address - pc1z2r0fmu8sg2ffa0tgrr08gnefcxl2kq7wvquf8z - Balance = 8,400,000.194910010
-  2. VC Investor - Address - pc1zprhnvcsy3pthekdcu28cw8muw4f432hkwgfasv - Balance = 6,300,000.000010001
+  2. VC Funds - Address - pc1zprhnvcsy3pthekdcu28cw8muw4f432hkwgfasv - Balance = 6,300,000.000010001
   3. Team & Operations - Address - pc1znn2qxsugfrt7j4608zvtnxf8dnz8skrxguyf45 - Balance = 3,779,999.999010000
   4. Community - Address - pc1zs64vdggjcshumjwzaskhfn0j9gfpkvche3kxd3 - Balance = 1,889,999.999010000
 
 The complete balance of the reserve wallets should be transferred to the treasury account.
 
-Hot:
+Hot: Recieved 640,000 from reserves
   1. Team & Operations - Address - pc1zuavu4sjcxcx9zsl8rlwwx0amnl94sp0el3u37g - Balance 155,999.857000000
   2. Community - Address - pc1zf0gyc4kxlfsvu64pheqzmk8r9eyzxqvxlk6s6t - Balance 5998.971900000
 
@@ -54,12 +54,23 @@ This proposal should not affect validators in any way, they will continue to rec
 
 ### Block Rewards 
 
-Block rewards are to increase from 1 coin per block to 1.2 coins per block. 1 coin to be sent to the block proposer
-and the remaining 0.2 to be divided among the reserve wallets.
+Block rewards are to increase from 1 coin per block to a rate 1.25 coins per block. 1 coin to be sent to the block proposer
+and the remaining 0.25 to be divided among the reserve wallets.
 
+### Block Rewards Allocation
 
+Block rewards of 1.25 are to be allocated as below:
+
+Proposer = 1
+Foundation = 0.1
+VC Funds = 0.075
+Team & Operation = 0.05
+Community = 0.025
 
 ### Coin Allocation Revision
+
+![PIP-8 - address format](../assets/pip-8/pactus_address.png)
+
 
 
 
