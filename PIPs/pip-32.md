@@ -66,6 +66,7 @@ and the remaining 0.25 to be divided among the reserve wallets.
 ### Block Rewards Allocation
 
 Block rewards of 1.25 are to be allocated as below:
+
 Proposer = 1
 
 Foundation = 0.1
@@ -80,6 +81,7 @@ Community = 0.025
 ### Coin Allocation Revision
 
 The revision to the coin allocation are to be as follows:
+
 Validators = 31,500,500
 
 Foundation = 4,200,000
