@@ -37,7 +37,7 @@ Several actions need to take place for the implementation of this PIP.
 
 The team currently holds 4 reserve and 2 hot wallets, they are described below with balances.
 
-# Reserve:
+#### Reserve:
   1. Foundation - Address - pc1z2r0fmu8sg2ffa0tgrr08gnefcxl2kq7wvquf8z - Balance = 8,400,000.194910010
   2. VC Funds - Address - pc1zprhnvcsy3pthekdcu28cw8muw4f432hkwgfasv - Balance = 6,300,000.000010001
   3. Team & Operations - Address - pc1znn2qxsugfrt7j4608zvtnxf8dnz8skrxguyf45 - Balance = 3,779,999.999010000
@@ -45,7 +45,7 @@ The team currently holds 4 reserve and 2 hot wallets, they are described below w
 
 _The complete balance of the reserve wallets should be transferred to the treasury account._
 
-# Hot: Recieved 640,000 from reserves
+#### Hot: Recieved 640,000 from reserves
   1. Team & Operations - Address - pc1zuavu4sjcxcx9zsl8rlwwx0amnl94sp0el3u37g - Balance 155,999.857000000
   2. Community - Address - pc1zf0gyc4kxlfsvu64pheqzmk8r9eyzxqvxlk6s6t - Balance 5998.971900000
 
