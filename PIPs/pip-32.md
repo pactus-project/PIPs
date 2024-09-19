@@ -1,6 +1,6 @@
 ---
 title: 32
-description: <Description is one full (short) sentence>
+description: Reallocation of Reserve Funds
 author: Mr. HoDL (@Mr-HoDL58)
 status: Draft
 type: Standards Track
