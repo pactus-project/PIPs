@@ -10,16 +10,16 @@ created: 2024-09-29
 
 ## Abstract
 
-This proposal outlines the introduction of a new address type known as the "Lock Account Address." The purpose 
-of this new feature is to offer users a mechanism to lock their assets for a specified period, thereby 
+This proposal outlines the introduction of a new address type known as the "Lock Account Address." The purpose
+of this new feature is to offer users a mechanism to lock their assets for a specified period, thereby
 promoting better financial management within our platform.
 
 ## Motivation
 
-The Lock Account Address will facilitate a unique type of transaction called the "Lock Transaction." This 
-transaction is a combination of bonding and unbonding, governed by specific date and time parameters. 
-By implementing this mechanism, The project and its users can secure their funds over defined periods while 
-still being able to withdraw portions of their assets when unlocked. This would serve as an alternative to 
+The Lock Account Address will facilitate a unique type of transaction called the "Lock Transaction." This
+transaction is a combination of bonding and unbonding, governed by specific date and time parameters.
+By implementing this mechanism, The project and its users can secure their funds over defined periods while
+still being able to withdraw portions of their assets when unlocked. This would serve as an alternative to
 PIP-32 by offering another solution to the unlocked reserve coins.
 
 ## Specification
@@ -58,11 +58,13 @@ The Unlock Transaction, which is used to withdraw the balance that has been unlo
 
  `tx unlock <from> <to> <amount/available>`
 
-The "amount/available" to unlock will be automatically determined when the transaction is called, ensuring users only withdraw the amounts that have matured based on the lock parameters.
+The "amount/available" to unlock will be automatically determined when the transaction is called, ensuring users
+only withdraw the amounts that have matured based on the lock parameters.
 
 ### Additional Parameters
 
-To provide users with greater flexibility and control, the Lock Time Transaction must include at least one lock parameter and one unlock parameter as above. Below are the definitions of potential additional time parameter flags:
+To provide users with greater flexibility and control, the Lock Time Transaction must include at least one lock
+parameter and one unlock parameter as above. Below are the definitions of potential additional time parameter flags:
 
 Lockdays:
 
