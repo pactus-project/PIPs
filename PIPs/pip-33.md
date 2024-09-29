@@ -62,7 +62,7 @@ The "amount/available" to unlock will be automatically determined when the trans
 
 ### Additional Parameters
 
-To provide users with greater flexibility and control, the Lock Time Transaction must include at least one lock parameter and one unlock parameter. Below are the definitions of the additional time parameters flags:
+To provide users with greater flexibility and control, the Lock Time Transaction must include at least one lock parameter and one unlock parameter as above. Below are the definitions of potential additional time parameter flags:
 
 Lockdays:
 
@@ -81,7 +81,7 @@ Unlockdays:
     
 `-ulmins`: Equivalent to 6 Blocks
 
-Use of these parameters can be seen in this example
+Use of these parameters can be seen in this example:
     
 `tx lock <from> <to> <amount> -lkdays 100 -lkhours 0 -lkmins 0 -uldays 1 -ulhour 0 -ulmins 0`
 
