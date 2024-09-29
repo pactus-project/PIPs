@@ -24,6 +24,8 @@ PIP-32 by offering another solution to the unlocked reserve coins.
 
 ## Specification
 
+Addition of new address type `Lock Account Address`
+
 ### Lock Command Structure
 
 The Lock Time Transaction will follow the command structure outlined below:
