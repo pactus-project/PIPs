@@ -32,8 +32,8 @@ The Lock Time Transaction will follow the command structure outlined below:
 
 #### Parameters
 
-    Lockdays: This parameter represents the total amount of time the coins will be locked.
-    Unlockdays: This signifies the time interval between each unlock.
+Lockdays: This parameter represents the total amount of time the coins will be locked.
+Unlockdays: This signifies the time interval between each unlock.
 
 The formula for calculating the amount eligible for unlocking is given by:
 
@@ -59,15 +59,15 @@ The "amount/available" to unlock will be automatically determined when the trans
 
 To provide users with greater flexibility and control, the Lock Time Transaction must include at least one lock parameter and one unlock parameter. Below are the definitions of the additional time parameters:
 
-    Lockdays:
-        -lkdays: Equivalent to 8640 Blocks
-        -lkhours: Equivalent to 360 Blocks
-        -lkmins: Equivalent to 6 Blocks
+Lockdays:
+    -lkdays: Equivalent to 8640 Blocks
+    -lkhours: Equivalent to 360 Blocks
+    -lkmins: Equivalent to 6 Blocks
 
-    Unlockdays:
-        -uldays: Equivalent to specified days
-        -ulhour: Equivalent to specified hours
-        -ulmins: Equivalent to specified minutes
+Unlockdays:
+    -uldays: Equivalent to specified days
+    -ulhour: Equivalent to specified hours
+    -ulmins: Equivalent to specified minutes
 
 
 ## Backwards Compatibility
