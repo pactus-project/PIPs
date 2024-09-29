@@ -11,8 +11,8 @@ created: 2024-09-29
 ## Abstract
 
 This proposal outlines the introduction of a new address type known as the "Lock Account Address." The purpose 
-of this new feature is to enhance transaction security and offer users a mechanism to lock their assets for a 
-specified period, thereby promoting better financial management within our platform.
+of this new feature is to offer users a mechanism to lock their assets for a specified period, thereby 
+promoting better financial management within our platform.
 
 ## Motivation
 
