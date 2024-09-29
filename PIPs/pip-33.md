@@ -35,8 +35,8 @@ The Lock Time Transaction will follow the command structure outlined below:
 
 #### Parameters
 
-Lockdays: This parameter represents the total amount of time the coins will be locked.
-Unlockdays: This signifies the time interval between each unlock.
+`Lockdays`: This parameter represents the total amount of time the coins will be locked.
+`Unlockdays`: This signifies the time interval between each unlock.
 
 The formula for calculating the amount eligible for unlocking is given by:
 
