@@ -25,6 +25,7 @@ PIP-32 by offering another solution to the unlocked reserve coins.
 ## Specification
 
 Addition of new address type `Lock Account Address`
+Addition of new transaction types `Lock` and `unlock`
 
 ### Lock Command Structure
 
