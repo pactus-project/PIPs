@@ -1,4 +1,5 @@
 ---
+pip: 33
 title: New Address Type: Lock Account Address
 author: Mr. HoDL (@Mr-HoDL58)
 status: Draft
