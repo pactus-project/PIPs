@@ -65,6 +65,7 @@ The "amount/available" to unlock will be automatically determined when the trans
 To provide users with greater flexibility and control, the Lock Time Transaction must include at least one lock parameter and one unlock parameter. Below are the definitions of the additional time parameters flags:
 
 Lockdays:
+
 `-lkdays`: Equivalent to 8640 Blocks
     
 `-lkhours`: Equivalent to 360 Blocks
@@ -73,6 +74,7 @@ Lockdays:
     
 
 Unlockdays:
+
 `-uldays`: Equivalent to 8640 Blocks
     
 `-ulhour`: Equivalent to 360 Blocks
