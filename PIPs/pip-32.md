@@ -11,19 +11,17 @@ created: 2024-09-19
 
 ## Abstract
 
-This document suggests reallocating the held reserve back to the treasury account, incorporating a reserve 
+This document suggests reallocating the held reserve back to the treasury account, incorporating a reserve
 fund into the block rewards system, and revising the coin allocation to better benefit the community.
-
 
 ## Motivation
 
-Pactus is currently responsible for holding the reserve funds for the project. However, due to limitations 
+Pactus is currently responsible for holding the reserve funds for the project. However, due to limitations
 within Pactus core functionality and the absence of smart contracts, we are unable to establish an effective
-time-locking or vesting schedule. As a result, the coins in these reserves are treated as unlocked, which 
-could raise concerns about their potential negative impact on both the project and its investors if they 
+time-locking or vesting schedule. As a result, the coins in these reserves are treated as unlocked, which
+could raise concerns about their potential negative impact on both the project and its investors if they
 were to be introduced to the market. By adopting this proposal, we can gradually release the reserve funds
 into the supply, thereby empowering the community and reinforcing trust among our investors.
-
 
 ## Specification
 
@@ -34,7 +32,6 @@ Several actions need to take place for the implementation of this PIP.
   3. Coin allocation revisal.
   4. Implementation.
      
-
 ### Reserve Wallets
 
 The team currently holds 4 reserve and 2 hot wallets, they are described below with balances.
@@ -53,17 +50,14 @@ _The complete balances of the reserve wallets should be transferred to the treas
 
 _The complete balance of the hot wallets should remain in teams custody for immediate operational funds._
 
-
 ### Validator Considerations
 
 This proposal should not affect validators in any way, they will continue to receive 1 coin per block as a reward.
 
+### Block Rewards
 
-### Block Rewards 
-
-Block rewards will increase from 1 coin per block to 1.25 coins per block. Of this amount, 1 coin will be allocated 
+Block rewards will increase from 1 coin per block to 1.25 coins per block. Of this amount, 1 coin will be allocated
 to the block proposer, while the remaining 0.25 coins will be distributed among the reserve wallets.
-
 
 ### Block Rewards Allocation
 
@@ -78,7 +72,6 @@ VC Funds = 0.075
 Team & Operation = 0.05
 
 Community = 0.025
-
 
 ### Coin Allocation Revision
 
@@ -109,11 +102,3 @@ VC Allocation = 42,000,000
 Team & Operations = 33,600,000
 
 Community = 33,600,000
-
-
-## Backwards Compatibility
-
-No backward compatibility issues found.
-
-
-
