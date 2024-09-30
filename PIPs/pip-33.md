@@ -69,21 +69,19 @@ parameter and one unlock parameter as above. Below are the definitions of potent
 Lockdays:
 
 `-lkdays`: Equivalent to 8640 Blocks
-    
+
 `-lkhours`: Equivalent to 360 Blocks
-    
+
 `-lkmins`: Equivalent to 6 Blocks
-    
 
 Unlockdays:
 
 `-uldays`: Equivalent to 8640 Blocks
-    
+
 `-ulhour`: Equivalent to 360 Blocks
-    
+
 `-ulmins`: Equivalent to 6 Blocks
 
 Use of these parameters can be seen in this example:
-    
-`tx lock <from> <to> <amount> -lkdays 100 -lkhours 0 -lkmins 0 -uldays 1 -ulhour 0 -ulmins 0`
 
+`tx lock <from> <to> <amount> -lkdays 100 -lkhours 0 -lkmins 0 -uldays 1 -ulhour 0 -ulmins 0`
