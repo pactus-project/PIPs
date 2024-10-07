@@ -8,18 +8,15 @@ status: Draft
 type: Standards Track
 category: Core
 created: 08-08-2024
-requires: 30
 ---
 
 ## Abstract
 
-This document proposes calculating the validator fee based on the amount of data each account consumes daily.
-It also defines the "Account Creation Fee" as a network fee that
-each account must pay to the network upon sending its first transaction.
+This document proposes calculating the fee based on the amount of data each account consumes daily.
 
 ## Specification
 
-The transaction fee can be determined based on either the Consumption Fee or the Account Creation Fee.
+The transaction fee can be determined based on either the Consumption Fee.
 Validators can drop transactions with lower fees,
 but transactions with higher fees are accepted and kept in the transaction pool.
 
@@ -35,9 +32,9 @@ Let's explain the parameters:
 
 #### Fixed Fee
 
-The fixed_fee is a constant fee applied to each transaction, regardless of its size.
+The `fixed_fee` is a constant fee applied to each transaction, regardless of its size.
 This parameter would be part of the node configuration, allowing each validator to set their preferred value.
-The default value for fixed_fee is proposed to be set to zero.
+The default value for `fixed_fee` is proposed to be set to zero.
 
 #### Consumption
 
@@ -64,28 +61,18 @@ $$
 In this model, the daily_limit is the number of bytes an account can send each day without paying a fee.
 This parameter would be part of the node configuration, allowing each validator to set their preferred value.
 
-The default value for `daily_limit` is proposed to be **set at 300 bytes?**
+The default value for `daily_limit` is proposed to be **300 bytes**
 
 #### Unit Price
 
 The unit_price would define the fee per byte in PAC. This parameter would be part of the node configuration,
 allowing each validator to set their preferred value.
 
-The default value for `unit_price` is proposed to be **set at 0.01 PAC?**
+The default value for `unit_price` is proposed to be **0.0001 PAC**.
 
 ### Account Creation Fee
 
-The Consumptional Fee Model could potentially allow attackers to send spam transactions.
-Since the fee for initial transactions may be minimal or free,
-an attacker could send transactions to non-existing accounts,
-which could then send transactions from those accounts to other new accounts, continuing the spam.
-
-To address this, the Account Creation Fee proposes.
-This fee would be paid only the first time an account initiates a transaction and
-should be set sufficiently high to deter such attacks.
-Additionally, the balance of a new account must be at least equal to the account creation fee.
-This fee is defined as part of the consensus parameters and is not configurable.
-It is proposed to be set at 1? PAC.
+Each account needs to pay a `fixed_fee` the first time, after which a consumptional fee is applied.
 
 ### Implementation Considerations
 
@@ -99,6 +86,39 @@ When a new block is committed, we update this map by iterating over all transact
 increasing the value for each address by the size of its transactions.
 Simultaneously, the block from 8640 blocks ago would be retrieved,
 and the value for each address would be decreased by the size of its transactions.
+
+For store this details in map we **don't have** overhead for 8640 blocks (`map[crypto.Address]uint16`):
+
+- **Key size**: 21 bytes (account address)
+- **Value size**: 2 bytes (`uint16`)
+- **Overhead**: Estimated at 8-16 bytes per entry for pointers, hash management, and bucket arrays
+
+The total size is computed by multiplying the size of each item (sum of key size, value size, and overhead) by
+the number of items.
+
+$$
+\[
+\text{Total Size} = (\text{key size} + \text{value size} + \text{overhead}) \times \text{number of items}
+\]
+$$
+
+For the first case:
+
+$$
+\[
+\text{Total Size} = (21 + 2 + 8) \times 8640 = 259,200 \, \text{bytes} \approx 260 \, \text{KB}
+\]
+$$
+
+For the second case (with a larger overhead):
+
+$$
+\[
+\text{Total Size} = (21 + 2 + 16) \times 8640 = 345,600 \, \text{bytes} \approx 346 \, \text{KB}
+\]
+$$
+
+So, the map size is approximately **260KB to 346KB**.
 
 #### New Account Detection
 
