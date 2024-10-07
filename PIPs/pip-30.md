@@ -3,7 +3,7 @@ pip: 30
 title: Fee Types
 author: Pactus Development Team <info@pactus.org>
 discussion-no: 171
-status: Draft
+status: Rejected
 type: Informational
 category: Core
 created: 08-08-2024
