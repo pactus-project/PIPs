@@ -4,7 +4,7 @@ title: Consumptional Fee Model
 description: Transaction Fee Based on Data Consumption
 author: Pactus Development Team <info@pactus.org>
 discussion-no: 172
-status: Draft
+status: Accepted
 type: Standards Track
 category: Core
 created: 08-08-2024
