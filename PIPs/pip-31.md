@@ -82,7 +82,7 @@ This parameter is part of the node configuration, allowing each validator to set
 All parameters for calculating the fee are configurable.
 However, we recommend the following configurations:
 
-For most validators, we suggest setting the daily limit to `0 bytes` and the fixed fee to `0.01 PAC`.
+For most validators, we suggest setting the unit price to `0 PAC` and the fixed fee to `0.01 PAC`.
 This configuration eliminates the consumption fee, meaning these validators will only apply the fixed fee.
 
 For validators with good resources, we recommend setting the daily limit to `280 bytes`,
