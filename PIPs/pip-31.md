@@ -12,67 +12,84 @@ created: 08-08-2024
 
 ## Abstract
 
-This document proposes calculating the fee based on the amount of data each account consumes daily.
+This document explains the consumptional fee.
+The consumptional fee calculates based on the amount of data each address consumes daily.
+
+## Motivation
+
+Some users want to find ways to pay lower fees to the network.
+These users usually don’t mind how long it takes for their transactions to be confirmed.
+By introducing the consumption fee, we can allow transactions with zero or low fees to be processed in the network.
+However, these transactions may take longer than usual to be confirmed.
 
 ## Specification
 
-The transaction fee can be determined based on either the Consumption Fee.
-Validators can drop transactions with lower fees,
-but transactions with higher fees are accepted and kept in the transaction pool.
+Each validator can calculate the minimum fee for every transaction they receive using this formula:
+
+$$
+\text{min_fee} = \text{fixed_fee} + \text{consumptional_fee}
+$$
+
+Validators reject transactions with fees lower than the minimum fee.
+They will keep transactions with higher fees in their transaction pool and later include them in the proposed blocks.
+
+### Fixed Fee
+
+The fixed fee is a constant fee applied to each transaction, regardless of its size or type.
+This parameter is part of the node configuration, allowing each validator to set their preferred value.
 
 ### Consumptional Fee
 
-Each validator can independently calculate the fee for each transaction based on the following formula:
+The consumptional Fee calculates as follow:
 
 $$
-\text{fee} = \text{fixed_fee} + ( \text{coefficient} \times \text{consumption} \times \text{unit_price} )
+\text{consumptional_fee} = ( \text{coefficient} \times \text{consumption} \times \text{unit_price} )
 $$
 
 Let's explain the parameters:
-
-#### Fixed Fee
-
-The `fixed_fee` is a constant fee applied to each transaction, regardless of its size.
-This parameter would be part of the node configuration, allowing each validator to set their preferred value.
-The default value for `fixed_fee` is proposed to be set to zero.
 
 #### Consumption
 
 To understand the Consumptional Fee Model, we first need to define consumption.
 
-Transactions are sequences of bytes that are decoded, processed, and stored by validators.
-Consumption is defined as the number of bytes stored over the last 8640 blocks [^1] for a specific account.
+Transactions are sequences of bytes that validators decode, process, and store in their local database.
+Consumption is defined as the number of bytes stored over the last 8640 blocks [^1]
+for a specific account that signed a transactions.
 
 #### Coefficient
 
-The coefficient is a unitless number that starts at zero and grows exponentially: $0, 1, 2, 4, 8, \dots $
+The coefficient is a unitless number that starts at zero and grows naturally: $0, 1, 2, 3, \dots $
 
 The coefficient would be calculated as follows:
 
 $$
-n = \frac{\text{consumption}}{\text{daily_limit}}
+\text{coefficient} = \lfloor \frac{\text{consumption}}{\text{daily_limit}} \rfloor
 $$
 
-$$
-\displaylines{\text{coefficient} = \begin{cases}  0 & \text{if } n = 0 \\ 2^{n-1} & \text{if } n \geq 1 \end{cases}
-}
-$$
+In this formula [^2], the daily limit is the number of bytes an account can send each day without paying a fee.
+This parameter is part of the node configuration, allowing each validator to set their preferred value.
 
-In this model, the daily_limit is the number of bytes an account can send each day without paying a fee.
-This parameter would be part of the node configuration, allowing each validator to set their preferred value.
-
-The default value for `daily_limit` is proposed to be **300 bytes**
+The only exception here is the account that broadcasts its first transaction.
+The coefficient for an account that sends its first transaction is always set to `1`.
 
 #### Unit Price
 
-The unit_price would define the fee per byte in PAC. This parameter would be part of the node configuration,
-allowing each validator to set their preferred value.
+The unit price would define the fee per byte in PAC.
+This parameter is part of the node configuration, allowing each validator to set their preferred value.
 
-The default value for `unit_price` is proposed to be **0.0001 PAC**.
+### Configuration
 
-### Account Creation Fee
+All parameters for calculating the fee are configurable.
+However, we recommend the following configurations:
 
-Each account needs to pay a `fixed_fee` the first time, after which a consumptional fee is applied.
+For most validators, we suggest setting the daily limit to `0 bytes` and the fixed fee to `0.01 PAC`.
+This configuration eliminates the consumption fee, meaning these validators will only apply the fixed fee.
+
+For validators with good resources, we recommend setting the daily limit to `280 bytes`,
+the unit price to `0.000005 PAC`, and the fixed fee to `0 PAC`.
+This allows users to send almost up to 5 free or low-fee transactions,
+but they will need to wait for these validators to enter the committee and propose the block.
+This way, the Pactus blockchain can support zero-fee transactions.
 
 ### Implementation Considerations
 
@@ -87,45 +104,11 @@ increasing the value for each address by the size of its transactions.
 Simultaneously, the block from 8640 blocks ago would be retrieved,
 and the value for each address would be decreased by the size of its transactions.
 
-For store this details in map we **don't have** overhead for 8640 blocks (`map[crypto.Address]uint16`):
-
-- **Key size**: 21 bytes (account address)
-- **Value size**: 2 bytes (`uint16`)
-- **Overhead**: Estimated at 8-16 bytes per entry for pointers, hash management, and bucket arrays
-
-The total size is computed by multiplying the size of each item (sum of key size, value size, and overhead) by
-the number of items.
-
-$$
-\[
-\text{Total Size} = (\text{key size} + \text{value size} + \text{overhead}) \times \text{number of items}
-\]
-$$
-
-For the first case:
-
-$$
-\[
-\text{Total Size} = (21 + 2 + 8) \times 8640 = 259,200 \, \text{bytes} \approx 260 \, \text{KB}
-\]
-$$
-
-For the second case (with a larger overhead):
-
-$$
-\[
-\text{Total Size} = (21 + 2 + 16) \times 8640 = 345,600 \, \text{bytes} \approx 346 \, \text{KB}
-\]
-$$
-
-So, the map size is approximately **260KB to 346KB**.
-
 #### New Account Detection
 
 To determine if an account is new and hasn't sent any transactions yet,
 we can check if its public key is indexed. If the public key is not indexed,
-it indicates that the account is sending a transaction for the first time,
-and the account creation fee should be applied.
+it indicates that the account is sending a transaction for the first time.
 
 #### Withdraw fee
 
@@ -136,3 +119,6 @@ and the fee for them can be calculated based on the Consumptional Fee model.
 
 [^1]: Based on the consensus parameters, the time to reach a block is 10 seconds,
     and 8640 blocks is approximately one day.
+
+[^2]: The symbol $\lfloor x \rfloor$ denotes the **floor function**,
+    which rounds down $x$ to the nearest whole number.
