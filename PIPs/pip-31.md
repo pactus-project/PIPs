@@ -101,7 +101,7 @@ To calculate consumption, we can define a map that associates an address with
 the total size of transactions stored in the blockchain over the last 8640 blocks.
 When a new block is committed, we update this map by iterating over all transactions in the block and
 increasing the value for each address by the size of its transactions.
-Simultaneously, the block from 8641 blocks ago would be retrieved,
+Simultaneously, the block from 8640 blocks ago would be retrieved,
 and the value for each address would be decreased by the size of its transactions.
 
 #### New Account Detection
