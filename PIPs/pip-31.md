@@ -53,8 +53,8 @@ Let's explain the parameters:
 To understand the Consumptional Fee Model, we first need to define consumption.
 
 Transactions are sequences of bytes that validators decode, process, and store in their local database.
-Consumption is defined as the number of bytes stored over the last 8640 blocks [^1]
-for a specific account that signed a transactions.
+Consumption is defined as the number of bytes stored over the last 8,640 blocks [^1]
+for a specific account that signed the transactions.
 
 #### Coefficient
 
