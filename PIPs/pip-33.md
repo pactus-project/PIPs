@@ -3,6 +3,7 @@ pip: 33
 title: Lock Account Address
 author: Mr. HoDL (@Mr-HoDL58)
 status: Draft
+discussion-no: 185
 type: Standards Track
 category: Core
 created: 2024-09-29
