@@ -74,7 +74,7 @@ The coefficient for an account that sends its first transaction is always set to
 
 #### Unit Price
 
-The unit price would define the fee per byte in PAC.
+The unit price defines the fee per byte in PAC.
 This parameter is part of the node configuration, allowing each validator to set their preferred value.
 
 ### Configuration
