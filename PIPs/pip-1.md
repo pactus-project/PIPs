@@ -45,7 +45,6 @@ flowchart TD
     Accepted --> Final
     Final -.-> Replaced
     Accepted --> Active
-    
     style Draft fill:#ffffff,stroke:#000000
     style Accepted fill:#d5e8d4,stroke:#000000
     style Final fill:#d1c4e9,stroke:#000000
