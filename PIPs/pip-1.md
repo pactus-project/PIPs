@@ -36,7 +36,24 @@ Once a PIP is approved, the implementation of the PIP can begin.
 
 The typical paths of the status of PIPs are as follows:
 
-![Status Workflow](../assets/pip-1/pactus-pip-workflow.png)
+```mermaid!
+flowchart TD
+    Draft --> Accepted
+    Draft --> Rejected
+    Draft --> Withdrawn
+    Draft --> Deferred
+    Accepted --> Final
+    Final -.-> Replaced
+    Accepted --> Active
+    style Draft fill:#ffffff,stroke:#000000
+    style Accepted fill:#d5e8d4,stroke:#000000
+    style Final fill:#d1c4e9,stroke:#000000
+    style Replaced fill:#bcaaa4,stroke:#000000
+    style Rejected fill:#ef9a9a,stroke:#000000
+    style Withdrawn fill:#ffecb3,stroke:#000000
+    style Deferred fill:#e3f2fd,stroke:#000000
+    style Active fill:#dae8fc,stroke:#000000
+```
 
 - **Draft**: The PIP is in the initial stage and is being actively worked on.
   It is open for feedback and suggestions from the community.
