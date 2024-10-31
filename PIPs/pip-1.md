@@ -37,22 +37,34 @@ Once a PIP is approved, the implementation of the PIP can begin.
 The typical paths of the status of PIPs are as follows:
 
 ```mermaid!
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryTextColor': '#000',
+      'lineColor': '#F8B229',
+      'tertiaryColor': '#fff'
+    }
+  }
+}%%
+
 flowchart TD
+    Active
     Draft --> Accepted
     Draft --> Rejected
     Draft --> Withdrawn
     Draft --> Deferred
     Accepted --> Final
     Final -.-> Replaced
-    Accepted --> Active
-    style Draft fill:#ffffff,stroke:#000000
-    style Accepted fill:#d5e8d4,stroke:#000000
-    style Final fill:#d1c4e9,stroke:#000000
-    style Replaced fill:#bcaaa4,stroke:#000000
-    style Rejected fill:#ef9a9a,stroke:#000000
-    style Withdrawn fill:#ffecb3,stroke:#000000
-    style Deferred fill:#e3f2fd,stroke:#000000
-    style Active fill:#dae8fc,stroke:#000000
+
+    style Draft fill:#ffffff,stroke:#808080
+    style Accepted fill:#d5e8d4,stroke:#abce9d
+    style Final fill:#d1c4e9,stroke:#bba4c7
+    style Replaced fill:#bcaaa4,stroke:#a58d7a
+    style Rejected fill:#f8cecc,stroke:#c67572
+    style Withdrawn fill:#ffecb3,stroke:#ebcd80
+    style Deferred fill:#e3f2fd,stroke:#c6c6c6
+    style Active fill:#dae8fc,stroke:#88a4cb
 ```
 
 - **Draft**: The PIP is in the initial stage and is being actively worked on.
@@ -80,9 +92,12 @@ flowchart TD
   This status is typically reserved for documents that require ongoing updates and revisions,
   such as this document, PIP-1.
 
-## PIP format
+## PIP Formats and Templates
 
-TODO: to complete
+PIPs should be written in [Markdown](https://www.markdownguide.org/cheat-sheet/) format.
+A [template](https://github.com/pactus-project/PIPs/blob/main/pip-template.md) is provided,
+containing inline comments that briefly explain each field.
+Please follow these comments and complete the PIP accordingly.
 
 ## PIP Types
 
@@ -122,3 +137,8 @@ This includes improvements to the peer-to-peer protocol, network topology, and r
 
 Interface PIPs propose changes to the external interfaces of the Pactus protocol, such as APIs.
 These changes impact how developers interact with the Pactus blockchain.
+
+### Wallet
+
+Wallet PIPs propose changes to the Pactus native wallet, including
+updates to the cryptographic signature scheme, HD wallet improvements, and related features.
