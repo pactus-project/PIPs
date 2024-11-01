@@ -85,7 +85,7 @@ However, we recommend the following configurations:
 For most validators, we suggest setting the unit price to `0 PAC` and the fixed fee to `0.01 PAC`.
 This configuration eliminates the consumption fee, meaning these validators will only apply the fixed fee.
 
-For validators with good resources, we recommend setting the daily limit to `280 bytes`,
+For validators with good resources, we recommend setting the daily limit to `360 bytes`,
 the unit price to `0.000005 PAC`, and the fixed fee to `0 PAC`.
 This allows users to send almost up to 5 free or low-fee transactions,
 but they will need to wait for these validators to enter the committee and propose the block.
