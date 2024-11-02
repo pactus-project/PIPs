@@ -16,7 +16,7 @@ removed, optimizing network efficiency and incentivizing higher fees.
 
 ## Motivation
 
-In our current transaction pool model, transactions are processed in a basic queue without prioritizing fees. 
+In our current transaction pool model, transactions are processed in a basic queue without prioritizing fees.
 This approach allows zero or low-fee transactions to take up space, potentially delaying higher-fee transactions,
 especially when the pool is full. As network usage increases, this lack of prioritization may lead to congestion
 and limit throughput. By introducing a fee-based prioritization system, we can ensure that transactions with higher
@@ -97,8 +97,8 @@ flowchart TB
 - A **new transaction** enters the pool and is **classified** based on its fee level (high, medium, low).
 - The **queue (`Q`)** receives the transaction, and a **sort operation (`S`)** is triggered to reorder
 transactions by priority.
-- The system checks if the **pool is full** (`F`). If it is:
-  - The **lowest-priority transaction is rejected** (`R`), making room for the new entry if needed.
+- The system checks if the **pool is full** (`F`). If it is the **lowest-priority transaction is rejected** (`R`),
+making room for the new entry if needed.
 - If the pool is **not full**, the **new transaction is accepted** (`A`).
 
 This diagram visually represents how the transaction pool prioritizes and handles new transactions,
