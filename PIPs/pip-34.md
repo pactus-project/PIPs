@@ -63,6 +63,10 @@ flowchart TB
     Q -.->|If Full, Remove Low Priority Tx| R
 ```
 
+This diagram visually represents how the transaction pool prioritizes and handles new transactions, ensuring that
+high-priority transactions are processed preferentially and that lower-priority transactions may be rejected when
+space is limited.
+
 1. **New Transaction Entry (`P`)**:
    - The starting point where new transactions arrive and are classified based on their fee
    level (high, medium, or low).
@@ -99,7 +103,3 @@ The **queue (`Q`)** receives the transaction, and a **sort operation (`S`)** is 
 The system checks if the **pool is full** (`F`). If it is, the **lowest-priority transaction is rejected** (`R`), making
 room for the new entry if needed.
 If the pool is **not full**, the **new transaction is accepted** (`A`).
-
-This diagram visually represents how the transaction pool prioritizes and handles new transactions, ensuring that
-high-priority transactions are processed preferentially and that lower-priority transactions may be rejected when
-space is limited.
