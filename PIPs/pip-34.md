@@ -77,8 +77,6 @@ flowchart TB
 8. **Dashed Line (`Q` → `R`)**:
    - Indicates that, when the pool is full, the queue initiates a process to remove the lowest-priority transaction to maintain space for higher-priority transactions.
 
-### Flow Explanation:
-
 - A **new transaction** enters the pool and is **classified** based on its fee level (high, medium, low).
 - The **queue (`Q`)** receives the transaction, and a **sort operation (`S`)** is triggered to reorder transactions by priority.
 - The system checks if the **pool is full** (`F`). If it is:
