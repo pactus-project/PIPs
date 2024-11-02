@@ -96,7 +96,10 @@ flowchart TB
 
 - A **new transaction** enters the pool and is **classified** based on its fee level (high, medium, low).
 - The **queue (`Q`)** receives the transaction, and a **sort operation (`S`)** is triggered to reorder transactions by priority.
-- The system checks if the **pool is full** (`F`). If it is, the **lowest-priority transaction is rejected** (`R`), making room for the new entry if needed.
+- The system checks if the **pool is full** (`F`). If it is, the **lowest-priority transaction is rejected** (`R`), making
+room for the new entry if needed.
 - If the pool is **not full**, the **new transaction is accepted** (`A`).
 
-This diagram visually represents how the transaction pool prioritizes and handles new transactions, ensuring that high-priority transactions are processed preferentially and that lower-priority transactions may be rejected when space is limited.
+This diagram visually represents how the transaction pool prioritizes and handles new transactions, ensuring that
+high-priority transactions are processed preferentially and that lower-priority transactions may be rejected when
+space is limited.
