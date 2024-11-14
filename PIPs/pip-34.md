@@ -58,8 +58,8 @@ lower-fee ones to be considered.
 
 - **Include Essential Transactions**:
 
-  - Directly include transactions of type **reward**, **sortition**, and **unbond**.
-  - Deduct their count from `block_size` to determine the remaining slots.
+- Directly include transactions of type **reward**, **sortition**, and **unbond**.
+- Deduct their count from `block_size` to determine the remaining slots.
 
 - **Determine Remaining Capacity**:
 
@@ -119,8 +119,8 @@ lower-fee ones to be considered.
 - **Block Size**: 10 transactions.
 - **Initial Inclusion**:
 
-  - Include `tx4`, `tx5`, and `tx6` (unbond and sortition).
-  - Remaining slots: $10 - 3 = 7$.
+- Include highest-fee transactions: `tx10` and `tx11` (0.01).
+- Remaining slots: $7 - 2 = 5$.
 
 ### Next Steps
 
