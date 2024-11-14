@@ -58,8 +58,8 @@ lower-fee ones to be considered.
 
 - **Include Essential Transactions**:
 
-- Directly include transactions of type **reward**, **sortition**, and **unbond**.
-- Deduct their count from `block_size` to determine the remaining slots.
+  - Directly include transactions of type **reward**, **sortition**, and **unbond**.
+  - Deduct their count from `block_size` to determine the remaining slots.
 
 - **Determine Remaining Capacity**:
 
