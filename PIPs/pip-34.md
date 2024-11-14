@@ -57,12 +57,10 @@ lower-fee ones to be considered.
 #### Steps
 
 - **Include Essential Transactions**:
-
   - Directly include transactions of type **reward**, **sortition**, and **unbond**.
   - Deduct their count from `block_size` to determine the remaining slots.
 
 - **Determine Remaining Capacity**:
-
   - Let $M$ be the initial `block_size`.
   - Let $N$ be the number of highest-fee transactions included directly.
   - Let $O$ represent the number of **sortition** and **unbond** transactions.
@@ -118,14 +116,12 @@ lower-fee ones to be considered.
 
 - **Block Size**: 10 transactions.
 - **Initial Inclusion**:
-
-- Include highest-fee transactions: `tx10` and `tx11` (0.01).
-- Remaining slots: $7 - 2 = 5$.
+  - Include highest-fee transactions: `tx10` and `tx11` (0.01).
+  - Remaining slots: $7 - 2 = 5$.
 
 ### Next Steps
-
-- Include highest-fee transactions: `tx10` and `tx11` (0.01).
-- Remaining slots: $7 - 2 = 5$.
+  - Include highest-fee transactions: `tx10` and `tx11` (0.01).
+  - Remaining slots: $7 - 2 = 5$.
 
 ### Calculate Total Fee Sum
 
