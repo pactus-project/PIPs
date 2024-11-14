@@ -29,13 +29,13 @@ during high network activity when the transaction pool contains more pending tra
 
 ### Key Concepts
 
-1. **Insertion Sort for Transaction Management**: Keeps the transaction pool sorted as new transactions are validated
+1.**Insertion Sort for Transaction Management**: Keeps the transaction pool sorted as new transactions are validated
 and added, ensuring efficient access during block proposal.
 
-2. **Weighted Random Selection for Block Proposal**: Prioritizes transactions based on fees using a weighted random
+2.**Weighted Random Selection for Block Proposal**: Prioritizes transactions based on fees using a weighted random
 selection method, providing higher chances of selection to higher-fee transactions while still allowing lower-fee ones to be considered.
 
-3. **Array Construction for Block Transactions**: Reserves a portion of the block for specific transaction types (e.g., reward,
+3.**Array Construction for Block Transactions**: Reserves a portion of the block for specific transaction types (e.g., reward,
 sortition, unbond), and fills the remaining space using the weighted random selection algorithm.
 
 ### Insertion Sort for Transaction Management
@@ -60,30 +60,33 @@ sortition, unbond), and fills the remaining space using the weighted random sele
    - Let $N$ be the number of highest-fee transactions included directly.
    - Let $O$ represent the number of **sortition** and **unbond** transactions.
    - Let $1$ be the block reward transaction.
-    $$
-    M_{\text{remaining}} = (M - N - O) - 1
-    $$
+      $$
+      M_{\text{remaining}} = (M - N - O) - 1
+      $$
 
 - **Assign Virtual Fees**:
-   - Assign a virtual fee of $f_{\text{min}} / 2$ to zero-fee transactions to include them in the weighted selection.
+
+Assign a virtual fee of $f_{\text{min}} / 2$ to zero-fee transactions to include them in the weighted selection.
 
 - **Calculate Total Fee Sum**:
-   - Compute the sum of fees for all remaining transactions:
-   
-   $$
-   \text{Total fee sum} = \sum_{i=1}^{w} f_i
-   $$
+
+Compute the sum of fees for all remaining transactions:
+
+$$
+\text{Total fee sum} = \sum_{i=1}^{w} f_i
+$$
 
 - **Calculate Weights**:
-   - Determine the weight for each transaction $i$:
+
+Determine the weight for each transaction $i$:
    
    $$
    w_i = \frac{f_i}{\text{Total fee sum}}
    $$
+
 - **Select Transactions Randomly**:
    
-   - Select $M_{\text{remaining}}$ transactions using a weighted random approach, ensuring higher-fee transactions are more
-   likely to be chosen while giving lower-fee transactions a chance.
+Select $M_{\text{remaining}}$ transactions using a weighted random approach, ensuring higher-fee transactions are more likely to be chosen while giving lower-fee transactions a chance.
 
 ## Example Test Case
 
@@ -106,8 +109,8 @@ sortition, unbond), and fills the remaining space using the weighted random sele
 
 - **Block Size**: 10 transactions.
 - **Initial Inclusion**:
-  - Include `tx4`, `tx5`, and `tx6` (unbond and sortition).
-  - Remaining slots: $10 - 3 = 7$.
+   - Include `tx4`, `tx5`, and `tx6` (unbond and sortition).
+   - Remaining slots: $10 - 3 = 7$.
 
 ### Next Steps
 - Include highest-fee transactions: `tx10` and `tx11` (0.01).
