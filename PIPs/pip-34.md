@@ -1,105 +1,118 @@
 ---
 pip: 34
-title: Prioritization Fees
-author: Javad Rajabzadeh (@Ja7ad)
+title: Fee-Based Prioritization with Weighted Random Selection
+author: Javad Rajabzadeh (@Ja7ad), Mohammad Allahbakhsh <allahbakhsh@gmail.com>
 status: Draft
-type: Standards Track
+type: Informational
 category: Core
 created: 2024-11-02
+requires: 31
 ---
 
 ## Abstract
 
-This proposal aims to implement a fee-based prioritization system in the transaction pool, ensuring transactions
-with higher fees are prioritized. When the pool reaches capacity, lower-fee transactions will be deprioritized or
-removed, optimizing network efficiency and incentivizing higher fees.
+This proposal introduces an enhancement to the transaction pool management system in Pactus blockchain, aiming to optimize transaction selection for block inclusion when the transaction pool size exceeds the block capacity. The method focuses on prioritizing transactions by fee while maintaining fairness through a weighted random selection mechanism.
 
 ## Motivation
 
-In our current transaction pool model, transactions are processed in a basic queue without prioritizing fees.
-This approach allows zero or low-fee transactions to take up space, potentially delaying higher-fee transactions,
-especially when the pool is full. As network usage increases, this lack of prioritization may lead to congestion
-and limit throughput. By introducing a fee-based prioritization system, we can ensure that transactions with higher
-fees are processed first, encouraging users to pay competitive fees for faster processing and enhancing the overall
-efficiency and reliability of the network.
+Efficient transaction selection is vital for maintaining network performance, user satisfaction, and economic balance in the Pactus blockchain. When the transaction pool holds more transactions than can fit in a block, a smart selection strategy is necessary to balance priority and fairness while ensuring optimal block composition.
 
 ## Specification
 
-The current blockchain transaction pool maintains a queue that handles incoming transactions without prioritization
-based on fees. To improve network efficiency and optimize resource utilization, this specification introduces a prioritized
-transaction handling system. Transactions are sorted within a single queue based on their fee levels: high, medium, and
-low. If the transaction pool reaches its maximum capacity, the system will reject the lowest-priority transactions to
-make room for higher-priority ones.
+The weighted random selection algorithm is designed to be applied in scenarios where the transaction pool exceeds the block size limit ($block size < len(tx pool)$), and not all transactions can be included in the block. This situation often occurs during high network activity when the transaction pool contains more pending transactions than can fit into a single block.
 
-```mermaid!
-flowchart TB
-    %% Define the transaction pool entry point
-    P[New Transaction Entry]
 
-    %% Single prioritized transaction queue
-    subgraph "Transaction Pool"
-        direction TB
-        Q[Queue with Sorted Transactions by Priority]
-    end
+### Key Concepts
 
-    %% Adding new transactions to the queue
-    P -->|Classify & Insert| Q
+1. **Insertion Sort for Transaction Management**: Keeps the transaction pool sorted as new transactions are validated and added, ensuring efficient access during block proposal.
+2. **Weighted Random Selection for Block Proposal**: Prioritizes transactions based on fees using a weighted random selection method, providing higher chances of selection to higher-fee transactions while still allowing lower-fee ones to be considered.
+3. **Array Construction for Block Transactions**: Reserves a portion of the block for specific transaction types (e.g., reward, sortition, unbond), and fills the remaining space using the weighted random selection algorithm.
 
-    Q --> S[Sort Queue by Priority   High > Medium > Low]
+### Insertion Sort for Transaction Management
+- **Objective**: Maintain an efficiently sorted transaction pool.
+- **Method**:
+  1. Validate incoming transactions.
+  2. Insert validated transactions into the pool in the correct order using insertion sort, prioritizing based on fees or other criteria.
 
-    %% Full pool decision
-    subgraph "Full Pool Decision"
-        direction TB
-        F[Is Pool Full?]
-    end
+### Weighted Random Selection Algorithm
+- **Objective**: Ensure that transactions are selected based on fees with some randomness to allow diversity.
+- **Steps**:
+  1. **Include Essential Transactions**:
+     - Directly include transactions of type **reward**, **sortition**, and **unbond**.
+     - Deduct their count from `block_size` to determine the remaining slots.
+  2. **Determine Remaining Capacity**:
+     - Let $M$ be the initial `block_size`.
+     - Let $N$ be the number of highest-fee transactions included directly.
+     - Let $O$ represent the number of **sortition** and **unbond** transactions.
+     - Let $1$ be the block reward transaction.
+     $$
+     M_{\text{remaining}} = (M - N - O) - 1
+     $$
+  3. **Assign Virtual Fees**:
+     - Assign a virtual fee of $f_{\text{min}} / 2$ to zero-fee transactions to include them in the weighted selection.
+  4. **Calculate Total Fee Sum**:
+     - Compute the sum of fees for all remaining transactions:
+     $$
+     \text{Total fee sum} = \sum_{i=1}^{w} f_i
+     $$
+  5. **Calculate Weights**:
+     - Determine the weight for each transaction $i$:
+     $$
+     w_i = \frac{f_i}{\text{Total fee sum}}
+     $$
+  6. **Select Transactions Randomly**:
+     - Select $M_{\text{remaining}}$ transactions using a weighted random approach, ensuring higher-fee transactions are more likely to be chosen while giving lower-fee transactions a chance.
 
-    S --> F
+## Example Test Case
 
-    %% Rejection outcome if the pool is full
-    F -->|Yes| R[Reject Lowest Priority Tx]
-    F -->|No| A[Accept Transaction]
+| **Transaction ID** | **Type**      | **Fee**  |
+|---------------------|---------------|----------|
+| tx4                 | Unbond        | -        |
+| tx5                 | Sortition     | -        |
+| tx6                 | Sortition     | -        |
+| tx3                 | Transfer      | 0.0      |
+| tx9                 | Bond          | 0.0      |
+| tx12                | Transfer      | 0.0      |
+| tx2                 | Bond          | 0.0002   |
+| tx1                 | Transfer      | 0.001    |
+| tx7                 | Transfer      | 0.0023   |
+| tx8                 | Transfer      | 0.00337  |
+| tx10                | Bond          | 0.01     |
+| tx11                | Transfer      | 0.01     |
 
-    %% Rejection process for lowest priority transaction
-    Q -.->|If Full, Remove Low Priority Tx| R
-```
+### Analysis for Block Inclusion:
+- **Block Size**: 10 transactions.
+- **Initial Inclusion**:
+  - Include `tx4`, `tx5`, and `tx6` (unbond and sortition).
+  - Remaining slots: $10 - 3 = 7$.
 
-This diagram visually represents how the transaction pool prioritizes and handles new transactions, ensuring that
-high-priority transactions are processed preferentially and that lower-priority transactions may be rejected when
-space is limited.
+### Next Steps:
+- Include highest-fee transactions: `tx10` and `tx11` (0.01).
+- Remaining slots: $7 - 2 = 5$.
 
-1. **New Transaction Entry (`P`)**:
-   - The starting point where new transactions arrive and are classified based on their fee
-   level (high, medium, or low).
+### Calculate Total Fee Sum
+Sum of fees: $\(0.001 + 0.0002 + 0.0023 + 0.00337 + 0.0001 \times 3 = 0.00717\)$
 
-2. **Transaction Pool (`Q`)**:
-   - A single queue structure that holds all transactions. The transactions are maintained in a
-   sorted order based on their fee levels, from highest to lowest priority (High > Medium > Low).
+### Calculate Weights
+Calculate the weight for each transaction $\( i \)$:
+- $\( w_1 = \frac{0.001}{0.00717} \)$
+- $\( w_2 = \frac{0.0002}{0.00717} \)$
+- $\( w_3 = \frac{0.0001}{0.00717} \)$
+- $\( w_4 = \frac{0.0023}{0.00717} \)$
+- $\( w_5 = \frac{0.00337}{0.00717} \)$
+- $\( w_6 = \frac{0.0001}{0.00717} \)$
+- $\( w_{7} = \frac{0.0001}{0.00717} \)$
 
-3. **Classify & Insert Operation**:
-   - When a new transaction (`P`) arrives, it is classified by its fee level and inserted into
-   the correct position within the queue (`Q`).
+### Weight Calculation:
+- Calculate the weight for each remaining transaction and perform a weighted random selection to fill the remaining slots.
 
-4. **Sort Queue by Priority (`S`)**:
-   - The queue automatically re-sorts itself when a new transaction is added to ensure the highest-priority
-   transactions are at the front and lower-priority ones are at the end.
+This approach ensures a balanced block composition, maintaining prioritization by fees while allowing for fairness and diversity in transaction selection.
 
-5. **Full Pool Decision (`F`)**:
-   - A decision point that checks if the transaction pool (`Q`) has reached its maximum capacity.
+## Implementation
 
-6. **Outcome When the Pool is Full**:
-   - If the pool is full (`F` → `Yes`), the lowest-priority transaction is identified and rejected (`R`).
-   - If the pool is not full (`F` → `No`), the new transaction is accepted into the pool (`A`).
+Test case params:
+- `block_size`: 50
+- `tx_pool`: 250
+- `total_txs`: 150
 
-7. **Rejection Process (`R`)**:
-   - If the pool reaches capacity, this step involves removing the lowest-priority transaction
-   (e.g., low or zero-fee) to make space for higher-priority transactions.
-
-8. **Dashed Line (`Q` → `R`)**:
-   - Indicates that, when the pool is full, the queue initiates a process to remove the lowest-priority
-   transaction to maintain space for higher-priority transactions.
-
-A **new transaction** enters the pool and is **classified** based on its fee level (high, medium, low).
-The **queue (`Q`)** receives the transaction, and a **sort operation (`S`)** is triggered to reorder transactions by priority.
-The system checks if the **pool is full** (`F`). If it is, the **lowest-priority transaction is rejected** (`R`), making
-room for the new entry if needed.
-If the pool is **not full**, the **new transaction is accepted** (`A`).
+[Python implementation](../assets/pip-34/test-case.py)
