@@ -29,39 +29,41 @@ The weighted random selection algorithm is designed to be applied in scenarios w
 3. **Array Construction for Block Transactions**: Reserves a portion of the block for specific transaction types (e.g., reward, sortition, unbond), and fills the remaining space using the weighted random selection algorithm.
 
 ### Insertion Sort for Transaction Management
+
 - **Objective**: Maintain an efficiently sorted transaction pool.
 - **Method**:
   1. Validate incoming transactions.
   2. Insert validated transactions into the pool in the correct order using insertion sort, prioritizing based on fees or other criteria.
 
 ### Weighted Random Selection Algorithm
+
 - **Objective**: Ensure that transactions are selected based on fees with some randomness to allow diversity.
 - **Steps**:
-  1. **Include Essential Transactions**:
-     - Directly include transactions of type **reward**, **sortition**, and **unbond**.
-     - Deduct their count from `block_size` to determine the remaining slots.
-  2. **Determine Remaining Capacity**:
-     - Let $M$ be the initial `block_size`.
-     - Let $N$ be the number of highest-fee transactions included directly.
-     - Let $O$ represent the number of **sortition** and **unbond** transactions.
-     - Let $1$ be the block reward transaction.
-     $$
-     M_{\text{remaining}} = (M - N - O) - 1
-     $$
-  3. **Assign Virtual Fees**:
-     - Assign a virtual fee of $f_{\text{min}} / 2$ to zero-fee transactions to include them in the weighted selection.
-  4. **Calculate Total Fee Sum**:
-     - Compute the sum of fees for all remaining transactions:
-     $$
-     \text{Total fee sum} = \sum_{i=1}^{w} f_i
-     $$
-  5. **Calculate Weights**:
-     - Determine the weight for each transaction $i$:
-     $$
-     w_i = \frac{f_i}{\text{Total fee sum}}
-     $$
-  6. **Select Transactions Randomly**:
-     - Select $M_{\text{remaining}}$ transactions using a weighted random approach, ensuring higher-fee transactions are more likely to be chosen while giving lower-fee transactions a chance.
+  - **Include Essential Transactions**:
+    - Directly include transactions of type **reward**, **sortition**, and **unbond**.
+    - Deduct their count from `block_size` to determine the remaining slots.
+  - **Determine Remaining Capacity**:
+    - Let $M$ be the initial `block_size`.
+    - Let $N$ be the number of highest-fee transactions included directly.
+    - Let $O$ represent the number of **sortition** and **unbond** transactions.
+    - Let $1$ be the block reward transaction.
+    $$
+    M_{\text{remaining}} = (M - N - O) - 1
+    $$
+  - **Assign Virtual Fees**:
+    - Assign a virtual fee of $f_{\text{min}} / 2$ to zero-fee transactions to include them in the weighted selection.
+  - **Calculate Total Fee Sum**:
+    - Compute the sum of fees for all remaining transactions:
+    $$
+    \text{Total fee sum} = \sum_{i=1}^{w} f_i
+    $$
+  - **Calculate Weights**:
+    - Determine the weight for each transaction $i$:
+    $$
+    w_i = \frac{f_i}{\text{Total fee sum}}
+    $$
+  - **Select Transactions Randomly**:
+    - Select $M_{\text{remaining}}$ transactions using a weighted random approach, ensuring higher-fee transactions are more likely to be chosen while giving lower-fee transactions a chance.
 
 ## Example Test Case
 
@@ -80,13 +82,15 @@ The weighted random selection algorithm is designed to be applied in scenarios w
 | tx10                | Bond          | 0.01     |
 | tx11                | Transfer      | 0.01     |
 
-### Analysis for Block Inclusion:
+### Analysis for Block Inclusion
+
 - **Block Size**: 10 transactions.
 - **Initial Inclusion**:
   - Include `tx4`, `tx5`, and `tx6` (unbond and sortition).
   - Remaining slots: $10 - 3 = 7$.
 
-### Next Steps:
+### Next Steps
+
 - Include highest-fee transactions: `tx10` and `tx11` (0.01).
 - Remaining slots: $7 - 2 = 5$.
 
@@ -94,6 +98,7 @@ The weighted random selection algorithm is designed to be applied in scenarios w
 Sum of fees: $\(0.001 + 0.0002 + 0.0023 + 0.00337 + 0.0001 \times 3 = 0.00717\)$
 
 ### Calculate Weights
+
 Calculate the weight for each transaction $\( i \)$:
 - $\( w_1 = \frac{0.001}{0.00717} \)$
 - $\( w_2 = \frac{0.0002}{0.00717} \)$
@@ -103,16 +108,8 @@ Calculate the weight for each transaction $\( i \)$:
 - $\( w_6 = \frac{0.0001}{0.00717} \)$
 - $\( w_{7} = \frac{0.0001}{0.00717} \)$
 
-### Weight Calculation:
-- Calculate the weight for each remaining transaction and perform a weighted random selection to fill the remaining slots.
+### Weight Calculation
+
+Calculate the weight for each remaining transaction and perform a weighted random selection to fill the remaining slots.
 
 This approach ensures a balanced block composition, maintaining prioritization by fees while allowing for fairness and diversity in transaction selection.
-
-## Implementation
-
-Test case params:
-- `block_size`: 50
-- `tx_pool`: 250
-- `total_txs`: 150
-
-[Python implementation](../assets/pip-34/test-case.py)
