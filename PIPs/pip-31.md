@@ -55,7 +55,9 @@ To understand the Consumptional Fee Model, we first need to define consumption.
 Transactions are sequences of bytes that validators decode, process, and store in their local database.
 Consumption is defined as the number of bytes stored over the last 8,640 blocks [^1]
 for a specific account that signed the transactions.
-If an account has any pending transactions in the pool, their size is also added to the account’s consumption.
+
+If an account has any pending transactions in the pool,
+these are considered "pending consumption" and contribute to the account's overall consumption value.
 
 #### Coefficient
 
