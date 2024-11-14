@@ -48,14 +48,10 @@ sortition, unbond), and fills the remaining space using the weighted random sele
 
 - **Objective**: Ensure that transactions are selected based on fees with some randomness to allow diversity.
 - **Steps**:
-  
   - **Include Essential Transactions**:
-    
     - Directly include transactions of type **reward**, **sortition**, and **unbond**.
     - Deduct their count from `block_size` to determine the remaining slots.
-  
   - **Determine Remaining Capacity**:
-    
     - Let $M$ be the initial `block_size`.
     - Let $N$ be the number of highest-fee transactions included directly.
     - Let $O$ represent the number of **sortition** and **unbond** transactions.
@@ -111,12 +107,10 @@ sortition, unbond), and fills the remaining space using the weighted random sele
 
 - **Block Size**: 10 transactions.
 - **Initial Inclusion**:
-  
   - Include `tx4`, `tx5`, and `tx6` (unbond and sortition).
   - Remaining slots: $10 - 3 = 7$.
 
 ### Next Steps
-
 - Include highest-fee transactions: `tx10` and `tx11` (0.01).
 - Remaining slots: $7 - 2 = 5$.
 
