@@ -4,7 +4,7 @@ title: Consumptional Fee Model
 description: Transaction Fee Based on Data Consumption
 author: Pactus Development Team <info@pactus.org>
 discussion-no: 172
-status: Accepted
+status: Final
 type: Standards Track
 category: Core
 created: 08-08-2024
@@ -56,6 +56,9 @@ Transactions are sequences of bytes that validators decode, process, and store i
 Consumption is defined as the number of bytes stored over the last 8,640 blocks [^1]
 for a specific account that signed the transactions.
 
+If an account has any pending transactions in the pool,
+these are considered "pending consumption" and contribute to the account's overall consumption value.
+
 #### Coefficient
 
 The coefficient is a unitless number that starts at zero and grows naturally: $0, 1, 2, 3, \dots $
@@ -103,6 +106,9 @@ When a new block is committed, we update this map by iterating over all transact
 increasing the value for each address by the size of its transactions.
 Simultaneously, the block from 8640 blocks ago would be retrieved,
 and the value for each address would be decreased by the size of its transactions.
+
+To calculate pending consumption, we iterate over all transactions in the pool
+to determine the pending consumption for each specific account.
 
 #### New Account Detection
 
