@@ -47,4 +47,3 @@ NNG is an improvement lib on Nanomsg. In below table there is some description a
 | Scalability   | NNG scales out to engage multiple cores using a bespoke asynchronous I/O framework, using thread pools to spread load without exceeding typical system limits.                                                                 |
 | Extensibility | Because it avoids ties to file descriptors, and avoids confusing interlocking state machines, it is easier to add new protocols and transports to NNG.  This was demonstrated by the addition of the TLS and ZeroTier transports. |
 | Security     | NNG provides TLS 1.2 and ZeroTier transports, offering support for robust and industry standard authentication and encryption. In addition, it is hardened to be resilient against malicious attackers, with special consideration given to use in a hostile Internet.|
-
