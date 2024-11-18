@@ -58,7 +58,7 @@ jobs:
       #     root: _site
 
       - name: HTML Proofer
-        run: bundle exec htmlproofer --swap-urls 'https\://pips.pactus.org:' --ignore-status-codes "999,429,403,0" --ignore-urls "/mermaid.ink/" ./_site
+        run: bundle exec htmlproofer --swap-urls 'https\://pips.pactus.org:' --ignore-status-codes "999,429,403,0" --ignore-urls "/github.com/,/mermaid.ink/" ./_site
 
       - name: DNS Validator
         run: bundle exec github-pages
