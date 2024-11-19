@@ -22,8 +22,11 @@ The most important thing for this new generation is supporting multiple threads 
 also supporting more operating systems.
 
 ## Specifications
+
 To ensure that Nanomsg is the best library to use, here we provide compare list between Nanomsg, gRPC and Cap’n Proto.
+
 ### Why using Nanomsg (in case of PUB/SUB)
+
 
 | Feature                    | **Nanomsg**                       | **gRPC**                          | **Cap’n Proto**                   |
 |----------------------------|-----------------------------------|-----------------------------------|-----------------------------------|
@@ -45,6 +48,7 @@ With these kinds of protocols we ensure to have lots of use-cases in Pactus netw
 * **SURVEY:** allows to query state of multiple applications in a single go
 
 ### NNG and Nanomsg enhancements
+
 NNG is an improvement lib on Nanomsg. In below table there is some description about NNG and the difference to Nanomsg.
 The NNG has compatibility to Nanomsg and can be implemented by [mangos](https://github.com/nanomsg/mangos).
 
