@@ -27,7 +27,6 @@ To ensure that Nanomsg is the best library to use, here we provide compare list 
 
 ### Why using Nanomsg (in case of PUB/SUB)
 
-
 | Feature                    | **Nanomsg**                       | **gRPC**                          | **Cap’n Proto**                   |
 |----------------------------|-----------------------------------|-----------------------------------|-----------------------------------|
 | **Native Pub/Sub Support** | Yes                               | Limited (not built-in)            | No                                |
