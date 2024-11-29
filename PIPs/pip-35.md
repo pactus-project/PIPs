@@ -31,11 +31,11 @@ Here we compared 9 protocols in terms of simplicity, resource consumption, commu
 | **AMQP**                   | Moderate         | Moderate                | [RabbitMQ Go Client](https://github.com/streadway/amqp)          | Moderate (runs a broker, can be optimized) |
 | **XMPP**                   | Moderate         | Large                   | [Go XMPP](https://mellium.im)                                    | Moderate (similar to AMQP)   |
 | **NATS**                   | Simple           | Growing                 | [NATS Go Client](https://github.com/nats-io/nats.go)             | Low (lightweight and efficient) |
-| **Apache Kafka**           | Complex          | Large                   | [Sarama](https://github.com/Shopify/sarama)                      | High (more robust features, higher overhead) |
+| **Apache Kafka**           | Complex          | Large                   | [sarama](https://github.com/Shopify/sarama)                      | High (more robust features, higher overhead) |
 | **Apache Pulsar**          | Moderate         | Growing                 | -                                                                | Moderate to High (depending on usage) |
 | **ZeroMQ**                 | Moderate         | Moderate                | [Go ZeroMQ](https://github.com/pebbe/zmq4)                       | Low to Moderate (depends on pattern) |
 | **CoAP**                   | Simple           | Small                   | [Go CoAP](https://github.com/go-ocf/go-coap)                     | Low (optimized for constrained devices) |
-| **Nanomsg**                | Simple           | Moderate       | [Go Nanomsg](https://github.com/nanomsg/nanomsg)                 | Low to Moderate (simple API, lightweight) |
+| **Nanomsg**                | Simple           | Moderate       | [mangos](https://github.com/nanomsg/mangos)                      | Low to Moderate (simple API, lightweight) |
 
 ### Conclusion
 
