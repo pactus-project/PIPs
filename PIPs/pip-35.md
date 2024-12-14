@@ -27,17 +27,17 @@ community size and implementation libraries.
 
 ### Compare list
 
-| Protocol                   | Simplicity        | Community | Implementation                                                   | Resource Consumption          | Using Broker |
-|----------------------------|------------------|-------------------------|------------------------------------------------------------------|-------------------------------|--------------|
-| **MQTT**                   | Simple           | Large                   | [Eclipse Paho MQTT](https://github.com/eclipse/paho.mqtt.golang) | Low (designed for lightweight devices) | YES          |
-| **AMQP**                   | Moderate         | Moderate                | [RabbitMQ Go Client](https://github.com/streadway/amqp)          | Moderate (runs a broker, can be optimized) | YES          |
-| **XMPP**                   | Complex         | Large                   | [Go XMPP](https://mellium.im)                                    | Moderate (similar to AMQP)   | YES          |
-| **NATS**                   | Simple           | Growing                 | [NATS Go Client](https://github.com/nats-io/nats.go)             | Low (lightweight and efficient) | YES          |
-| **Apache Kafka**           | Complex          | Large                   | [sarama](https://github.com/Shopify/sarama)                      | High (more robust features, higher overhead) | YES          |
-| **Apache Pulsar**          | Moderate         | Growing                 | -                                                                | Moderate to High (depending on usage) | YES          |
-| **ZeroMQ**                 | Moderate         | Moderate                | [Go ZeroMQ](https://github.com/pebbe/zmq4)                       | Low to Moderate (depends on pattern) | NO           |
-| **CoAP**                   | Simple           | Small                   | [Go CoAP](https://github.com/go-ocf/go-coap)                     | Low (optimized for constrained devices) | NO           |
-| **Nanomsg**                | Simple           | Moderate       | [mangos](https://github.com/nanomsg/mangos)                      | Low to Moderate (simple API, lightweight) | NO           |
+| Protocol          | Simplicity | Community | Implementation                                                   | Resource Consumption                         | Using Broker |
+| ----------------- | ---------- | --------- | ---------------------------------------------------------------- | -------------------------------------------- | ------------ |
+| **MQTT**          | Simple     | Large     | [Eclipse Paho MQTT](https://github.com/eclipse/paho.mqtt.golang) | Low (designed for lightweight devices)       | YES          |
+| **AMQP**          | Moderate   | Moderate  | [RabbitMQ Go Client](https://github.com/streadway/amqp)          | Moderate (runs a broker, can be optimized)   | YES          |
+| **XMPP**          | Complex    | Large     | [Go XMPP](https://mellium.im)                                    | Moderate (similar to AMQP)                   | YES          |
+| **NATS**          | Simple     | Growing   | [NATS Go Client](https://github.com/nats-io/nats.go)             | Low (lightweight and efficient)              | YES          |
+| **Apache Kafka**  | Complex    | Large     | [sarama](https://github.com/Shopify/sarama)                      | High (more robust features, higher overhead) | YES          |
+| **Apache Pulsar** | Moderate   | Growing   | -                                                                | Moderate to High (depending on usage)        | YES          |
+| **ZeroMQ**        | Moderate   | Moderate  | [zmq4](https://github.com/go-zeromq/zmq4)                        | Low to Moderate (depends on pattern)         | NO           |
+| **CoAP**          | Simple     | Small     | [Go-CoAP](https://github.com/go-ocf/go-coap)                     | Low (optimized for constrained devices)      | NO           |
+| **Nanomsg**       | Simple     | Moderate  | [mangos](https://github.com/nanomsg/mangos)                      | Low to Moderate (simple API, lightweight)    | NO           |
 
 ### Simplicity & Implementation
 
