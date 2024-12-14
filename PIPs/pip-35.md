@@ -2,7 +2,7 @@
 pip: 35
 title: Comparison of communication protocols
 author: Muhammad Javad Akbarian (@akbariandev)
-status: Draft
+status: Final
 type: Informational
 category: Informational
 discussion-no: 201
