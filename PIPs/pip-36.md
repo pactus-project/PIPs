@@ -85,8 +85,7 @@ The Transaction Info topic data is structured as:
 
 The block number indicates the block in which the transaction is confirmed.
 If the block number is set to `0`, the transaction remains unconfirmed.
-This enables the service to notify applications when transactions enter the transaction pool,
-with potential for future expansion.
+This allows the service to notify applications when transactions enter the transaction pool, with room for future expansion.
 
 #### Raw Block Header
 
