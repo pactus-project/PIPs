@@ -107,7 +107,7 @@ The Raw Transaction topic data is structured as:
 
 In the configuration file, the following items should be added under the `[zeromq]` section:
 
-```yaml
+```toml
 # `zeromq` contains configuration options for the ZeroMQ notification service.
 [zeromq]
 
