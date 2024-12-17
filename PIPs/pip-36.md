@@ -145,4 +145,4 @@ The same notification can be specified multiple times if needed.
 The High Watermark (HWM) defines the capacity of ZeroMQ's internal message pipes.
 For simplicity, the watermark number is applied to all active topics.
 
-If an address in the configuration file is left empty, the corresponding topic will be disabled.
+Leaving an address empty in the configuration file will disable the corresponding topic.
