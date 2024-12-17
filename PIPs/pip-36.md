@@ -71,7 +71,7 @@ The topic data contains variable-length information specific to each topic, as o
 
 The Block Info topic data is structured as:
 
-```
+```text
 <Proposer Address: 21 bytes> + <Block Time in Unix: 4 bytes> + <Block Number: 4 bytes>
 ```
 
@@ -79,7 +79,7 @@ The Block Info topic data is structured as:
 
 The Transaction Info topic data is structured as:
 
-```
+```text
 <Transaction ID: 32 bytes> + <Block Number: 4 Bytes>
 ```
 
@@ -92,7 +92,7 @@ with potential for future expansion.
 
 The Raw Block Header topic data is structured as:
 
-```
+```text
 <Raw Block Header: Variable Length> + <Block Certificate: Variable Length>
 ```
 
@@ -100,7 +100,7 @@ The Raw Block Header topic data is structured as:
 
 The Raw Transaction topic data is structured as:
 
-```
+```text
 <Raw Transaction: Variable Length>
 ```
 
@@ -108,12 +108,13 @@ The Raw Transaction topic data is structured as:
 
 In the configuration file, the following items should be added under the `[zeromq]` section:
 
-```
--zmqpubblockinfo = address
--zmqpubtxinfo = address
--zmqpubrawblock = address
--zmqpubrawtx = address
--zmqpubhwm = n
+```yaml
+[zeromq]
+   zmqpubblockinfo = address
+   zmqpubtxinfo = address
+   zmqpubrawblock = address
+   zmqpubrawtx = address
+   zmqpubhwm = n
 ```
 
 The socket type is PUB and the address must be a valid ZeroMQ socket address.
