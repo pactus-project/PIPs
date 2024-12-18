@@ -135,7 +135,7 @@ In the configuration file, the following items should be added under the `[zerom
   # This parameter determines the maximum number of messages ZeroMQ can buffer before blocking the publishing of further messages.
   # The watermark is applied uniformly to all active topics.
   # Default is 1000
-  zmqpubhwm: 1000
+  zmqpubhwm = 1000
 ```
 
 The socket type is PUB and the address must be a valid ZeroMQ socket address.
