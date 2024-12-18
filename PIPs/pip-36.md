@@ -119,7 +119,7 @@ In the configuration file, the following items should be added under the `[zerom
   # `zmqpubtxinfo` specifies the address for publishing transaction info notifications.
   # Example: "tcp://127.0.0.1:28332"
   # Default is "", meaning the topic is disabled
-  zmqpubtxinfo: ""
+  zmqpubtxinfo = ""
 
   # `zmqpubrawblock` specifies the address for publishing raw block notifications.
   # Example: "tcp://127.0.0.1:28332"
