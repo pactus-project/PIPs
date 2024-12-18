@@ -2,7 +2,7 @@
 pip: 16
 title: Adding events in Pactus transactions
 author: Kayhan Alizadeh <me@kehiy.net>
-status: Draft
+status: Rejected
 type: Standards Track
 discussion-no: 73
 category:
