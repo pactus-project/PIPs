@@ -129,7 +129,7 @@ In the configuration file, the following items should be added under the `[zerom
   # `zmqpubrawtx` specifies the address for publishing raw transaction notifications.
   # Example: "tcp://127.0.0.1:28332"
   # Default is "", meaning the topic is disabled
-  zmqpubrawtx: ""
+  zmqpubrawtx = ""
 
   # `zmqpubhwm` defines the High Watermark (HWM) for ZeroMQ message pipes.
   # This parameter determines the maximum number of messages ZeroMQ can buffer before blocking the publishing of further messages.
