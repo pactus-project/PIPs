@@ -119,8 +119,8 @@ transactions than can fit into a single block.
 
 - **Block Size**: 10 transactions.
 - **Initial Inclusion**:
-- Include highest-fee transactions: `tx10` and `tx11` (0.01).
-- Remaining slots: $7 - 2 = 5$.
+- Include tx4 , tx5 , and tx6 (unbond and sortition).
+- Remaining slots: 10 − 3 = 7.
 
 ### Next Steps
 
