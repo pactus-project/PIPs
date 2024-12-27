@@ -3,7 +3,7 @@ pip: 36
 title: ZeroMQ Notification Service
 description: Real-time notification service for Pactus using ZeroMQ PUB/SUB
 author: Pactus Development Team <info@pactus.org>
-status: Draft
+status: Accepted
 type: Standards Track
 category: Core
 discussion-no: 206
@@ -72,7 +72,7 @@ The topic data contains variable-length information specific to each topic, as o
 The Block Info topic data is structured as:
 
 ```text
-<Proposer Address: 21 bytes> + <Block Time in Unix: 4 bytes> + <Block Number: 4 bytes>
+<Proposer Address: 21 bytes> + <Block Time in Unix: 4 bytes> + <Total Txs: 2 bytes > + <Block Number: 4 bytes>
 ```
 
 #### Transaction Info
