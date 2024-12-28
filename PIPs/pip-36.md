@@ -140,7 +140,6 @@ In the configuration file, the following items should be added under the `[zerom
 
 The socket type is PUB and the address must be a valid ZeroMQ socket address.
 The same address can be used in more than one notification.
-The same notification can be specified multiple times if needed.
 
 The High Watermark (HWM) defines the capacity of ZeroMQ's internal message pipes.
 For simplicity, the watermark number is applied to all active topics.
