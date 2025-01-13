@@ -20,7 +20,7 @@ Batch transactions enable users to include multiple payloads in a single transac
 
 ## Specifications
 
-To indicate that a transaction contains multiple payloads, a new flag is introduced and set to `0x2`.
+To designate that a transaction contains multiple payloads, a new flag, `0x2`, is introduced.
 If this flag is not set, the transaction format remains unchanged.
 When the flag is set, the transaction format is updated as follows:
 
