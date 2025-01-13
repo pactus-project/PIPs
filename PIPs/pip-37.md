@@ -16,9 +16,7 @@ This proposal introduces support for batch transactions, enabling a single trans
 
 ## Motivation
 
-Batch transactions allow users to include multiple payloads in a single transaction and execute them at the same time.
-This feature is especially beneficial for merchants who want to receive payments across different accounts or
-for node operators who need to bond multiple validators in a single transaction.
+Batch transactions enable users to include multiple payloads in a single transaction, executed simultaneously. This functionality is particularly advantageous for merchants receiving payments across multiple accounts or node operators bonding multiple validators in a single operation.
 
 ## Specifications
 
