@@ -52,7 +52,7 @@ This feature should only be enabled once the majority of the network supports it
 There are several security considerations for batch transactions:
 
 1. **Payload Limit**:
-   The number of payloads is restricted to a maximum of 32 to prevent excessively large transactions.
+    The number of payloads is capped at 32 to prevent excessively large transactions that could strain network resources.
 2. **Atomic Execution**:
    Transactions with multiple payloads must be atomic.
    If one payload fails, none of the others should execute.
