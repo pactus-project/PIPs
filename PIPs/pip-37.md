@@ -37,7 +37,7 @@ When the flag is set, the transaction format is updated as follows:
 | Signature          | 48 bytes |
 | Public Key         | 96 bytes |
 
-To verify the transaction signature, all payloads must have the same signer address.
+To validate the transaction signature, all payloads must share the same signer address.
 
 This format ensures that multiple payloads can be encoded and decoded without
 altering the existing transaction structure.
