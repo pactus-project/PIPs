@@ -12,8 +12,7 @@ created: 2025-01-13
 
 ## Abstract
 
-This document proposes support for batch transactions.
-A batch transaction is a single transaction containing multiple payloads, all executed together.
+This proposal introduces support for batch transactions, enabling a single transaction to contain multiple payloads that are executed together.
 
 ## Motivation
 
