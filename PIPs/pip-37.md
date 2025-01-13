@@ -1,0 +1,61 @@
+---
+pip: 37
+title: Batch Transaction
+description: Transitions with multiple Payloads
+author: Pactus Development Team <info@pactus.org>
+status: Draft
+type: Standards Track
+category: Core
+discussion-no:
+created: 2025-01-13
+---
+
+## Abstract
+
+This document proposes support for batch transactions.
+A batch transaction is a single transaction containing multiple payloads, all executed together.
+
+## Motivation
+
+Batch transactions allow users to include multiple payloads in a single transaction and execute them at the same time.
+This feature is especially beneficial for merchants who want to receive payments across different accounts or
+for node operators who need to bond multiple validators in a single transaction.
+
+## Specifications
+
+To indicate that a transaction contains multiple payloads, a new flag is introduced and set to `0x2`.
+If this flag is not set, the transaction format remains unchanged.
+When the flag is set, the transaction format is updated as follows:
+
+| Field              | Size     |
+| ------------------ | -------- |
+| Flags              | 1 byte   |
+| Version            | 1 byte   |
+| Lock Time          | 4 bytes  |
+| Fee                | Variant  |
+| Memo               | Variant  |
+| Number of Payloads | 1 byte   |
+| Payload.Type     | 1 byte   |
+| Payload.Data     | Variant  |
+| Signature          | 48 bytes |
+| Public Key         | 96 bytes |
+
+To verify the transaction signature, all payloads must have the same signer address.
+
+This format ensures that multiple payloads can be encoded and decoded without
+altering the existing transaction structure.
+
+## Backwards Compatibility
+
+Batch transactions are not backward-compatible.
+This feature should only be enabled once the majority of the network supports it.
+
+## Security Considerations
+
+There are several security considerations for batch transactions:
+
+1. **Payload Limit**:
+   The number of payloads is restricted to a maximum of 32 to prevent excessively large transactions.
+2. **Atomic Execution**:
+   Transactions with multiple payloads must be atomic.
+   If one payload fails, none of the others should execute.
