@@ -12,11 +12,14 @@ created: 2025-01-13
 
 ## Abstract
 
-This proposal introduces support for batch transactions, enabling a single transaction to contain multiple payloads that are executed together.
+This proposal introduces support for batch transactions,
+enabling a single transaction to contain multiple payloads that are executed together.
 
 ## Motivation
 
-Batch transactions enable users to include multiple payloads in a single transaction, executed simultaneously. This functionality is particularly advantageous for merchants receiving payments across multiple accounts or node operators bonding multiple validators in a single operation.
+Batch transactions enable users to include multiple payloads in a single transaction, executed simultaneously.
+This functionality is particularly advantageous for merchants receiving payments across multiple accounts or
+node operators bonding multiple validators in a single operation.
 
 ## Specifications
 
@@ -32,8 +35,8 @@ When the flag is set, the transaction format is updated as follows:
 | Fee                | Variant  |
 | Memo               | Variant  |
 | Number of Payloads | 1 byte   |
-| Payload.Type     | 1 byte   |
-| Payload.Data     | Variant  |
+| Payload.Type       | 1 byte   |
+| Payload.Data       | Variant  |
 | Signature          | 48 bytes |
 | Public Key         | 96 bytes |
 
@@ -52,7 +55,8 @@ This feature should only be enabled once the majority of the network supports it
 There are several security considerations for batch transactions:
 
 1. **Payload Limit**:
-    The number of payloads is capped at 32 to prevent excessively large transactions that could strain network resources.
+    The number of payloads is capped at 32 to prevent excessively large transactions that
+    could strain network resources.
 2. **Atomic Execution**:
    Transactions with multiple payloads must be atomic.
    If one payload fails, none of the others should execute.

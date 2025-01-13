@@ -9,7 +9,7 @@ serve: install
 
 check: build
 	mdl --style=./config/.mdlrc.rb ./PIPs
-	htmlproofer --enforce-https=false --ignore-missing-alt=true --ignore-status-codes "999,429,403,0" --ignore-urls=/github.com/,/cdn./,/discord.gg/,/t.me/,/tools.ietf.org/,/www.googletagmanager.com/,/googletagmanager.com/ ./public
+	htmlproofer --enforce-https=false --ignore-missing-alt=true --ignore-status-codes "999,429,403,0" --ignore-urls=/github.com/,/cdn./,/discord.gg/,/t.me/,/tools.ietf.org/,/www.googletagmanager.com/,/googletagmanager.com/ ./_site
 	python3 .github/workflows/check_images.py ./static/images
 
 exif:
