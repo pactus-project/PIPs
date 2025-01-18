@@ -92,7 +92,7 @@ This allows the service to notify applications when transactions enter the trans
 The Raw Block Header topic data is structured as:
 
 ```text
-<Raw Block Header: Variable Length> + <Block Certificate: Variable Length>
+<Raw Block Header: 138 bytes> + <Block Number: 4 Bytes>
 ```
 
 #### Raw Transaction
@@ -100,7 +100,7 @@ The Raw Block Header topic data is structured as:
 The Raw Transaction topic data is structured as:
 
 ```text
-<Raw Transaction: Variable Length>
+<Raw Transaction: Variable Length> + <Block Number: 4 Bytes>
 ```
 
 ### Configuration
