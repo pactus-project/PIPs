@@ -3,8 +3,8 @@ pip: 29
 title:  Batch Transactions
 author: Maximiliano Paz (@maxipaz)
 discussion-no: 168
-status: Draft
-type: Standards Track
+status: Deferred
+type: Informational
 category: Core
 created: 05-08-2024
 ---
