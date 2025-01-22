@@ -3,7 +3,7 @@ pip: 36
 title: ZeroMQ Notification Service
 description: Real-time notification service for Pactus using ZeroMQ PUB/SUB
 author: Pactus Development Team <info@pactus.org>
-status: Accepted
+status: Final
 type: Standards Track
 category: Core
 discussion-no: 206
