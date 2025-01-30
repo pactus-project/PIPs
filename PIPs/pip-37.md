@@ -27,27 +27,30 @@ To designate that a transaction contains multiple payloads, a new flag, `0x2`, i
 If this flag is not set, the transaction format remains unchanged.
 When the flag is set, the transaction format is updated as follows:
 
-| Field              | Size     |
-| ------------------ | -------- |
-| Flags              | 1 byte   |
-| Version            | 1 byte   |
-| Lock Time          | 4 bytes  |
-| Fee                | Variant  |
-| Memo               | Variant  |
-| Number of Payloads | 1 byte   |
-| Payload.Type       | 1 byte   |
-| Payload.Data       | Variant  |
-| Signature          | 48 bytes |
-| Public Key         | 96 bytes |
+| Field              | Size    |
+| ------------------ | ------- |
+| Flags              | 1 byte  |
+| Version            | 1 byte  |
+| Lock Time          | 4 bytes |
+| Fee                | Variant |
+| Memo               | Variant |
+| Number of Payloads | 1 byte  |
+| Payload.Type       | 1 byte  |
+| Payload.Data       | Variant |
+| Signature          | Variant |
+| Public Key         | Variant |
 
 To validate the transaction signature, all payloads must share the same signer address.
 
 This format ensures that multiple payloads can be encoded and decoded without
-altering the existing transaction structure.
+altering the existing structure for single-payload transactions.
+Transactions using the old format remain valid,
+while the new format can be extended to support batch transactions.
 
 ## Backwards Compatibility
 
 Batch transactions are not backward-compatible.
+The old format does not include the "Number of Payloads" field.
 This feature should only be enabled once the majority of the network supports it.
 
 ## Security Considerations
