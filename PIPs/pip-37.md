@@ -47,7 +47,7 @@ altering the existing structure for single-payload transactions.
 Transactions using the old format remain valid,
 while the new format can be extended to support batch transactions.
 
-#### Upgrade Version To 0x02:
+### Upgrade Version To 0x02
 
 The introduction of batch transactions necessitates a version upgrade from `0x01` to `0x02`.
 
