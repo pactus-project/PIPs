@@ -47,6 +47,27 @@ altering the existing structure for single-payload transactions.
 Transactions using the old format remain valid,
 while the new format can be extended to support batch transactions.
 
+#### Upgrade Version To 0x02:
+
+The introduction of batch transactions necessitates a version upgrade from `0x01` to `0x02`.
+
+1. **Batch Transaction Support:**
+   - Transactions can now include multiple payloads, requiring an additional "Number of Payloads" field.
+2. **New Transaction Flag (`0x2`)**:
+   - This flag designates whether a transaction follows the new batch format.
+   - If unset, transactions remain in the legacy format (`0x01`).
+3. **Signature Validation Update:**
+   - All payloads within a batch transaction must be signed by the same key.
+4. **Backward Compatibility Handling:**
+   - Nodes must support both `0x01` and `0x02` transaction formats during the upgrade transition.
+   - Transactions in the old format (`0x01`) remain valid and are processed normally.
+   - Nodes should reject batch transactions (`0x02`) if the network majority does not support them.
+5. **Atomic Execution Requirement:**
+   - If any payload in a batch transaction fails, all payloads are reverted to maintain consistency.
+
+The upgrade from `0x01` to `0x02` ensures that the network can adopt batch transactions seamlessly
+while preserving compatibility with existing transactions.
+
 ## Backwards Compatibility
 
 Batch transactions are not backward-compatible.
