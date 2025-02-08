@@ -53,14 +53,14 @@ Transactions failing to meet this requirement will be rejected.
 If the public key of the Watcher account is revealed (indicating it has signed and broadcast a transaction),
 the Xeggex deposit account is considered **unfrozen** and can send transactions without restrictions.
 
-To ensure proper enforcement during a network upgrade, nodes implementing this PIP will validate
+To ensure proper enforcement during the network upgrade, nodes adopting this PIP will validate
 the hash of the Xeggex deposit account when committing new blocks.
-Nodes running the updated version will enforce the following rules if the account hash does not match the defined hash:
+They enforce the following rules if the account hash does not match the defined hash:
 
 1. If the **public key of the Watcher account is revealed**, the Xeggex deposit account is unfrozen,
    and blocks can be committed as normal.
 2. Otherwise, if the **Watcher account balance is less than 500,000 PAC**,
-   the node will reject the incoming block and require the rest of the network to upgrade.
+   the node will reject the incoming block and require the rest of the network to resync and upgrade.
 
 Once the majority of the network upgrades and adopts this PIP, the Xeggex account will be monitored
 and controlled by the Pactus team. Any suspicious or malicious transactions will be rejected.
