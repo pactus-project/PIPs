@@ -2,7 +2,7 @@
 pip: 38
 title: Monitor Xeggex Deposit Account
 author: Pactus Development Team <info@pactus.org>
-status: Final
+status: Unfrozen
 type: Standards Track
 category: Core
 discussion-no: 223
