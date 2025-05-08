@@ -47,6 +47,8 @@ altering the existing structure for single-payload transactions.
 Transactions using the old format remain valid,
 while the new format can be extended to support batch transactions.
 
+The version for transactions with multiple payloads should be set to 2.
+
 ## Backwards Compatibility
 
 Batch transactions are not backward-compatible.
