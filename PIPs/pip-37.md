@@ -1,7 +1,7 @@
 ---
 pip: 37
 title: Batch Transaction
-description: Transitions with multiple Payloads
+description: Transactions with multiple Payloads
 author: Pactus Development Team <info@pactus.org>
 status: Draft
 type: Standards Track
@@ -23,22 +23,25 @@ node operators bonding multiple validators in a single operation.
 
 ## Specifications
 
-To designate that a transaction contains multiple payloads, a new flag, `0x2`, is introduced.
+To designate that a transaction contains multiple payloads, a new flag, `0x4`, is introduced.
 If this flag is not set, the transaction format remains unchanged.
 When the flag is set, the transaction format is updated as follows:
 
-| Field              | Size    |
-| ------------------ | ------- |
-| Flags              | 1 byte  |
-| Version            | 1 byte  |
-| Lock Time          | 4 bytes |
-| Fee                | Variant |
-| Memo               | Variant |
-| Number of Payloads | 1 byte  |
-| Payload.Type       | 1 byte  |
-| Payload.Data       | Variant |
-| Signature          | Variant |
-| Public Key         | Variant |
+| Field               | Size    |
+| ------------------- | ------- |
+| Flags               | 1 byte  |
+| Version             | 1 byte  |
+| Lock Time           | 4 bytes |
+| Fee                 | Variant |
+| Memo                | Variant |
+| Number of Payloads* | 1 byte  |
+| Payload.Type        | 1 byte  |
+| Payload.Data        | Variant |
+| Signature           | Variant |
+| Public Key          | Variant |
+
+Batch transactions have an extra field called "Number of Payloads"
+that determines how many payloads this transaction contains and should be greater than 1.
 
 To validate the transaction signature, all payloads must share the same signer address.
 
@@ -58,8 +61,9 @@ This feature should only be enabled once the majority of the network supports it
 There are several security considerations for batch transactions:
 
 1. **Payload Limit**:
-    The number of payloads is capped at 32 to prevent excessively large transactions that
-    could strain network resources.
+   The number of payloads is capped at 32 to prevent excessively large transactions that
+   could strain network resources.
+
 2. **Atomic Execution**:
    Transactions with multiple payloads must be atomic.
    If one payload fails, none of the others should execute.
