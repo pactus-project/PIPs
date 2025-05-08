@@ -27,7 +27,7 @@ jobs:
           echo $MERGE_SHA > ./pr/merge_sha
 
       - name: Upload PR Number
-        uses: actions/upload-artifact@65d862660abb392b8c4a3d1195a2108db131dd05
+        uses: actions/upload-artifact@v4
         with:
           name: pr_number
           path: pr/
@@ -51,11 +51,10 @@ jobs:
           bundle exec jekyll doctor
           bundle exec jekyll build
 
-      # TODO: Enable me later
-      # - name: HTML5Validator
-      #   uses: Cyb3r-Jak3/html5validator-action@v7.2.0
-      #   with:
-      #     root: _site
+      - name: HTML5Validator
+        uses: Cyb3r-Jak3/html5validator-action@v7.2.0
+        with:
+          root: _site
 
       - name: HTML Proofer
         run: bundle exec htmlproofer --swap-urls 'https\://pips.pactus.org:' --ignore-status-codes "999,429,403,0" --ignore-urls "/github.com/" ./_site
