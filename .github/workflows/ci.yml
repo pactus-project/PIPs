@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Checkout PIP Repository
-        uses: actions/checkout@47fbe2df0ad0e27efb67a70beac3555f192b062f
+        uses: actions/checkout@v4
 
       - name: Install Ruby
         uses: ruby/setup-ruby@v1
@@ -68,7 +68,7 @@ jobs:
 
     steps:
       - name: Checkout PIP Repository
-        uses: actions/checkout@47fbe2df0ad0e27efb67a70beac3555f192b062f
+        uses: actions/checkout@v4
 
       - name: Link Checker
         uses: gaurav-nelson/github-action-markdown-link-check@v1
@@ -85,7 +85,7 @@ jobs:
 
     steps:
       - name: Checkout PIP Repository
-        uses: actions/checkout@47fbe2df0ad0e27efb67a70beac3555f192b062f
+        uses: actions/checkout@v4
 
       - name: Get Changed Files
         id: changed
@@ -98,7 +98,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run CodeSpell
-        uses: codespell-project/actions-codespell@57beb9f38f49d773d641ac555d1565c3b6a59938
+        uses: codespell-project/actions-codespell@v2
         if: steps.changed.outcome == 'success'
         with:
           check_filenames: true
