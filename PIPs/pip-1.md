@@ -21,7 +21,7 @@ they can impact the production environment.
 
 The PIP process starts with an idea for the Pactus blockchain.
 The author should document the idea in PIP format and explain it in simple and
-[plain English](https://plainenglish.co.uk/how-to-write-in-plain-english.html).
+[plain English](https://www.plainenglish.co.uk/free-guides).
 The drafted PIP can then be submitted to the PIP repository.
 
 The PIP should be assigned a proper number and category before it gets merged.
