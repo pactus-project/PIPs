@@ -41,7 +41,7 @@ The `BatchTransfer` payload will be structured as follows:
 | Recipients[].Amount | `Amount`  | Variant  | Amount to transfer (within each recipient) |
 
 The Batch Transfer payload will be encoded deterministically.
-The number of recipients will be used to decode the payload.
+The number of recipients will be used to decode the recipients.
 
 ## Backwards Compatibility
 
