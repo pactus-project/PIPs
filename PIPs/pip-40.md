@@ -24,7 +24,8 @@ To incentivize participation, 1 coin is distributed from the treasury to a valid
 amounting to 8640 coins per day. Additionally, validators currently receive all transaction fees, accelerating
 depletion of the treasury.
 
-With 42 million PAC initially allocated to the treasury, projections indicate the treasury will be exhausted in approximately 13 years.
+With 42 million PAC initially allocated to the treasury, projections indicate the treasury will be exhausted in
+approximately 13 years.
 Without intervention, the network will no longer be able to distribute base block rewards after that point, threatening long-term
 validator engagement and network security.
 
