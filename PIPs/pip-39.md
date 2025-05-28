@@ -3,7 +3,7 @@ pip: 39
 title: Batch Transfer
 description: Transfer Payload with Multiple Receivers
 author: Pactus Development Team <info@pactus.org>
-status: Draft
+status: Accepted
 type: Standards Track
 category: Core
 discussion-no: 232
