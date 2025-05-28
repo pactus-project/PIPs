@@ -31,9 +31,9 @@ validator engagement and network security.
 ## Specification
 
 - All network fees will be redirected from validators to the treasury account. These include:
-  - Transaction processing fees
-  - Smart contract execution fees
-  - Other operation-related fees
+   - Transaction processing fees
+   - Smart contract execution fees
+   - Other operation-related fees
 
 - Validators will continue receiving 1 PAC per proposed block from the treasury account.
 
@@ -48,13 +48,13 @@ No backward compatibility issues found.
 ## Test Cases
 
 - Simulate a block with:
-  - 10 transactions, each paying a fee of 0.01 PAC
-  - Current implementation: validator earns 1 PAC (base) + 0.1 PAC (fees)
-  - Proposed implementation: validator earns only 1 PAC; treasury gains 0.1 PAC
+   - 10 transactions, each paying a fee of 0.01 PAC
+   - Current implementation: validator earns 1 PAC (base) + 0.1 PAC (fees)
+   - Proposed implementation: validator earns only 1 PAC; treasury gains 0.1 PAC
 
 - Validate:
-  - Treasury balance increases by the sum of all fees
-  - Validator balance increases only by the base reward
+   - Treasury balance increases by the sum of all fees
+   - Validator balance increases only by the base reward
 
 ## Security Considerations
 
