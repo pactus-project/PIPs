@@ -12,15 +12,21 @@ created: 2025-05-28
 
 ## Abstract
 
-This proposal suggests redirecting all network fees (transaction, smart contract execution, etc.) from validators to the treasury account.
-This change will extend the sustainability of the Pactus treasury and ensure the continuity of validator block rewards for future years.
+This proposal suggests redirecting all network fees (transaction, smart contract execution, etc.) from validators
+to the treasury account.
+This change will extend the sustainability of the Pactus treasury and ensure the continuity of validator block rewards
+for future years.
 
 ## Motivation
 
-The Pactus blockchain uses a staking model that enables even low-resource community members to participate as validators. To incentivize
-participation, 1 coin is distributed from the treasury to a validator every 10 seconds for proposing a block, amounting to 8640 coins per day. Additionally, validators currently receive all transaction fees, accelerating depletion of the treasury.
+The Pactus blockchain uses a staking model that enables even low-resource community members to participate as validators.
+To incentivize participation, 1 coin is distributed from the treasury to a validator every 10 seconds for proposing a block,
+amounting to 8640 coins per day. Additionally, validators currently receive all transaction fees, accelerating
+depletion of the treasury.
 
-With 42 million PAC initially allocated to the treasury, projections indicate the treasury will be exhausted in approximately 13 years. Without intervention, the network will no longer be able to distribute base block rewards after that point, threatening long-term validator engagement and network security.
+With 42 million PAC initially allocated to the treasury, projections indicate the treasury will be exhausted in approximately 13 years.
+Without intervention, the network will no longer be able to distribute base block rewards after that point, threatening long-term
+validator engagement and network security.
 
 ## Specification
 
@@ -53,4 +59,5 @@ No backward compatibility issues found.
 ## Security Considerations
 
 Redirecting fees to the treasury may slightly reduce short-term validator income but ensures long-term reward sustainability.
-It may reduce incentive for spam transactions by removing fee revenue motivation. No additional attack vectors are introduced by this proposal.
+It may reduce incentive for spam transactions by removing fee revenue motivation. No additional attack vectors are introduced
+by this proposal.
