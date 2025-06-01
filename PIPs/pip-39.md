@@ -3,7 +3,7 @@ pip: 39
 title: Batch Transfer
 description: Transfer Payload with Multiple Receivers
 author: Pactus Development Team <info@pactus.org>
-status: Draft
+status: Accepted
 type: Standards Track
 category: Core
 discussion-no: 232
@@ -16,9 +16,9 @@ This proposal introduces support for a Batch Transfer payload, enabling a one-to
 
 ## Motivation
 
-Batch transfers enable users to include multiple recipients in a single transfer payload, known as `BatchTransfer`,
+Batch transfers allow users to include multiple recipients in a single transfer payload, known as `BatchTransfer`,
 which is executed simultaneously.
-This functionality is particularly advantageous for users who wish to send PACs to multiple accounts in one transaction.
+This functionality is particularly advantageous for users who wish to send PAC to multiple accounts in one transaction.
 
 ## Specifications
 
@@ -47,11 +47,11 @@ The number of recipients will be used to decode the recipients.
 ## Backwards Compatibility
 
 Batch transfers are **not** backward-compatible.
-This feature will be activated at block number `XXX` on the Mainnet.
+This feature will be activated at block number `4,703,760` on the Mainnet.
 Older versions of the software will not be able to decode or process Batch Transfers.
 
 ## Security Considerations
 
-TThe payload will only execute if all recipient addresses are valid and
+The payload will only execute if all recipient addresses are valid and
 the total sum of the amounts does not exceed the sender’s available balance.
-The number of recipients is capped at 32 to prevent excessively large transactions that could strain network resources.
+The number of recipients is capped at 8 to prevent excessively large transactions that could strain network resources.
