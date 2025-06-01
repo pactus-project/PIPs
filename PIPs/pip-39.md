@@ -47,7 +47,7 @@ The number of recipients will be used to decode the recipients.
 ## Backwards Compatibility
 
 Batch transfers are **not** backward-compatible.
-This feature will be activated at block number `XXX` on the Mainnet.
+This feature will be activated at block number `4,703,760` on the Mainnet.
 Older versions of the software will not be able to decode or process Batch Transfers.
 
 ## Security Considerations
