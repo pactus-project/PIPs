@@ -16,9 +16,9 @@ This proposal introduces support for a Batch Transfer payload, enabling a one-to
 
 ## Motivation
 
-Batch transfers enable users to include multiple recipients in a single transfer payload, known as `BatchTransfer`,
+Batch transfers allow users to include multiple recipients in a single transfer payload, known as `BatchTransfer`,
 which is executed simultaneously.
-This functionality is particularly advantageous for users who wish to send PACs to multiple accounts in one transaction.
+This functionality is particularly advantageous for users who wish to send PAC to multiple accounts in one transaction.
 
 ## Specifications
 
@@ -52,6 +52,6 @@ Older versions of the software will not be able to decode or process Batch Trans
 
 ## Security Considerations
 
-TThe payload will only execute if all recipient addresses are valid and
+The payload will only execute if all recipient addresses are valid and
 the total sum of the amounts does not exceed the sender’s available balance.
 The number of recipients is capped at 8 to prevent excessively large transactions that could strain network resources.
