@@ -54,4 +54,4 @@ Older versions of the software will not be able to decode or process Batch Trans
 
 TThe payload will only execute if all recipient addresses are valid and
 the total sum of the amounts does not exceed the sender’s available balance.
-The number of recipients is capped at 32 to prevent excessively large transactions that could strain network resources.
+The number of recipients is capped at 8 to prevent excessively large transactions that could strain network resources.
