@@ -6,6 +6,7 @@ author: Pactus Development Team <info@pactus.org>
 status: Draft
 type: Standards Track
 category: Core
+discussion-no: 242
 created: 2025-03-22
 ---
 
