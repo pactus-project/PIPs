@@ -31,34 +31,34 @@ The proposed URI scheme follows this general format:
 pactus:<address>[?amount=<amount>][?memo=<message>]
 ```
 
-### Components:
+### Components
 
 * `pactus:`: The URI scheme identifier.
 * `<address>`: A valid Pactus address.
 * `amount` (optional): The amount to be transferred, specified in Pactus units.
 * `memo` (optional): A message or note associated with the payment.
 
-### Examples:
+### Examples
 
 **Basic Payment Request**:
 
-```
+```text
 pactus:tpc1r35xwz99uw2qrhz9wmdanaqcsge2nzsfegvv555
 ```
 
 **Payment with Amount**:
 
-```
+```text
 pactus:tpc1r35xwz99uw2qrhz9wmdanaqcsge2nzsfegvv555?amount=123.45
 ```
 
 **Payment with Amount and Memo**:
 
-```
+```text
 pactus:tpc1r35xwz99uw2qrhz9wmdanaqcsge2nzsfegvv555?amount=123.45&memo=Invoice%20%1234
 ```
 
-### Parsing Rules:
+### Parsing Rules
 
 1. Address: Mandatory. Must conform to Pactus address specifications.
 2. Amount: Optional. Should be a positive decimal number.
