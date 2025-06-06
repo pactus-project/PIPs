@@ -133,7 +133,7 @@ layout: default
     {% include toc.html html=content sanitize=true h_max=3 %}
   </div>
 
-  {% include anchor_headings.html html=content anchorClass="anchor-link" beforeHeading=true %}
+  {% include anchor_headings.html html=content anchorBody="#" %}
 
   {% if page.status != "Living" %}
   </br>
