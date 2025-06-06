@@ -10,6 +10,7 @@ created: 2025-03-22
 ---
 
 ## Abstract
+
 This proposal enables automatic recovery of used addresses when restoring a wallet from a mnemonic phrase.
 
 ## Motivation
@@ -35,17 +36,15 @@ When recovering a wallet from an external source (e.g., mnemonic phrase), the so
 3. Set `inactive_count = 1`.
 4. Derive the first address.
 5. Loop:
-
    * Check if the address’s public key is indexed in the blockchain.
    * If **not indexed** (inactive):
-       - Increase `inactive_count` by 1.
-       - If `inactive_count > 32`, break the loop.
-       - Derive the next address.
-
+      * Increase `inactive_count` by 1.
+      * If `inactive_count > 32`, break the loop.
+      * Derive the next address.
    * If **indexed** (active):
-       - Add `inactive_count` to `recovered_count`.
-       - Reset `inactive_count = 1`.
-       - Derive the next address.
+      * Add `inactive_count` to `recovered_count`.
+      * Reset `inactive_count = 1`.
+      * Derive the next address.
 
 After finding all recoverable addresses,
 the software should delete the temporary in-memory wallet, create a permanent wallet,
@@ -59,4 +58,3 @@ In this case, the user needs to manually create addresses until they reach the d
 ## Backward Compatibility
 
 This change is backward-compatible.
-
