@@ -3,7 +3,7 @@ pip: 37
 title: Batch Transaction
 description: Transactions with multiple Payloads
 author: Pactus Development Team <info@pactus.org>
-status: Draft
+status: Withdrawn
 type: Standards Track
 category: Core
 discussion-no: 213
