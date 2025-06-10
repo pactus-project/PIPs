@@ -3,7 +3,7 @@ pip: 39
 title: Batch Transfer
 description: Transfer Payload with Multiple Receivers
 author: Pactus Development Team <info@pactus.org>
-status: Accepted
+status: Final
 type: Standards Track
 category: Core
 discussion-no: 232
@@ -47,7 +47,7 @@ The number of recipients will be used to decode the recipients.
 ## Backwards Compatibility
 
 Batch transfers are **not** backward-compatible.
-This feature will be activated at block number `4,703,760` on the Mainnet.
+This feature will be activated at block number `4,800,000` on the Mainnet.
 Older versions of the software will not be able to decode or process Batch Transfers.
 
 ## Security Considerations
