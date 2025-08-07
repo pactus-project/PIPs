@@ -5,9 +5,9 @@ description: Split Block Rewards
 author: Pactus Development Team <info@pactus.org>
 status: Draft
 type: Standards Track
-category: Interface
+category: Core
 discussion-no:
-created: 2025-07-26
+created: 2025-08-07
 ---
 
 ## Abstract
@@ -41,12 +41,13 @@ the Treasury account as follows:
 
 1. **Foundation Address:**
    `pc1z2r0fmu8sg2ffa0tgrr08gnefcxl2kq7wvquf8z`
+
    Balance: 8,400,000.194910010
 
 2. **Team & Operations Address:**
    `pc1znn2qxsugfrt7j4608zvtnxf8dnz8skrxguyf45`
-   Balance: 3,779,999.999010000
 
+   Balance: 3,779,999.999010000
 
 ### Foundation Address
 
