@@ -51,7 +51,7 @@ the Treasury account as follows:
 
 The Pactus Foundation Reward addresses are defined as follows:
 
-```
+```text
   1. pc1z0k5ctvn02hsxvl9t3d2efnkv2d5k46ayfddzxg
   2. pc1zrv84qnh96pmkg2sykedtz5mlu0q72st2l5c6gg
   3. pc1zuyqdsewxl4leth4rsmzhme2qxwwsvv5qvp6lfl
