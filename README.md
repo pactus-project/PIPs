@@ -19,7 +19,7 @@ for efficient dependency management, including [Bootstrap](https://getbootstrap.
 Now, clone this repository and run it locally using the following commands:
 
 ```zsh
-git clone https://github.com/pactus-project/pips.git
+git clone https://github.com/pactus-project/PIPs.git
 cd PIPs
 yarn install ## To install bootstrap
 bundle install
