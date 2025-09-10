@@ -3,7 +3,7 @@ pip: 32
 title: Reallocation of Reserve Funds
 author: Mr. HoDL (@Mr-HoDL58)
 discussion-no: 178
-status: Draft
+status: Replaced
 type: Standards Track
 category: Core
 created: 2024-09-19

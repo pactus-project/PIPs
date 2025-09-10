@@ -3,7 +3,7 @@ pip: 43
 title: Split Rewards
 description: Split Block Rewards
 author: Pactus Development Team <info@pactus.org>
-status: Draft
+status: Final
 type: Standards Track
 category: Core
 discussion-no: 247
@@ -17,39 +17,36 @@ Validators and the Pactus Foundation.
 
 ## Motivation
 
-To enhance the sustainability and trust in the Pactus economy,
+To enhance sustainability and trust in the Pactus economy,
 this proposal merges the existing "Foundation" and "Team & Operations" funds into the Treasury account and
 modifies the block reward mechanism.
-Moving forward, rewards will be split between Validators and the treasury, according to a fixed ratio:
+Moving forward, rewards will be split between Validators and the Treasury, according to a fixed ratio:
 
 - 70% to Validators
 - 30% to the Pactus Foundation
 
 ## Specification
 
-This proposal requires that [PIP-39](https://pips.pactus.org/PIPs/pip-39) — Batch Transfer — be adopted and enabled.
-With Batch Transfer support, block rewards can be split automatically between
-the Validator and the Foundation in a single transaction.
+With [Batch Transfer](https://pips.pactus.org/PIPs/pip-39) support,
+block rewards can be split automatically between the Validator and the Foundation in a single transaction.
 
 The new reward distribution will follow this ratio:
 
-- **0.7** to the Validator (proposer of the block)
-- **0.3** to the Foundation addresses.
+- **0.7** to the Validator (block proposer)
+- **0.3** to the Foundation addresses
 
 Additionally, the balances of the existing "Foundation" and "Team & Operations" accounts will be merged into
 the Treasury account as follows:
 
 1. **Foundation Account:**
-
    - **Address:** `pc1z2r0fmu8sg2ffa0tgrr08gnefcxl2kq7wvquf8z`
    - **Balance:** 8,400,000.194910010 PAC
 
 2. **Team & Operations Account:**
-
    - **Address:** `pc1znn2qxsugfrt7j4608zvtnxf8dnz8skrxguyf45`
    - **Balance:** 3,779,999.999010000 PAC
 
-The Pactus Foundation Reward addresses are defined as follows:
+The Pactus Foundation reward addresses are defined as follows:
 
 ```text
   1. pc1z0k5ctvn02hsxvl9t3d2efnkv2d5k46ayfddzxg
@@ -156,7 +153,8 @@ The Pactus Foundation Reward addresses are defined as follows:
 
 ## Actiation
 
-This PIP will be enabled at block height `XXX`.
-Once the majority of validators adopt this PIP, it will be activated.
-When activated, the balance of existing "Foundation" and "Team & Operations" accounts
-will be transferred to the treasury.
+This change introduces a protocol update in Pactus, increasing the protocol version to 2.
+Once more than 70% of the committee supports this upgrade,
+this PIP will be activated and the protocol upgraded.
+After activation, the balances of the existing "Foundation" and "Team & Operations" accounts
+will be transferred to the Treasury.
