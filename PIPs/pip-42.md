@@ -3,8 +3,8 @@ pip: 42
 title: URI Scheme
 description: Define URI scheme for making Pactus payments.
 author: |
-   B00f (@b00f)
-   Henry (phoenixit99)
+  B00f (@b00f),
+  Henry (@phoenixit99)
 status: Draft
 type: Informational
 category: Interface
