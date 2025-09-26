@@ -51,7 +51,8 @@ Figure below shows the communication patterns for the fast agreement path.
 
 If the network, proposer, or some validators are faulty,
 the validators might not receive responses from all $3f+1$ validators, causing them to become stuck.
-The change-proposer phase is triggered by timeouts and prevent validators from waiting indefinitely for the proposal to be committed.
+The change-proposer phase is triggered by timeouts and prevent validators from
+waiting indefinitely for the proposal to be committed.
 
 The change-proposer phase is a binary agreement, and each validator begins with an initial value $v_i \in \\{0,1\\}$
 that is biased toward zero.
