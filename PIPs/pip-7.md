@@ -36,7 +36,7 @@ ensuring that all nodes in the network maintain consistent time settings.
 
 ## Security Considerations
 
-Introducing a timestamp check during handshaking with improve the security and integrity of the Pactus network.
+Introducing a timestamp check during handshaking will improve the security and integrity of the Pactus network.
 It is critical to prevent nodes with incorrect timestamp configurations from
 joining the network because they can potentially cause synchronization and consensus issues.
 

@@ -10,7 +10,7 @@ requires: <PIP number(s)> # Only required when you reference an PIP in the `Spec
 ---
 
 <!--
-  READ PIP-1 (https://pips.pactus.org/PIPS/pip-1) BEFORE USING THIS TEMPLATE!
+  READ PIP-1 (https://pips.pactus.org/PIPs/pip-1) BEFORE USING THIS TEMPLATE!
 
   This is the suggested template for new PIPs.
   After you have filled in the requisite fields, please delete these comments.

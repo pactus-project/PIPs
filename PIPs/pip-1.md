@@ -72,7 +72,7 @@ Please follow these comments and complete the PIP accordingly.
 
 ## PIP Types
 
-There are types of a PIP:
+There are three types of PIPs:
 
 ### Standards Track
 

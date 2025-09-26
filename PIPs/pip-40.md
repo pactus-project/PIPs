@@ -4,10 +4,10 @@ title: Reallocation of Network Fees to Treasury
 description: Redirect network fees from validators to the treasury account to sustain block rewards.
 author: Javad Rajabzadeh (@ja7ad)
 status: Draft
-type: Standard
+type: Standards Track
 category: Core
 discussion-no: 235
-created: 2025-05-28
+created: 2024-12-28
 ---
 
 ## Abstract
