@@ -49,7 +49,7 @@ In both `Validator address` and `BLS-Account address`, the data is the hash of t
 
 ## Examples
 
- Examples of validator address:
+Examples of validator address:
 
 - `pc1p97d72u2nqfwq3rv3kfuy0xaeuvkk6ye5cl2vyp`
 - `pc1ppjedvfsd02x74j83ceu0kju37652u253z9cnh6`

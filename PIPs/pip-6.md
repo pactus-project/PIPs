@@ -1,7 +1,7 @@
 ---
 pip: 6
 title: In-Memory Storage of Public Keys, Validators, and Accounts using LRU Cache
-status: Withdraw
+status: Withdrawn
 type: Standards Track
 discussion-no: 17
 author: Javad Rajabzadeh <ja7ad@live.com>
@@ -11,7 +11,7 @@ created: 2023-09-9
 ## Abstract
 
 This proposal outlines the implementation of an LRU (Least Recently Used) cache to store
-public keys, validators, and account data in memory base on review for
+public keys, validators, and account data in memory based on review for
 [PIP-4](https://pips.pactus.org/PIPs/pip-4).
 Storing this information in memory will optimize performance and reduce the need for redundant data storage.
 

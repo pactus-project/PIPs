@@ -44,7 +44,7 @@ the Treasury account as follows:
 
 2. **Team & Operations Account:**
    - **Address:** `pc1znn2qxsugfrt7j4608zvtnxf8dnz8skrxguyf45`
-   - **Balance:** 3,779,999.999010000 PAC
+   - **Balance:** 3,359,999.989010000 PAC
 
 The Pactus Foundation reward addresses are defined as follows:
 
