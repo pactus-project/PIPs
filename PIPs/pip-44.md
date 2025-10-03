@@ -1,8 +1,9 @@
 ---
 pip: 44
 title: Decentralized AI Chatbot and DAO Governance for Pactus
-description: Integrates a decentralized AI chatbot for wallet operations and DAO governance,
-halves validator rewards to incentivize compute contributors, and enables WASM smart contract deployment.
+description: >
+  Integrates a decentralized AI chatbot for wallet operations and DAO governance,
+  halves validator rewards to incentivize compute contributors, and enables WASM smart contract deployment.
 author: Curtis Caudill (@cjcaudill79)
 discussions-to: https://github.com/pactus-project/PIPs/discussions
 status: Draft
