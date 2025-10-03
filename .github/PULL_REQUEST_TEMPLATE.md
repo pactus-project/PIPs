@@ -11,7 +11,7 @@ We have a GitHub bot that automatically merges certain PRs. Your PR will be merg
 
 Please confirm that your PR meets the following requirements:
 
-- [ ] If submitting a new PIP, I used the suggested template: [pip-template.md](https://github.com/pactus-project/PIPs/blob/master/pip-template.md).
+- [ ] If submitting a new PIP, I used the suggested template: [pip-template.md](https://github.com/pactus-project/PIPs/blob/main/pip-template.md).
 - [ ] I have read and followed the proposal guidelines in [PIP-1](https://pips.pactus.org/PIPs/pip-1).
 
 Thank you for contributing to Pactus Improvement Proposals! 🚀
