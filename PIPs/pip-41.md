@@ -3,7 +3,7 @@ pip: 41
 title: Address Recovery
 description: Recovering Address after Wallet Recovery
 author: Pactus Development Team <info@pactus.org>
-status: Draft
+status: Accepted
 type: Standards Track
 category: Core
 discussion-no: 242
