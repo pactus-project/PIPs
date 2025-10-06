@@ -57,3 +57,7 @@ In this case, the user needs to manually create addresses until they reach the d
 ## Backward Compatibility
 
 This change is backward-compatible.
+
+## Reference
+
+[BIP-44: Multi-Account Hierarchy for Deterministic Wallets - Account Discovery](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#user-content-Account_discovery)
