@@ -18,7 +18,8 @@ This proposal enables automatic recovery of used addresses when restoring a wall
 
 ### Problem
 
-Right now, when a wallet is recovered using a mnemonic phrase, it cannot automatically restore all previously used or balance-holding addresses.
+Right now, when a wallet is recovered using a mnemonic phrase,
+it cannot automatically restore all previously used or balance-holding addresses.
 Users must manually create addresses, which is not efficient.
 This can also cause problems, especially if there is a gap in address usage.
 
