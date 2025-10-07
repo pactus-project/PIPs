@@ -34,7 +34,7 @@ Otherwise, it is inactive or empty.
 When recovering a wallet from an external source (e.g., mnemonic phrase), the software should follow these steps:
 
 1. Set `recovered_count = 1`.
-2. Set `inactive_count = 1`.
+2. Set `inactive_count = 0`.
 3. Derive the first address.
 4. Loop:
    * Check if the address's public key is indexed in the blockchain.
