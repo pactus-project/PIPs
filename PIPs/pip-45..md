@@ -55,14 +55,14 @@ simplicity and safe parsing:
 moniker = "name=javad;email=ja7ad@live.com;web=https://google.com"
 ```
 
- - Keys and values are separated by `=`.
- - Multiple entries are separated by `;`.
- - Keys are case-insensitive and limited to alphanumeric and underscore
-	 (`_`) characters.
- - Values can include alphanumeric, underscore, dash, and limited
-	 URL-safe characters.
- - Plain monikers (e.g., `"Javad"`) remain valid and unchanged.
- - Empty moniker (`""`) is still permitted.
+- Keys and values are separated by `=`.
+- Multiple entries are separated by `;`.
+- Keys are case-insensitive and limited to alphanumeric and underscore
+  (`_`) characters.
+- Values can include alphanumeric, underscore, dash, and limited
+  URL-safe characters.
+- Plain monikers (e.g., `"Javad"`) remain valid and unchanged.
+- Empty moniker (`""`) is still permitted.
 
 ### Example
 
@@ -74,11 +74,11 @@ moniker = "name=javad;email=ja7ad@live.com;web=https://google.com"
 
 ### Validation Rules
 
- - Maximum length remains consistent with the current moniker field
-	 limit.
- - Invalid pairs (missing key or value) are ignored during parsing.
- - The first key-value pair’s `name` (if provided) is used as the display
-	 fallback in UI.
+- Maximum length remains consistent with the current moniker field
+  limit.
+- Invalid pairs (missing key or value) are ignored during parsing.
+- The first key-value pair’s `name` (if provided) is used as the display
+  fallback in UI.
 
 ## Backwards Compatibility
 
@@ -89,10 +89,9 @@ string as-is without error.
 
 ## Security Considerations
 
- - Node metadata is **public**, so sensitive information (e.g., personal
-	 email or phone numbers) should not be included.
- - Clients and explorers must properly escape and sanitize displayed
-	 fields to avoid HTML or injection attacks.
- - Structured parsing must strictly follow key/value delimiters and
-   ignore malformed entries to prevent potential buffer or format
-   issues.
+- Node metadata is **public**, so sensitive information (e.g., personal
+  email or phone numbers) should not be included.
+- Clients and explorers must properly escape and sanitize displayed
+  fields to avoid HTML or injection attacks.
+- Structured parsing must strictly follow key/value delimiters and
+  ignore malformed entries to prevent potential buffer or format issues.
