@@ -3,7 +3,7 @@ pip: 41
 title: Address Recovery
 description: Recovering Addresses after Wallet Recovery
 author: Pactus Development Team <info@pactus.org>
-status: Accepted
+status: Final
 type: Standards Track
 category: Core
 discussion-no: 242
@@ -26,8 +26,9 @@ This can also cause problems, especially if there is a gap in address usage.
 ### Solution
 
 This proposal suggests recovering addresses that have activity on the blockchain.
-An address is considered active if its public key is stored in the blockchain database.
-Otherwise, it is inactive or empty.
+An address is considered **active** if it is indexed in the blockchain database;
+otherwise, it is considered **inactive** or **empty**.
+Account activity can be determined using the [GetAccount](https://docs.pactus.org/api/grpc/) API.
 
 ## Specification
 
