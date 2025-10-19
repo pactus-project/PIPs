@@ -6,7 +6,7 @@ description: >
   richer, descriptive, and backward-compatible node identities.
 author: Pactus Development Team <info@pactus.org>
 status: Draft
-type: Standards Track
+type: Informational
 category: Network
 discussion-no:
 created: 2025-10-07
