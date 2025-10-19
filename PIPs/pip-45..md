@@ -7,7 +7,7 @@ description: >
 author: Pactus Development Team <info@pactus.org>
 status: Draft
 type: Standards Track
-category: Core
+category: Network
 discussion-no:
 created: 2025-10-07
 ---
