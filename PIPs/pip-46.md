@@ -5,6 +5,7 @@ description: Add Ed25519 (EdDSA) support including encoding, addresses, and HD d
 author: Pactus Development Team <info@pactus.org>
 status: Draft
 category: Core
+discussion-no: 266
 created: 2025-10-20
 ---
 
