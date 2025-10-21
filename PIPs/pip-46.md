@@ -58,15 +58,13 @@ Public keys are encoded with Bech32m using a distinct HRP.
 public_key_string = bech32m(HRP="public", TYPE="3", DATA="<compressed_public_key>")
 ```
 
-
 ### Private Key
 
 The Ed25519 private key is a 32-byte seed. It is encoded with Bech32m using a distinct HRP.
 
-```
+```text
 private_key_string = bech32m(HRP="SECRET", TYPE="3", DATA="<private_key_seed>")
 ```
-
 
 ### Derivation PATH
 
@@ -113,4 +111,3 @@ Note: Ed25519-based derivation does not support non-hardened children. All path 
 m/44'/21888'/3'/0'   # first Ed25519 account/address
 m/44'/21888'/3'/1'   # second Ed25519 account/address
 ```
-
