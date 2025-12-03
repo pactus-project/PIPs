@@ -5,6 +5,7 @@ author: Johan (@johan256x)
 status: Draft
 type: Standards Track
 category: Core
+discussion-no: 271
 created: 2025-11-27
 ---
 
@@ -235,3 +236,4 @@ Pending
 * PIP-1: Pactus Improvement Proposal Process
 * Cosmos SDK x/authz module (Grant/Allowance concepts)
 * XRP Ledger SetRegularKey transaction structure
+
