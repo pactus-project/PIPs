@@ -236,4 +236,3 @@ Pending
 * PIP-1: Pactus Improvement Proposal Process
 * Cosmos SDK x/authz module (Grant/Allowance concepts)
 * XRP Ledger SetRegularKey transaction structure
-
