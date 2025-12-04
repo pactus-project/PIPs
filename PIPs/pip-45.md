@@ -8,7 +8,7 @@ author: Pactus Development Team <info@pactus.org>
 status: Draft
 type: Informational
 category: Network
-discussion-no:
+discussion-no: 269
 created: 2025-10-07
 ---
 
