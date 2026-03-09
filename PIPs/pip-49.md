@@ -11,13 +11,17 @@ created: 2026-03-08
 
 ## Abstract
 
-This PIP proposes a validator delegation mechanism that allows a stake owner to authorize another party to operate a validator on their behalf. In return, block rewards are split between the validator operator and the stake owner based on a predefined share.
+This PIP proposes a validator delegation mechanism that allows a stake owner to authorize another party to
+operate a validator on their behalf. In return, block rewards are split between the validator operator and
+the stake owner based on a predefined share.
 
 ## Motivation
 
-Currently, only the stake owner can run a validator. Some users may not have the technical capability or infrastructure to operate validator nodes, while still wanting to participate in staking.
+Currently, only the stake owner can run a validator. Some users may not have the technical capability or
+infrastructure to operate validator nodes, while still wanting to participate in staking.
 
-This proposal enables stake owners to delegate validator operations to an operator and receive a configurable portion of rewards without running validator infrastructure themselves.
+This proposal enables stake owners to delegate validator operations to an operator and receive a configurable portion of
+rewards without running validator infrastructure themselves.
 
 ## Specification
 
@@ -32,17 +36,17 @@ The Pactus validator data structure is extended with an optional delegation sect
 
 ```go
 type validatorData struct {
-	PublicKey           *bls.PublicKey
-	Number              int32
-	Stake               amount.Amount
-	LastBondingHeight   uint32
-	UnbondingHeight     uint32
-	LastSortitionHeight uint32
+  PublicKey           *bls.PublicKey
+  Number              int32
+  Stake               amount.Amount
+  LastBondingHeight   uint32
+  UnbondingHeight     uint32
+  LastSortitionHeight uint32
 
-	// Optional delegation fields.
-	DelegateOwner  crypto.Address // Stake owner account address
-	DelegateShare  int64          // Owner share in nano PAC (portion of 1.0 PAC block reward)
-	DelegateExpiry int32          // Block height at which delegation expires
+  // Optional delegation fields.
+  DelegateOwner  crypto.Address // Stake owner account address
+  DelegateShare  int64          // Owner share in nano PAC (portion of 1.0 PAC block reward)
+  DelegateExpiry int32          // Block height at which delegation expires
 }
 ```
 
@@ -50,8 +54,8 @@ If delegation fields are absent, the validator is treated as non-delegated.
 
 ### Bond transaction
 
-The bond transaction includes optional delegation fields. If provided, the resulting validator is considered delegated and must satisfy all delegation validation rules (share bounds, expiry validity, and owner address presence).
-
+The bond transaction includes optional delegation fields. If provided, the resulting validator is considered delegated
+and must satisfy all delegation validation rules (share bounds, expiry validity, and owner address presence).
 
 ### Unbond transaction
 
@@ -63,7 +67,8 @@ Only the stake owner can receive principal stake in withdrawal transactions.
 
 ## Reward distribution
 
-`DelegateShare` defines the stake owner's reward share and MUST be within `[0, 0.7 PAC]`, represented in nano PAC (`10^8` units per PAC).
+`DelegateShare` defines the stake owner's reward share and MUST be within `[0, 0.7 PAC]`,
+represented in nano PAC (`10^8` units per PAC).
 
 The total block reward remains `1.0 PAC` and is distributed as:
 
