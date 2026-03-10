@@ -1,11 +1,12 @@
 ---
-pip: 50
+pip: 49
 title: Native State Anchoring (Pruning-Resistant Live State Slot)
 author: Johan (@johan256x)
 status: Draft
 type: Standards Track
 category: Core
-created: 2026-03-11
+discussion-no:
+created: 2026-03-08
 ---
 
 ## Abstract
