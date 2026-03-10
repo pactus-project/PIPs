@@ -113,12 +113,12 @@ AnchorType is a lightweight client hint intended for application-level classific
 
 Standardized values:
 
-0x00 = Raw Data / Generic Commitment
-0x01 = Service Manifest
-0x02 = DID Document
-0x03 = Verifiable Credential / Revocation Registry
-0x04 to 0xFE = Reserved
-0xFF = Private / Encrypted / Proprietary Usage
+* 0x00 = Raw Data / Generic Commitment
+* 0x01 = Service Manifest
+* 0x02 = DID Document
+* 0x03 = Verifiable Credential / Revocation Registry
+* 0x04 to 0xFE = Reserved
+* 0xFF = Private / Encrypted / Proprietary Usage
 
 The Reserved range is intentionally left undefined for future standardization without changing the field format.
 
