@@ -1,5 +1,5 @@
 ---
-pip: 49
+pip: 50
 title: Native State Anchoring (Pruning-Resistant Live State Slot)
 author: Johan (@johan256x)
 status: Draft
