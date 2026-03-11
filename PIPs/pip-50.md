@@ -6,7 +6,7 @@ status: Draft
 type: Standards Track
 category: Core
 created: 2026-03-11
----
+-------------------
 
 ## Abstract
 
@@ -184,31 +184,20 @@ This proposal defines the semantic fields and operations, but not a canonical bi
 
 ### 5. Deposit Rules
 
-`MinAnchorDeposit` is a protocol parameter defined by the chain implementation and may change across protocol versions.
-
-Rules:
-
-* Creating an anchor requires the resulting locked deposit to be at least `MinAnchorDeposit`.
-* Updating an existing anchor does not require additional deposit if the currently locked amount already satisfies the minimum required at the time the anchor was created or last validly updated under prior rules.
-* If `MinAnchorDeposit` decreases in a later protocol version, the account MAY recover the excess locked amount, provided the remaining deposit still satisfies the active minimum.
-* If `MinAnchorDeposit` increases later, existing anchors are not required to top up automatically solely because of the parameter change.
-
-### 5. Deposit Rules
-
-MinAnchorDeposit is a protocol parameter defined by the chain implementation and
-may change across protocol versions.
+`MinAnchorDeposit` is a protocol parameter defined by the chain implementation and
+ may change across protocol versions.
 
 #### Rules
 
 * Creating an anchor requires the resulting locked deposit to be at least
-  MinAnchorDeposit.
+ `MinAnchorDeposit`.
 * Updating an existing anchor does not require additional deposit if the currently
   locked amount already satisfies the minimum required at the time the anchor was
   created or last validly updated under prior rules.
-* If MinAnchorDeposit decreases in a later protocol version, the account may be
-  allowed to recover the excess locked amount, provided the remaining deposit still
-  satisfies the active minimum and the chain implementation supports this operation.
-* If MinAnchorDeposit increases later, existing anchors are not required to top up
+* If `MinAnchorDeposit` decreases in a later protocol version, the account MAY
+  recover the excess locked amount, provided the remaining deposit still satisfies
+  the active minimum.
+* If `MinAnchorDeposit` increases later, existing anchors are not required to top up
   automatically solely because of the parameter change.
 
 ### 6. Execution Logic
