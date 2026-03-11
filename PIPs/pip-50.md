@@ -117,10 +117,11 @@ Length MUST be between 32 and 64 bytes inclusive.
 
 ManifestURI
 An optional UTF-8 encoded URI or identifier pointing to externally stored metadata
-or content.
+ or content.
 Encoded byte length MUST be less than or equal to 128 bytes.
 The protocol stores this field as opaque UTF-8 text and does not validate URI scheme
 or content.
+The protocol does not require `ManifestURI` to be dereferenceable.
 
 AnchorType
 A one-byte application classification hint.
@@ -131,25 +132,25 @@ The amount of NanoPAC currently locked for maintaining the state slot.
 
 ### 2. AnchorType Registry
 
-AnchorType is a lightweight client hint intended for application-level classification.
-It does not create protocol-level behavior and must not be interpreted as an on-chain
-authorization or execution flag.
+`AnchorType` is a lightweight client hint intended for application-level classification.
+ It does not create protocol-level behavior and MUST NOT be interpreted as an on-chain
+ authorization or execution flag.
 
 Standardized values:
 
-0x00 = Raw Data / Generic Commitment
-0x01 = Service Manifest
-0x02 = DID Document
-0x03 = Verifiable Credential / Revocation Registry
-0x04 to 0xFE = Reserved
-0xFF = Private / Encrypted / Proprietary Usage
+* `0x00` = Raw Data / Generic Commitment
+* `0x01` = Service Manifest
+* `0x02` = DID Document
+* `0x03` = Verifiable Credential / Revocation Registry
+* `0x04` to `0xFE` = Reserved
+* `0xFF` = Private / Encrypted / Proprietary Usage
 
 The Reserved range is intentionally left undefined for future standardization without
-changing the field format.
+ changing the field format.
 
 ### 3. Transaction Payload
 
-A new transaction payload type, PayloadTypeAnchor, is introduced.
+A new transaction payload type, `PayloadTypeAnchor`, is introduced.
 
 It supports three operations:
 
@@ -157,35 +158,42 @@ It supports three operations:
 * update
 * delete
 
-The exact binary encoding is implementation-defined here, but the payload must carry
-enough information to distinguish between:
+This proposal defines the semantic fields and operations, but not a canonical binary
+ wire encoding. The payload MUST carry enough information to distinguish between:
 
 * setting or updating anchor fields
 * explicitly removing the anchor
 
 ### 4. Validation Rules
 
-#### For create or update operations
+#### For create or update operations:
 
-1. RootHash length MUST be between 32 and 64 bytes inclusive.
-2. ManifestURI, if present, MUST be valid UTF-8.
-3. ManifestURI encoded byte length MUST be less than or equal to 128 bytes.
-4. AnchorType is a single byte and may take any value, but only the standardized
-   values listed in this proposal have defined meanings.
+1. `RootHash` length MUST be between 32 and 64 bytes inclusive.
+2. `ManifestURI`, if present, MUST be valid UTF-8.
+3. `ManifestURI` encoded byte length MUST be less than or equal to 128 bytes.
+4. `AnchorType` is a single byte and may take any value, but only the standardized
+    values listed in this proposal have defined meanings.
 5. The resulting locked deposit for the account MUST be greater than or equal to
-   MinAnchorDeposit.
+   `MinAnchorDeposit`.
 
-#### For delete operations
+#### For delete operations:
 
 1. The request MUST explicitly indicate deletion.
+2. If no anchor exists for the sender account, the transaction MUST fail or no-op according to the chain’s standard missing-state mutation policy.
+3. On success, the locked deposit is refunded and the anchor entry is deleted from state.
 
-2. If no anchor exists for the sender account, the transaction MUST fail or no-op
-   according to the chain's standard missing-state mutation policy.
+### 5. Deposit Rules
 
-3. On success, the locked deposit is refunded and the anchor entry is deleted
-   from state.
+`MinAnchorDeposit` is a protocol parameter defined by the chain implementation and may change across protocol versions.
 
-4. Deposit Rules
+Rules:
+
+* Creating an anchor requires the resulting locked deposit to be at least `MinAnchorDeposit`.
+* Updating an existing anchor does not require additional deposit if the currently locked amount already satisfies the minimum required at the time the anchor was created or last validly updated under prior rules.
+* If `MinAnchorDeposit` decreases in a later protocol version, the account MAY recover the excess locked amount, provided the remaining deposit still satisfies the active minimum.
+* If `MinAnchorDeposit` increases later, existing anchors are not required to top up automatically solely because of the parameter change.
+
+### 5. Deposit Rules
 
 MinAnchorDeposit is a protocol parameter defined by the chain implementation and
 may change across protocol versions.
@@ -203,16 +211,16 @@ may change across protocol versions.
 * If MinAnchorDeposit increases later, existing anchors are not required to top up
   automatically solely because of the parameter change.
 
-### 5. Execution Logic
+### 6. Execution Logic
 
 #### Create / Update
 
 If the payload contains anchor data:
 
 1. Determine whether an anchor already exists for the sender account.
-2. Transfer Tx.Value, if any, from the sender balance into LockedDeposit.
-3. Overwrite RootHash, ManifestURI, and AnchorType with the new values.
-4. Persist the resulting AnchorData into AnchorRegistry under the sender address.
+2. `Tx.Value`, if any, is added to the account's existing `LockedDeposit`.
+3. Overwrite `RootHash`, `ManifestURI`, and `AnchorType` with the new values.
+4. Persist the resulting `AnchorData` into `AnchorRegistry` under the sender address.
 
 #### Delete / Withdrawal
 
@@ -234,35 +242,35 @@ no effect on the anchor's current validity or usability.
 
 ## Reading and Discovery Model
 
-Canonical read path
+### Canonical Read Path
 
 The canonical lookup method is by account address:
-GetAnchor(AccountAddress)
 
-This proposal defines the protocol-level state object. It does not require the
-consensus layer to maintain secondary indexes by AnchorType or any other derived
-field.
+`GetAnchor(AccountAddress)`
 
-## Discovery
+This proposal defines the protocol-level state object. It does not require the consensus
+ layer to maintain secondary indexes by `AnchorType` or any other derived field.
+
+### Discovery
 
 Global discovery is outside consensus scope.
 
-Applications, wallets, explorers, and indexers may build their own derived views
-over anchors. This includes filtering by AnchorType, fetching and validating
-ManifestURI contents, and presenting richer service or identity directories.
+Applications, wallets, explorers, and indexers may build their own derived views over anchors.
+ This includes filtering by `AnchorType`, fetching and validating `ManifestURI` contents,
+ and presenting richer service or identity directories.
 
-### Node assistance
+### Node Assistance
 
-Node implementations may expose helper interfaces to make external indexing
-cheaper, for example:
+Node implementations may expose helper interfaces to make external indexing cheaper, for
+ example:
 
-* paginated iteration over AnchorRegistry
+* paginated iteration over `AnchorRegistry`
 * registry snapshot export
 * filtered export in implementation-specific APIs
 * event streams for create, update, and delete operations
 
 Such interfaces are optional implementation conveniences. They are not part of
-consensus and do not alter canonical state semantics.
+ consensus and do not alter canonical state semantics.
 
 ## Use Cases
 
@@ -342,11 +350,13 @@ and implementation surface. This proposal intentionally stores only the canonica
 minimal state object. Discovery and derived views are better handled by external
 applications and node-level helper interfaces.
 
-Why UTF-8 for ManifestURI?
+Why UTF-8 for `ManifestURI`?
 
-UTF-8 is the standard interoperable text encoding used across modern software stacks.
+UTF-8 is the standard interoperable text encoding used across modern software stacks. 
 Requiring valid UTF-8 ensures consistent storage and decoding behavior across
-implementations while still treating the field as opaque application-level content.
+ implementations while still treating the field as opaque application-level content.
+ This requirement improves cross-implementation consistency for storage, validation,
+ and display.
 
 ## Resistance to State Bloat
 
