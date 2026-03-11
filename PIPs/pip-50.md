@@ -74,7 +74,7 @@ separate contract or convention.
 * Keep the state footprint small and bounded
 * Make anchor validity depend on current state presence
 * Allow explicit removal and deposit recovery
-* Support simple application-level classification via AnchorType
+* Support simple application-level classification via `AnchorType`
 * Keep discovery outside consensus while remaining easy to index off-chain
 
 ## Non-Goals
@@ -82,20 +82,21 @@ separate contract or convention.
 * Storing full application data on-chain
 * Defining a full decentralized discovery or directory protocol
 * Enforcing URI formats, content schemas, or application semantics
-* Maintaining on-chain secondary indexes by AnchorType
+* Maintaining on-chain secondary indexes by `AnchorType`
 * Replacing smart contracts or richer application layers
 
 ## Specification
 
 ### 1. State Storage: Anchor Registry
 
-The protocol introduces a sparse key-value map in the global state called AnchorRegistry.
+The protocol introduces a sparse key-value map in the global state
+called `AnchorRegistry`.
 
 Key:
-AccountAddress (20 bytes)
+`AccountAddress` (20 bytes)
 
 Value:
-AnchorData (bounded size)
+`AnchorData` (bounded size)
 
 Each account may own at most one anchor entry.
 
@@ -103,33 +104,33 @@ Suggested structure:
 
 ```go
 type AnchorData struct {
-RootHash      []byte
-ManifestURI   string
-AnchorType    uint8
-LockedDeposit int64
+    RootHash      []byte
+    ManifestURI   string
+    AnchorType    uint8
+    LockedDeposit int64
 }
 ```
 
 Field semantics:
 
-RootHash
-A cryptographic commitment to externally stored content or to an application-defined
-structure such as a Merkle root.
+`RootHash`
+A cryptographic commitment to externally stored content or to an
+application-defined structure such as a Merkle root.
 Length MUST be between 32 and 64 bytes inclusive.
 
-ManifestURI
-An optional UTF-8 encoded URI or identifier pointing to externally stored metadata
- or content.
+`ManifestURI`
+An optional UTF-8 encoded URI or identifier pointing to externally stored
+metadata or content.
 Encoded byte length MUST be less than or equal to 128 bytes.
 The protocol stores this field as opaque UTF-8 text and does not validate URI scheme
 or content.
 The protocol does not require `ManifestURI` to be dereferenceable.
 
-AnchorType
+`AnchorType`
 A one-byte application classification hint.
 The protocol stores this field but does not validate application semantics.
 
-LockedDeposit
+`LockedDeposit`
 The amount of NanoPAC currently locked for maintaining the state slot.
 
 ### 2. AnchorType Registry
@@ -168,7 +169,7 @@ This proposal defines the semantic fields and operations, but not a canonical bi
 
 ### 4. Validation Rules
 
-#### For create or update operations:
+#### For create or update operations
 
 1. `RootHash` length MUST be between 32 and 64 bytes inclusive.
 2. `ManifestURI`, if present, MUST be valid UTF-8.
@@ -178,10 +179,11 @@ This proposal defines the semantic fields and operations, but not a canonical bi
 5. The resulting locked deposit for the account MUST be greater than or equal to
    `MinAnchorDeposit`.
 
-#### For delete operations:
+#### For delete operations
 
 1. The request MUST explicitly indicate deletion.
-2. If no anchor exists for the sender account, the transaction MUST fail or no-op according to the chain’s standard missing-state mutation policy.
+2. If no anchor exists for the sender account, the transaction MUST fail or
+   no-op according to the chain’s standard missing-state mutation policy.
 3. On success, the locked deposit is refunded and the anchor entry is deleted from state.
 
 ### 5. Deposit Rules
@@ -217,8 +219,8 @@ If the payload contains anchor data:
 
 If the payload explicitly requests removal:
 
-1. Refund the full LockedDeposit to the sender balance.
-2. Delete the corresponding entry from AnchorRegistry.
+1. Refund the full `LockedDeposit` to the sender balance.
+2. Delete the corresponding entry from `AnchorRegistry`.
 3. Release the occupied state entry so the live network cost returns to zero for
    that account.
 
@@ -267,8 +269,8 @@ Such interfaces are optional implementation conveniences. They are not part of
 
 ### 1. Identity and DID Publication
 
-An account may publish an anchor whose ManifestURI points to a DID document or
-related metadata. The RootHash commits to the expected external content. Applications
+An account may publish an anchor whose `ManifestURI` points to a DID document or
+related metadata. The `RootHash` commits to the expected external content. Applications
 can verify that the retrieved document matches the commitment and that the anchor
 is currently active.
 
@@ -320,21 +322,21 @@ reason about for wallets, explorers, and implementations. Applications that need
 complex registries can still place richer structures off-chain and commit only a root
 or manifest through the single live anchor.
 
-Why 32 to 64 bytes for RootHash?
+Why 32 to 64 bytes for `RootHash`?
 
 A 32-byte hash is sufficient for common modern commitments such as SHA-256 or BLAKE3
 outputs. Allowing up to 64 bytes preserves compatibility with stronger or future-proof
 formats without forcing the overhead on everyone. The field is intentionally flexible
 while still remaining tightly bounded.
 
-Why AnchorType instead of richer on-chain metadata?
+Why `AnchorType` instead of richer on-chain metadata?
 
 A one-byte type tag is a compact and low-cost classification hint. Richer
 human-readable metadata would increase state size, raise phishing and naming issues,
 and push application-specific concerns into the protocol. The type tag plus an
 external manifest is a more efficient separation of concerns.
 
-Why no on-chain secondary index by AnchorType?
+Why no on-chain secondary index by `AnchorType`?
 
 Maintaining derived indexes in consensus would increase state size, update complexity,
 and implementation surface. This proposal intentionally stores only the canonical
@@ -343,7 +345,7 @@ applications and node-level helper interfaces.
 
 Why UTF-8 for `ManifestURI`?
 
-UTF-8 is the standard interoperable text encoding used across modern software stacks. 
+UTF-8 is the standard interoperable text encoding used across modern software stacks.
 Requiring valid UTF-8 ensures consistent storage and decoding behavior across
  implementations while still treating the field as opaque application-level content.
  This requirement improves cross-implementation consistency for storage, validation,
@@ -360,8 +362,8 @@ constrain long-term growth and encourage retention only for anchors that remain 
 
 This proposal requires a hard fork to introduce:
 
-* AnchorRegistry in the global state
-* PayloadTypeAnchor transaction support
+* `AnchorRegistry` in the global state
+* `PayloadTypeAnchor` transaction support
 * associated validation and execution logic
 
 It does not require changes to the standard account structure beyond the introduction
@@ -375,10 +377,11 @@ Applications must distinguish between historical existence and current validity.
 The authoritative signal is current state presence, not the mere fact that an anchor
 once appeared in transaction history.
 
-### 2. Malicious ManifestURI values
+### 2. Malicious `ManifestURI` values
 
-The protocol does not validate URI schemes, content type, or safety. Client software
-must sanitize and handle ManifestURI values safely before displaying or dereferencing
+The protocol does not validate URI schemes, content type, or safety. Client
+software must sanitize and handle `ManifestURI` values safely before displaying
+or dereferencing
 them.
 
 ### 3. Phishing and impersonation
