@@ -6,7 +6,7 @@ status: Draft
 type: Standards Track
 category: Core
 created: 2026-03-11
--------------------
+---
 
 ## Abstract
 
@@ -101,12 +101,14 @@ Each account may own at most one anchor entry.
 
 Suggested structure:
 
+```go
 type AnchorData struct {
 RootHash      []byte
 ManifestURI   string
 AnchorType    uint8
 LockedDeposit int64
 }
+```
 
 Field semantics:
 
