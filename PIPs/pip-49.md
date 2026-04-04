@@ -1,8 +1,8 @@
 ---
 pip: 49
 title: Validator Delegation
-author:
-status: Draft
+author: Pactus Development Team <info@pactus.org>
+status: Final
 type: Standards Track
 category: Core
 discussion-no:
