@@ -46,7 +46,7 @@ type validatorData struct {
   // Optional delegation fields.
   DelegateOwner  crypto.Address // Stake owner account address
   DelegateShare  int64          // Owner share in nano PAC (portion of 1.0 PAC block reward)
-  DelegateExpiry int32          // Block height at which delegation expires
+  DelegateExpiry uint32         // Block height at which delegation expires
 }
 ```
 
@@ -68,13 +68,13 @@ Only the stake owner can receive principal stake in withdrawal transactions.
 ## Reward distribution
 
 `DelegateShare` defines the stake owner's reward share and MUST be within `[0, 0.7 PAC]`,
-represented in nano PAC (`10^8` units per PAC).
+represented in nano PAC (`10^9` units per PAC).
 
 The total block reward remains `1.0 PAC` and is distributed as:
 
 1. Protocol share: `0.3 PAC`
-2. Validator operator share: `0.7 PAC - DelegateShare`
-3. Stake owner share: `DelegateShare`
+2. Stake owner share: `DelegateShare`
+3. Validator operator share: `0.7 PAC - DelegateShare`
 
 The three outputs MUST sum to exactly `1.0 PAC`.
 
