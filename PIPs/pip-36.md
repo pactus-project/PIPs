@@ -50,7 +50,7 @@ where multiple clients may need updates about specific events like new blocks or
 Messages in ZeroMQ, following the Pactus message format,
 begin with a 2-byte Topic ID, followed by topic-specific data and a 4-byte sequence number,
 The sequence number, which acts as an incremental counter for each Topic ID and
-is encoded in little-endian format, helps detect lost messages by tracking the message count.
+is encoded in big-endian format, helps detect lost messages by tracking the message count.
 
 ![Pactus zeroMQ Message Format](../assets/pip-36/pactus_zeromq.png)
 
