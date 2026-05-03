@@ -56,11 +56,12 @@ If a validator wasn't in the committee for the last 60,000 blocks, their score d
 
 When a validator within the committee receives a proposal from another validator,
 it first checks the availability score of the proposer.
-If the availability score is less than $0.9$, it rejects the proposal and
-enters the proposer-change phase [^1].
+If the availability score is less than $0.666667$ [^1], it rejects the proposal and
+enters the proposer-change phase [^2].
 Since the majority of validators make the same decision, the proposal will be rejected,
 and the validator won't receive any reward.
 
 ## References
 
-[^1]: [Pactus consensus protocol](https://docs.pactus.org/protocol/consensus/protocol/)
+[^1]: [Minimum Availability Score](https://pips.pactus.org/PIPs/pip-26)
+[^2]: [Pactus consensus protocol](https://docs.pactus.org/protocol/consensus/protocol/)
