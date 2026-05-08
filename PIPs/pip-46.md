@@ -60,10 +60,11 @@ public_key_string = bech32m(HRP="public", TYPE="3", DATA="<compressed_public_key
 
 ### Private Key
 
-The Ed25519 private key is a 32-byte seed. It is encoded with Bech32m using a distinct HRP.
+The Ed25519 private key is a random 32-byte.
+It is encoded with Bech32m using a distinct HRP.
 
 ```text
-private_key_string = bech32m(HRP="SECRET", TYPE="3", DATA="<private_key_seed>")
+private_key_string = bech32m(HRP="SECRET", TYPE="3", DATA="<private_key_data>")
 ```
 
 ### Derivation PATH
