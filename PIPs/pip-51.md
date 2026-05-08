@@ -79,5 +79,3 @@ After the upgrade is activated, nodes that have not upgraded their software will
 no longer be able to parse or validate new blocks produced under the new version.
 These outdated nodes must upgrade to the latest software version in order to
 rejoin the network and synchronize the chain.
-
-
