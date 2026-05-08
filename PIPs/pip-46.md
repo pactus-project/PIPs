@@ -50,7 +50,7 @@ We define signature type `3` for Ed25519 key pairs.
 
 The public key is 32 bytes in the standard Ed25519 compressed form:
 it encodes the y-coordinate, and the most significant bit of the final octet encodes
-the sign bit of the x-coordinate. See RFC 8032 for details.
+the sign bit of the x-coordinate. See RFC 8032, Section 5.1.5, for details.
 
 Public keys are encoded with Bech32m using a distinct HRP.
 
