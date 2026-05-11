@@ -3,7 +3,7 @@ pip: 46
 title: Supporting Ed25519 Curve
 description: Add Ed25519 (EdDSA) support including encoding, addresses, and HD derivation
 author: Pactus Development Team <info@pactus.org>
-status: Draft
+status: Replaced
 category: Core
 discussion-no: 266
 created: 2025-10-20
