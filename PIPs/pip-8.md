@@ -47,7 +47,7 @@ We propose to define address types as follows:
 For the treasury address, the data is a string of zeros in 21-byte length: `000000000000000000000000000000000000000000`.
 In both `Validator address` and `BLS-Account address`, the data is the hash of the corresponding public key.
 
-## Examples
+### Examples
 
 Examples of validator address:
 
@@ -61,9 +61,9 @@ Examples of BLS-account address:
 - `pc1zhjk4pujm770elt30ud2d868czg9kth3e3nefnl`
 - `pc1zzya8am0h0y0nu6msxz5j5pt9tsqsdvgzs5r89v`
 
-Note that validator addresses start with `pc1p`, and BLS account addresses start with `pc1z`.
+Note that validator addresses start with `pc1p...`, and BLS account addresses start with `pc1z...`.
 
-## Address derivation path
+## BLS Address Derivation Path
 
 Currently, the wallet derivation path in Pactus is similar to [EIP-2334](https://eips.ethereum.org/EIPS/eip-2334).
 To align with this proposal, we suggest changing the derivation path to:
@@ -83,14 +83,14 @@ This indicates the use of the BLS subtree for the derivation path.
 
 Hardened derivation is used at this level.
 
-### Coin type
+### Coin Type
 
 The coin type is set to `21888`, which matches the PAC coin type registered at
 [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md).
 
 Hardened derivation is used at this level.
 
-### Address type
+### Address Type
 
 The address type is same as the type of address, setting 1 for validators and 2 for accounts.
 The value 0 is reserved and is not used.
@@ -100,12 +100,10 @@ Hardened derivation is used at this level.
 ### Address Index
 
 Addresses start from index 0 and increase sequentially.
-This number is similar to the child index in
-[BIP32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki) derivation.
 
 Non-Hardened derivation is used at this level.
 
-## References
+## Implementations
 
-- [BIP-0044](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki)
-- [EIP-2334](https://eips.ethereum.org/EIPS/eip-2334)
+- [Go Implementation](https://github.com/pactus-project/pactus)
+- [Python Implementation (No Wallet)](https://github.com/pactus-project/python-sdk)
