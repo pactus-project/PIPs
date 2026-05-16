@@ -82,6 +82,7 @@ private_key_string = bech32m(HRP="SECRET", TYPE="4", DATA="<private_key_data>")
 
 ECDSA signatures use the secp256k1 curve and follow these rules:
 
+- Message digests use BLAKE2b (`blake2b_256`).
 - Signature values are generated using deterministic nonce generation per RFC 6979.
 - The signature is encoded as a fixed 64-byte sequence: `r || s`.
 - The value `s` MUST be in the lower half of the curve order to ensure a
@@ -145,7 +146,8 @@ The following test vectors demonstrate the encoding and decoding of secp256k1 ke
 - **Encoded Public Key**: `public1yqdkke2kzfzheda405lusfa2sy5aq70hn7k4zle5r322my9nfz35wyfamrfs`
 - **Encoded Address**: `pc1y90qakls8jlz9hyvdcsqsj0yj2lrqz26vqu7l0z`
 - **Message (bytes)**: `pactus`
-- **Signature (hex)**: `16e6f8bcdb92964a35773aae200628a5b470b6488d42ceef6538da0b4ffd3b42098dd821eea96f66ba02c9c4473443ab51c411ab78adfbb90d53b07ca1d6862b`
+- **Message Digest (hex)**: `ea020ace5c968f755dfc1b5921e574191cd9ff438639badae8a69f667e0d5970`
+- **Signature (hex)**: `c86779676d217b04979434e5bd37eddd02b671e9a54b48d3a812c7862dcb539631bb5e8459fec007608f50ea5661e0a5215aac976705404cb4f36ee623e63199`
 
 ### HD Wallet Test Cases
 
