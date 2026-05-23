@@ -159,5 +159,5 @@ refer to [SLIP-0010](https://github.com/satoshilabs/slips/blob/master/slip-0010.
 
 ## Implementations
 
-* [Go Implementation](https://github.com/pactus-project/pactus)
-* [Python Implementation (No HD Wallet)](https://github.com/pactus-project/python-sdk)
+- [Go Implementation](https://github.com/pactus-project/pactus)
+- [Python Implementation (No HD Wallet)](https://github.com/pactus-project/python-sdk)
