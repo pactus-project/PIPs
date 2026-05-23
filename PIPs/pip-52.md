@@ -82,12 +82,16 @@ Signature generation and verification follow RFC 8032.
 
 ### Derivation Path
 
-For hierarchical deterministic key generation, this proposal follows [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md)
+For hierarchical deterministic key generation,
+this proposal follows [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md)
 with a fully hardened derivation path.
 
 ```text
 m / purpose' / coin_type' / address_type' / address_index'
 ```
+
+Ed25519-based derivation does not support non-hardened child keys.
+All components in the derivation path MUST be hardened.
 
 #### Purpose
 
@@ -114,9 +118,6 @@ Addresses start from index `0` and increase sequentially.
 
 Hardened derivation is used at this level.
 
-Note: Ed25519-based derivation does not support non-hardened child keys.
-All components in the derivation path MUST be hardened.
-
 ##### Example Paths
 
 ```text
@@ -130,14 +131,14 @@ m/44'/21888'/3'/1'   # second Ed25519 account/address
 
 The following test vectors demonstrate encoding and decoding of Ed25519 keys and addresses:
 
-* **Private Key Data (hex)**: `000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f`
-* **Public Key Data (hex)**: `03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8`
-* **Address Data (hex)**: `0396a882c41ef85a07c75a6416a57fcce95aad4a3f`
-* **Encoded Private Key**: `SECRET1RQQQSYQCYQ5RQWZQFPG9SCRGWPUGPZYSNZS23V9CCRYDPK8QARC0SW5D8X2`
-* **Encoded Public Key**: `public1rqwss00lnecgtu8tsm5vwwj7qn9n7f43snwjs6hcamjrxgyj4xxuq5agu5g`
-* **Encoded Address**: `pc1rj65g93q7lpdq0366vst22l7va9d26j3l2vr0em`
-* **Message (bytes)**: `pactus`
-* **Signature (hex)**: `1fc2c800499342d08242db9c3eb654027cb7b821e6af9ede56dfdb67e824f15bddb419d2db3fd5aaf3ef1a9ebb9a9deb749380f0d6a110cbe95319fe9f794305`
+- **Private Key Data (hex)**: `000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f`
+- **Public Key Data (hex)**: `03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8`
+- **Address Data (hex)**: `0396a882c41ef85a07c75a6416a57fcce95aad4a3f`
+- **Encoded Private Key**: `SECRET1RQQQSYQCYQ5RQWZQFPG9SCRGWPUGPZYSNZS23V9CCRYDPK8QARC0SW5D8X2`
+- **Encoded Public Key**: `public1rqwss00lnecgtu8tsm5vwwj7qn9n7f43snwjs6hcamjrxgyj4xxuq5agu5g`
+- **Encoded Address**: `pc1rj65g93q7lpdq0366vst22l7va9d26j3l2vr0em`
+- **Message (bytes)**: `pactus`
+- **Signature (hex)**: `1fc2c800499342d08242db9c3eb654027cb7b821e6af9ede56dfdb67e824f15bddb419d2db3fd5aaf3ef1a9ebb9a9deb749380f0d6a110cbe95319fe9f794305`
 
 ### HD Wallet Test Cases
 
@@ -146,6 +147,6 @@ refer to [SLIP-0010](https://github.com/satoshilabs/slips/blob/master/slip-0010.
 
 ## Implementations
 
-* [Go Implementation](https://github.com/pactus-project/pactus)
-* [Rust Implementation](https://github.com/trustwallet/wallet-core)
-* [Python Implementation (No HD Wallet)](https://github.com/pactus-project/python-sdk)
+- [Go Implementation](https://github.com/pactus-project/pactus)
+- [Rust Implementation](https://github.com/trustwallet/wallet-core)
+- [Python Implementation (No HD Wallet)](https://github.com/pactus-project/python-sdk)
