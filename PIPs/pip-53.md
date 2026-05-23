@@ -94,12 +94,15 @@ Verification follows the standard ECDSA verification algorithm over secp256k1.
 
 #### Derivation Path
 
-For hierarchical deterministic key generation, this proposal follows [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md)
-and allows a non-hardened address index for secp256k1.
+For hierarchical deterministic key generation,
+this proposal follows [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md)
+with a fully hardened derivation path.
 
 ```text
-m / purpose' / coin_type' / address_type' / address_index
+m / purpose' / coin_type' / address_type' / address_index'
 ```
+
+All components in the derivation path MUST be hardened.
 
 #### Purpose
 
@@ -124,13 +127,13 @@ Hardened derivation is used at this level.
 
 Addresses start at index `0` and increase sequentially.
 
-Non-hardened derivation is used at this level to support public-key-only address generation.
+Hardened derivation is used at this level.
 
 ##### Example Paths
 
 ```text
-m/44'/21888'/4'/0   # first secp256k1 account/address
-m/44'/21888'/4'/1   # second secp256k1 account/address
+m/44'/21888'/4'/0'   # first secp256k1 account/address
+m/44'/21888'/4'/1'   # second secp256k1 account/address
 ```
 
 ## Test Cases
@@ -156,4 +159,5 @@ refer to [SLIP-0010](https://github.com/satoshilabs/slips/blob/master/slip-0010.
 
 ## Implementations
 
-- [Python Implementation (No HD Wallet)](https://github.com/pactus-project/python-sdk)
+* [Go Implementation](https://github.com/pactus-project/pactus)
+* [Python Implementation (No HD Wallet)](https://github.com/pactus-project/python-sdk)

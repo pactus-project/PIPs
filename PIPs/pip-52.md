@@ -82,12 +82,16 @@ Signature generation and verification follow RFC 8032.
 
 ### Derivation Path
 
-For hierarchical deterministic key generation, this proposal follows [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md)
+For hierarchical deterministic key generation,
+this proposal follows [SLIP-10](https://github.com/satoshilabs/slips/blob/master/slip-0010.md)
 with a fully hardened derivation path.
 
 ```text
 m / purpose' / coin_type' / address_type' / address_index'
 ```
+
+Ed25519-based derivation does not support non-hardened child keys.
+All components in the derivation path MUST be hardened.
 
 #### Purpose
 
@@ -113,9 +117,6 @@ Hardened derivation is used at this level.
 Addresses start from index `0` and increase sequentially.
 
 Hardened derivation is used at this level.
-
-Note: Ed25519-based derivation does not support non-hardened child keys.
-All components in the derivation path MUST be hardened.
 
 ##### Example Paths
 
