@@ -19,14 +19,18 @@ for future years.
 
 ## Motivation
 
-The Pactus blockchain uses a staking model that enables even low-resource community members to participate as validators.
-To incentivize participation, 1 coin is distributed from the treasury to a validator every 10 seconds for proposing a block,
-amounting to 8640 coins per day. Additionally, validators currently receive all transaction fees, accelerating
+The Pactus blockchain uses a staking model that enables even
+low-resource community members to participate as validators.
+To incentivize participation, 1 coin is distributed from the treasury
+to a validator every 10 seconds for proposing a block,
+amounting to 8640 coins per day. Additionally, validators currently
+receive all transaction fees, accelerating
 depletion of the treasury.
 
-With 42 million PAC initially allocated to the treasury, projections indicate the treasury will be exhausted in
-approximately 13 years.
-Without intervention, the network will no longer be able to distribute base block rewards after that point, threatening long-term
+With 42 million PAC initially allocated to the treasury, projections
+indicate the treasury will be exhausted in approximately 13 years.
+Without intervention, the network will no longer be able to
+distribute base block rewards after that point, threatening long-term
 validator engagement and network security.
 
 ## Specification
@@ -40,7 +44,8 @@ validator engagement and network security.
 
 - No change to block time, staking rules, or validator selection logic.
 
-- Treasury address: [000000000000000000000000000000000000000000](https://bootstrap1.pactus.org/account/address/000000000000000000000000000000000000000000)
+- Treasury address:
+  [000000000000000000000000000000000000000000](https://pactusscan.com/address/000000000000000000000000000000000000000000)
 
 ## Backwards Compatibility
 
@@ -59,6 +64,8 @@ No backward compatibility issues found.
 
 ## Security Considerations
 
-Redirecting fees to the treasury may slightly reduce short-term validator income but ensures long-term reward sustainability.
-It may reduce incentive for spam transactions by removing fee revenue motivation. No additional attack vectors are introduced
+Redirecting fees to the treasury may slightly reduce short-term
+validator income but ensures long-term reward sustainability.
+It may reduce incentive for spam transactions by removing fee revenue motivation.
+No additional attack vectors are introduced
 by this proposal.

@@ -36,7 +36,8 @@ and execution is organized into a sequence of rounds.
 Within a round, a single validator is designated as the proposer responsible for collecting transactions and
 creating a proposal block.
 The proposer then broadcasts a proposal message that includes the proposal block to other validators.
-Other validators, once they receive the proposal message, validate it and broadcast the $PREPARE$ message to other validators.
+Other validators, once they receive the proposal message, validate it and broadcast
+the $PREPARE$ message to other validators.
 
 ### Fast Agreement Path
 
@@ -59,7 +60,8 @@ that is biased toward zero.
 If a correct validator has received more than $2f+1$ Prepared messages,
 the initial value should be set to zero; otherwise, it should be set to one.
 The outcome of the binary agreement determines whether the proposer should be changed or not.
-If the validators agree to not change the proposer, they continue the agreement protocol by moving to the precommit step.
+If the validators agree to not change the proposer, they continue the
+agreement protocol by moving to the precommit step.
 Otherwise, they increase the round number, and the next proposer proposes the new proposal.
 
 Figure below shows the communication patterns for the agreement path when one validator is faulty.

@@ -39,9 +39,11 @@ When the cache reaches its capacity, the least recently used items will be evict
 ### Data Inclusion in the Cache
 
 1. **Public Keys**:
-   As transactions are committed for the first time, their associated public keys will be indexed by the signer's address.
+   As transactions are committed for the first time,
+   their associated public keys will be indexed by the signer's address.
    When a new transaction is processed, the cache will be checked for the presence of the signer's public key.
-   If found, the public key will be retrieved from the cache, eliminating the need to include it in the transaction data.
+   If found, the public key will be retrieved from the cache,
+   eliminating the need to include it in the transaction data.
 
 2. **Validators**:
    Validators information will be loaded into the cache when the blockchain starts or when new validators are added.

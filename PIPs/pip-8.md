@@ -30,9 +30,10 @@ However, there are some problems with this approach:
    [Bond transaction](https://docs.pactus.org/protocol/transaction/bond/)
    (An issue regarding this problem is reported [here](https://github.com/pactus-project/pactus/issues/510)).
 
-1. The address doesn't indicate its usage.
+2. The address doesn't indicate its usage.
    This makes it challenging for both humans and machines to identify the purpose of each address,
-   whether it belongs to an `Account` or `Validator`. This is particularly troublesome in applications like block explorers.
+   whether it belongs to an `Account` or `Validator`.
+   This is particularly troublesome in applications like block explorers.
 
 ## Specification
 
