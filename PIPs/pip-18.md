@@ -36,7 +36,8 @@ This delay could cause their signatures to arrive late compared to other validat
 The proposal suggests adding a time check routine that repeats every minute.
 This routine calculates the "Clock Offset" in each run,
 which is defined as the estimated offset of the local system clock relative to the network's clock.
-The network clock can be obtained using the Network Time Protocol (NTP) and a set of NTP servers from the NTP Pool Project.
+The network clock can be obtained using the Network Time Protocol (NTP) and
+a set of NTP servers from the NTP Pool Project.
 The NTP Pool Project is a globally distributed network of volunteer-operated time servers,
 ensuring precise time synchronization across various geographic locations.
 

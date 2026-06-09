@@ -32,7 +32,8 @@ will simultaneously offer a more streamlined transaction format.
 
 ### LockTime vs. Stamp
 
-With the finalization of [PIP-2](https://pips.pactus.org/PIPs/pip-2), each transaction now includes the `LockTime` field.
+With the finalization of [PIP-2](https://pips.pactus.org/PIPs/pip-2),
+each transaction now includes the `LockTime` field.
 The `LockTime` is mandatory and should be set to the block number that the transaction can be committed after.
 In this case, the need to set the stamp is no longer necessary, and users will likely ignore it.
 

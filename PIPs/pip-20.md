@@ -30,7 +30,7 @@ and allow or deny access based on the authentication outcome.
 
 ### Generate Password Hash
 
-1. Generate Bcrypt Hash:
+#### 1. Generate Bcrypt Hash
 
 Bcrypt is a widely used hashing algorithm for securely hashing passwords.
 It includes a salt to protect against rainbow table attacks and
@@ -56,7 +56,7 @@ htpasswd -bnB foo bar
 
 This command outputs the bcrypt-hashed password for the user "foo".
 
-2. Store the Hashed Password in Configuration File:
+#### 2. Store the Hashed Password
 
 Once the bcrypt-hashed password is obtained, it can be stored in the configuration file:
 

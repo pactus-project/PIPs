@@ -150,7 +150,8 @@ The following test vectors demonstrate the encoding and decoding of secp256k1 ke
 - **Encoded Address**: `pc1y90qakls8jlz9hyvdcsqsj0yj2lrqz26vqu7l0z`
 - **Message (bytes)**: `pactus`
 - **Message Digest (hex)**: `ea020ace5c968f755dfc1b5921e574191cd9ff438639badae8a69f667e0d5970`
-- **Signature (hex)**: `c86779676d217b04979434e5bd37eddd02b671e9a54b48d3a812c7862dcb539631bb5e8459fec007608f50ea5661e0a5215aac976705404cb4f36ee623e63199`
+- **Signature (hex)**:
+  `c86779676d217b04979434e5bd37eddd02b671e9a54b48d3a812c7862dcb539631bb5e8459fec007608f50ea5661e0a5215aac976705404cb4f36ee623e63199`
 
 ### HD Wallet Test Cases
 

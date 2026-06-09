@@ -159,50 +159,50 @@ language, integrating with PVM to accelerate dApp development.
 
 PVM supports WASM-based smart contracts.
 
-1. Prerequisites:
+### 1. Prerequisites
 
 • PVM operational.
 • Pactus SDK (JS/Python) for tx building.
 • AI fine-tuned for code parsing (e.g., via CodeBERT).
 
-2. User Input Processing:
+### 2. User Input Processing
 
 • Developer inputs: “Deploy contract: wasm code” or similar.
 • AI parses code, language, and parameters using NLP.
 
-3. Code Validation:
+### 3. Code Validation
 
 • Syntax check with linters (e.g., wasm-lint for WASM).
 • Static analysis for vulnerabilities (e.g., custom WASM tools).
 • Simulate execution in sandbox (wasmtime for WASM).
 
-4. Compilation:
+### 4. Compilation
 
 • Compile to PVM bytecode (e.g., wasm-pack or Pactus-specific compiler).
 • AI handles errors, suggests fixes (e.g., missing imports).
 
-5. Transaction Construction:
+### 5. Transaction Construction
 
 • Pactus AI & DAO Proposal
 • Build deployment tx via Pactus gRPC/REST API.
 • Include bytecode, ABI, constructor args; calculate fees per PIP-31.
 
-6. Signing and Broadcast:
+### 6. Signing and Broadcast
 
 • User approves/signs via chatbot (local key management).
 • Broadcast tx to Pactus nodes.
 
-7. Post-Deployment:
+### 7. Post-Deployment
 
 • Poll tx status via API; return contract address, logs.
 • AI enables interaction (e.g., “Call function X with args Y”).
 
-8. Decentralized Aspects:
+### 8. Decentralized Aspects
 
 • Offload compilation/validation to compute contributors (e.g., via distributed WebAssembly runtimes).
 • DAO governs supported languages and tools.
 
-9. Security:
+### 9. Security
 
 • Rate limits and stake requirements (e.g., 100 PAC) for deployments.
 • AI flags risky code (e.g., reentrancy risks) for manual review or veto.

@@ -50,5 +50,6 @@ To support these businesses, we need to allow multiple receivers in a single tra
 
 - **Complexity:** Increases the complexity of transaction validation and processing.
 - **Security:** Requires rigorous security measures to prevent batch transaction abuse.
-- **Redundancy:** If gas-less transactions are implemented, the primary benefit of batch transactions (cost saving) is diminished.
+- **Redundancy:** If gas-less transactions are implemented, the primary benefit of
+  batch transactions (cost saving) is diminished.
 - **Debugging Difficulties:** Troubleshooting failed transactions can become more complex.

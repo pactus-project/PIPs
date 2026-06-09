@@ -138,7 +138,8 @@ The following test vectors demonstrate encoding and decoding of Ed25519 keys and
 - **Encoded Public Key**: `public1rqwss00lnecgtu8tsm5vwwj7qn9n7f43snwjs6hcamjrxgyj4xxuq5agu5g`
 - **Encoded Address**: `pc1rj65g93q7lpdq0366vst22l7va9d26j3l2vr0em`
 - **Message (bytes)**: `pactus`
-- **Signature (hex)**: `1fc2c800499342d08242db9c3eb654027cb7b821e6af9ede56dfdb67e824f15bddb419d2db3fd5aaf3ef1a9ebb9a9deb749380f0d6a110cbe95319fe9f794305`
+- **Signature (hex)**:
+  `1fc2c800499342d08242db9c3eb654027cb7b821e6af9ede56dfdb67e824f15bddb419d2db3fd5aaf3ef1a9ebb9a9deb749380f0d6a110cbe95319fe9f794305`
 
 ### HD Wallet Test Cases
 

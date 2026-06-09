@@ -36,11 +36,12 @@ However, in practice, the double proposer often still manages to get rewarded. H
    Since the majority of the nodes are running the latest version, the outdated proposal will get ignored,
    and only one proposal will be voted on.
 
-1. Due to network topology and time differences between validators,
+2. Due to network topology and time differences between validators,
    one proposal can be received by the majority of the validators faster.
    Therefore, the first proposal can garner 2/3 of the votes before the second proposal causes vote divergence.
 
-This proposal suggests starting the "change proposer" phase once the second signed proposal is received by the validators,
+This proposal suggests starting the "change proposer" phase once the
+second signed proposal is received by the validators,
 no matter its validity.
 By doing so, validators will have no incentive to run duplicated nodes.
 
