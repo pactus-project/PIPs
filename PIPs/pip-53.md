@@ -3,7 +3,7 @@ pip: 53
 title: Supporting secp256k1 Curve
 description: Add secp256k1 (ECDSA) support, including encoding, addresses, and HD derivation
 author: Pactus Development Team <info@pactus.org>
-status: Draft
+status: Final
 type: Standards Track
 category: Core
 created: 2026-05-12
