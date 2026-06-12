@@ -12,7 +12,7 @@ created: 2026-06-09
 ## Abstract
 
 This PIP documents the fix for a critical integer overflow vulnerability
-in the BatchTransfer transaction type ([PIP-39](http://pips.pactus.org/PIPs/pip-39)) that allowed minting coins
+in the BatchTransfer transaction type ([PIP-39](https://pips.pactus.org/PIPs/pip-39)) that allowed minting coins
 beyond the total supply, and specifies the chain recovery protocol used
 to restore the network to a valid state.
 
