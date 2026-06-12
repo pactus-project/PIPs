@@ -12,7 +12,7 @@ created: 2026-06-09
 ## Abstract
 
 This PIP documents the fix for a critical integer overflow vulnerability
-in the BatchTransfer transaction type (PIP-39) that allowed minting coins
+in the BatchTransfer transaction type ([PIP-39](http://pips.pactus.org/PIPs/pip-39)) that allowed minting coins
 beyond the total supply, and specifies the chain recovery protocol used
 to restore the network to a valid state.
 
@@ -71,20 +71,20 @@ for _, r := range payload.Recipients {
 }
 ```
 
-| Check | Rule |
-|-------|------|
-| Per-recipient amount | `0 < amount <= MaxNanoPAC` |
-| Aggregate amount | `sum(amounts) <= MaxNanoPAC` |
+| Check                | Rule                                      |
+|----------------------|-------------------------------------------|
+| Per-recipient amount | `0 < amount <= MaxNanoPAC`                |
+| Aggregate amount     | `sum(amounts) <= MaxNanoPAC`              |
 | Number of recipients | `1 <= count <= 8` (unchanged from PIP-39) |
-| Duplicate recipients | No two recipients share the same address |
+| Duplicate recipients | No two recipients share the same address  |
 
 ### Part 2: Chain Recovery Protocol
 
 The chain rolls back to block **7,406,820**, the last valid block before
 the exploit transaction at block 7,406,821.
 
-The committee for block **7,406,821** is reset to a **Bootstrap
-Committee**, which allows the network to resume block production
+The committee for block **7,406,821** is reset to a **Bootstrap Committee**,
+which allows the network to resume block production
 immediately without waiting for the full validator set to rejoin.
 Validators from the existing 6,508 active validators gradually rejoin
 the network as they upgrade to the patched software.
