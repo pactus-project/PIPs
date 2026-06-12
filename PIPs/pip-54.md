@@ -1,7 +1,7 @@
 ---
 pip: 54
 title: Safe Amount Validation for BatchTransfer
-author: andrut <andrut-ds>
+author: andrut <andrut@pactus.org>
 status: Draft
 type: Standards Track
 category: Core
