@@ -2,7 +2,7 @@
 pip: 54
 title: Safe Amount Validation for BatchTransfer
 author: andrut <andrut@pactus.org>
-status: Draft
+status: Final
 type: Standards Track
 category: Core
 discussion-no: 297
@@ -75,7 +75,7 @@ for _, r := range payload.Recipients {
 |----------------------|-------------------------------------------|
 | Per-recipient amount | `0 < amount <= MaxNanoPAC`                |
 | Aggregate amount     | `sum(amounts) <= MaxNanoPAC`              |
-| Number of recipients | `1 <= count <= 8` (unchanged from PIP-39) |
+| Number of recipients | `2 <= count <= 8` (unchanged from PIP-39) |
 | Duplicate recipients | No two recipients share the same address  |
 
 ### Part 2: Chain Recovery Protocol
