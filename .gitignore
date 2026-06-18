@@ -21,3 +21,10 @@ tmp
 # vscode
 .vscode
 Gemfile.lock
+
+# AI agents
+.ai
+.entire
+.claude
+.agent
+.cursor
