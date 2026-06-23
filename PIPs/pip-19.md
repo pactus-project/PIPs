@@ -20,7 +20,7 @@ Some users are running Pactus on extremely low-spec machines, potentially compro
 For example, at the time of writing this proposal,
 only 50% of validators have signed more than 90% of blocks in a one-week period.
 Considering that validators have a 10-second window to validate the block and broadcast their votes,
-this level of performance is suboptimal
+this level of performance is suboptimal.
 Therefore, we need to take action to discourage users from dedicating very low-spec machines to run Pactus.
 
 The chart below is extracted from the Testnet data over a one-week period:

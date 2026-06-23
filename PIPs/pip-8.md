@@ -93,7 +93,7 @@ Hardened derivation is used at this level.
 
 ### Address Type
 
-The address type is same as the type of address, setting 1 for validators and 2 for accounts.
+The address type is the same as the type of address, setting 1 for validators and 2 for accounts.
 The value 0 is reserved and is not used.
 
 Hardened derivation is used at this level.

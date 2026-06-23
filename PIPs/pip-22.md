@@ -1,6 +1,6 @@
 ---
 pip: 22
-title: Agent Node Defination
+title: Agent Node Definition
 author: Nagaraj (@ragnarok87)
 status: Final
 type: Standards Track
@@ -32,4 +32,6 @@ This proposal suggests defining the node field as the application type of the ag
 
 ## Security Considerations
 
-The implementation of this time check feature should not compromise security.
+Redefining the node field as an application type prevents fingerprinting of the
+operating system or custom application names, reducing the attack surface for
+network-level targeting.

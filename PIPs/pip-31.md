@@ -13,7 +13,7 @@ created: 08-08-2024
 ## Abstract
 
 This document explains the consumptional fee.
-The consumptional fee calculates based on the amount of data each address consumes daily.
+The consumptional fee is calculated based on the amount of data each address consumes daily.
 
 ## Motivation
 
@@ -40,7 +40,7 @@ This parameter is part of the node configuration, allowing each validator to set
 
 ### Consumptional Fee
 
-The consumptional Fee calculates as follow:
+The consumptional Fee is calculated as follows:
 
 $$
 \text{consumptional_fee} = ( \text{coefficient} \times \text{consumption} \times \text{unit_price} )
