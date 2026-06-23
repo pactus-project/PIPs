@@ -3,7 +3,7 @@ pip: 51
 title: Protocol Upgrade Mechanism
 description: Explain how Pactus performs protocol upgrades.
 author: Pactus Development Team <info@pactus.org>
-status: Draft
+status: Accepted
 type: Informational
 created: 2026-05-08
 ---
@@ -15,8 +15,8 @@ A protocol upgrade is similar to a hard fork in Proof-of-Work blockchains:
 it introduces backward-incompatible changes by raising the block version.
 
 Nodes announce supported protocol versions during peer handshakes and block
-proposals so validators can detect when a supermajority supports the upgrade
-and safely activate the new block version.
+proposals so validators can detect when more than 75% of the committee's total
+power supports the upgrade and safely activate the new block version.
 
 ## Motivation
 
@@ -62,13 +62,16 @@ version among the validator set.
 
 ### Activation Threshold
 
-A protocol upgrade is activated when a proposer detects that a supermajority of
-committee validators support the latest protocol version.
+A protocol upgrade is activated when a proposer detects that more than 75% of
+the committee's total power supports the latest protocol version.
+Support is determined by the sum of the stake (power) of committee validators
+whose announced protocol version is greater than or equal to the target version,
+divided by the total committee power.
 
 Once this threshold is satisfied, the proposer increases the block version and
 begins proposing blocks under the new version to other committee validators.
-Because a supermajority of committee members now support the new block version,
-those blocks are expected to be validated successfully.
+Because more than 75% of the committee's total power now supports the new block
+version, those blocks are expected to be validated successfully.
 Committee members that have not upgraded will not be able to commit the new
 blocks and will gradually be replaced by upgraded validators through the
 sortition process.
