@@ -11,7 +11,7 @@ created: 2024-11-14
 
 ## Abstract
 
-This proposal shows the compare list between some communication protocols to use in Pactus blockchain
+This proposal compares between some communication protocols to use in Pactus blockchain
 notification service. The important thing is that this protocol must support PUB/SUB pattern.
 
 ## Motivation
@@ -41,11 +41,11 @@ community size and implementation libraries.
 
 ### Simplicity & Implementation
 
-In terms of simplicity Nonomsg, MQTT, NATS and CoAP are completely simple. They have few keywords, methods and
+In terms of simplicity Nanomsg, MQTT, NATS and CoAP are completely simple. They have few keywords, methods and
 simple structure to use.
 After that to ensure about good implementation, we need to have a stable and reliable libraries.
 The NATS supports lots of languages ([see this link](https://nats.io/download/)) and also MQTT have a complete list of
-languages to support ([see here](https://mqtt.org/software/)). in other side, Nanomsg and ZeroMQ have good resources
+languages to support ([see here](https://mqtt.org/software/)). on the other hand, Nanomsg and ZeroMQ have good resources
 but not much enough as NATS and MQTT.
 And finally we may have difficult path to implement CoAP since it has less supported languages.
 Other protocols like Apache Kafka, XMPP,... are not so simple to use.
@@ -69,5 +69,5 @@ are cautious to use resources and never make big concerns around this host resou
 
 As we need to support PUB/SUB patterns in a simple way without using broker,
 we can select Nanomsg or ZeroMQ. Both used in big projects and have good support
-on implementation. We must mention that other solutions are enough good to use in other cases but in this case
+on implementation. We must mention that other solutions are good enough to use in other cases but in this case
 we must completely focus on ZeroMQ or Nanomsg.

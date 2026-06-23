@@ -151,10 +151,10 @@ The Pactus Foundation reward addresses are defined as follows:
 100. pc1zgqq766nf3782gxvrncv8cvfszdda4ss20y4e7a
 ```
 
-## Actiation
+## Activation
 
 This change introduces a protocol update in Pactus, increasing the protocol version to 2.
-Once more than 70% of the committee supports this upgrade,
+Once more than 75% of the committee supports this upgrade,
 this PIP will be activated and the protocol upgraded.
 After activation, the balances of the existing "Foundation" and "Team & Operations" accounts
 will be transferred to the Treasury.

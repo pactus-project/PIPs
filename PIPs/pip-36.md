@@ -56,7 +56,7 @@ is encoded in big-endian format, helps detect lost messages by tracking the mess
 
 #### Topic ID
 
-Topic ID is a fixed lenght two bytes and defined as below:
+Topic ID is a fixed length two bytes and defined as below:
 
 1. **0x0001**: Block Info
 2. **0x0002**: Transaction Info

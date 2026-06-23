@@ -80,4 +80,5 @@ The three outputs MUST sum to exactly `1.0 PAC`.
 
 ## Backward compatibility
 
-To activate this proposal, the protocol block version is increased to `3` once a majority of validators have upgraded.
+To activate this proposal, the protocol block version is increased to `3` once
+more than 75% of the committee's total power supports the upgrade.

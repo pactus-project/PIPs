@@ -29,7 +29,7 @@ as it is already known and indexed by the signer's address.
 
 ### Transaction ID
 
-The `Flags` field will be excluded from the hash data, and the hash computes only from the Header and Payload data.
+The `Flags` field will be excluded from the hash data, and the hash is computed only from the Header and Payload data.
 
 ![Indexed public key](../assets/pip-4/indexed-public-key.png)
 
