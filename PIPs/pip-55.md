@@ -36,12 +36,12 @@ Reducing the reward over time serves two purposes:
 The reward is based on block height. The Foundation share is always 30%
 of the block reward (per PIP-43).
 
-| Start block | End block  | Reward per block |
-| ----------- | ---------- | ---------------- |
-| 0           | 7,999,999  | 1.000 PAC        |
-| 8,000,000   | 23,999,999 | 0.500 PAC        |
-| 24,000,000  | 55,999,999 | 0.250 PAC        |
-| 56,000,000  | —          | 0.125 PAC        |
+| Start block | End block  | Reward per block | Total Blocks | Total PAC |
+| ----------- | ---------- | ---------------- | ------------ | --------- |
+| 1           | 8,000,000  | 1.000 PAC        | 8,000,000    | 8,000,000 |
+| 8,000,001   | 24,000,000 | 0.500 PAC        | 16,000,000   | 8,000,000 |
+| 24,000,001  | 56,000,000 | 0.250 PAC        | 32,000,000   | 8,000,000 |
+| 56,000,001  | —          | 0.125 PAC        | —            | —         |
 
 ## Backward Compatibility
 
