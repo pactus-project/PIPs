@@ -2,7 +2,7 @@
 pip: 55
 title: Block Reward Halving
 author: Pactus Development Team <info@pactus.org>
-status: Draft
+status: Accepted
 type: Standards Track
 category: Core
 created: 2026-06-24
