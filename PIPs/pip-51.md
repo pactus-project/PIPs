@@ -3,7 +3,8 @@ pip: 51
 title: Protocol Upgrade Mechanism
 description: Explain how Pactus performs protocol upgrades.
 author: Pactus Development Team <info@pactus.org>
-status: Accepted
+status: Final
+category: Core
 type: Informational
 created: 2026-05-08
 ---
