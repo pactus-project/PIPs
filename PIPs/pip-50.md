@@ -262,21 +262,21 @@ No hash, URI, type, or deposit fields follow. Decoders MUST NOT read further pay
 
 All of the following MUST fail the transaction before pool / execution:
 
-**Common**
+#### Common
 
 1. `From` is an account address.
 2. `Action` is `0` or `1`.
 3. `Value() >= 0` and `Value() <= MaxNanoPAC` (already applied by `tx.BasicCheck`).
 4. `Fee >= 0`, `Fee <= MaxNanoPAC`, and the transaction is not treated as free.
 
-**Set**
+#### Set
 
 1. `32 <= HashLen <= 64` and `len(RootHash) == HashLen`.
 2. `URILen <= 128` and `len(ManifestURI) == URILen`.
 3. `ManifestURI` is valid UTF-8 (empty is valid).
 4. `Deposit >= 0` and `Deposit <= MaxNanoPAC`.
 
-**Delete**
+#### Delete
 
 1. Payload contains only `From` and `Action`.
 
