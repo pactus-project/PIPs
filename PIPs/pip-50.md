@@ -123,7 +123,7 @@ type AnchorData struct {
     LockedDeposit   amount.Amount  // nano PAC, not spendable
     CreatedAtHeight types.Height   // first Set, never overwritten
     CreatedAtTime   uint32         // Unix seconds of that block
-    UpdatedAtHeight types.Height   // last Set
+    UpdatedAtHeight types.Height   // Set that wrote the current RootHash
     UpdatedAtTime   uint32         // Unix seconds of that block
 }
 ```
@@ -170,7 +170,7 @@ Suffix when `Anchor != nil`:
 | `LockedDeposit` | `int64` | 8 | Nano PAC, `0 < LockedDeposit <= MaxNanoPAC` |
 | `CreatedAtHeight` | `uint32` | 4 | First Set. Executor-written. |
 | `CreatedAtTime` | `uint32` | 4 | Unix time of that block. |
-| `UpdatedAtHeight` | `uint32` | 4 | Last Set. Executor-written. |
+| `UpdatedAtHeight` | `uint32` | 4 | Set that wrote the current `RootHash`. Executor-written. |
 | `UpdatedAtTime` | `uint32` | 4 | Unix time of that block. |
 
 These four timestamp fields MUST NOT appear in the transaction payload. The user cannot
@@ -197,9 +197,25 @@ varint. The payload still uses `Amount.Encode` (varint), matching other transact
 | --- | --- | --- |
 | `MinAnchorDeposit` | `1 PAC` (`1_000_000_000` nano PAC) | Only by a later PIP |
 
-`1 PAC` equals the genesis `MinimumStake`. It is a protocol constant on version 5,
-not a genesis JSON field (genesis is immutable). Nodes MUST use this exact value after
-activation. Testnet uses the same constant.
+`1 PAC` is the **initial** value. It is a protocol constant from version 5, not a genesis
+JSON field (genesis is immutable). Nodes MUST use this exact value after activation.
+Testnet uses the same constant.
+
+The deposit prices bytes of current state, not the attestation itself:
+
+* A slot adds at most 220 bytes to the state (section 2), so `1 PAC` locks at least
+  about 4.5 mPAC per byte. A validator record is 120 bytes for a `MinimumStake` of
+  `1 PAC`, about 8.3 mPAC per byte, so both kinds of live state cost the same order.
+* The deposit bounds the whole anchor state by the supply: with 42 million PAC, at most
+  42 million slots can exist, about 9.2 GB in the worst case, even if every coin were
+  locked in anchors. A one-way fee gives no such bound.
+* `1 PAC` is 100 times the default fixed fee (`0.01 PAC`), so a slot is never cheaper to
+  keep than to use.
+
+The right value in PAC depends on the market value of PAC, which the protocol does not
+know. If PAC becomes much more or much less valuable, a later PIP changes
+`MinAnchorDeposit` with a new protocol version (PIP-51), as for any other consensus
+constant.
 
 If a later PIP changes `MinAnchorDeposit`:
 
@@ -314,10 +330,10 @@ Let `D = payload.Deposit`.
 11. Let `h = sbx.CurrentHeight()` and `t = sbx.CurrentUnixTime()`.
 12. If this is a create (`previous Anchor == nil`): set `CreatedAtHeight = h`,
     `CreatedAtTime = t`, `UpdatedAtHeight = h` and `UpdatedAtTime = t`.
-13. If this is an update, leave `CreatedAt*` unchanged. If `RootHash`, `ManifestURI` or
-    `AnchorType` differ from the values stored before step 10, set `UpdatedAtHeight = h`
-    and `UpdatedAtTime = t`. Otherwise (a deposit top-up, or the same content sent
-    again), leave `UpdatedAt*` unchanged.
+13. If this is an update, leave `CreatedAt*` unchanged. If `RootHash` differs from the
+    value stored before step 10, set `UpdatedAtHeight = h` and `UpdatedAtTime = t`.
+    Otherwise leave `UpdatedAt*` unchanged, even if `ManifestURI` or `AnchorType`
+    changed or deposit was added.
 14. `UpdateAccount(From, acc)`.
 
 Create and update are the same action. The three public fields are replaced entirely
@@ -329,9 +345,12 @@ Create and update are the same action. The three public fields are replaced enti
 2. Let `locked = acc.LockedDeposit()`.
 3. If `locked < fee`, fail `ErrInsufficientFunds`.
    (Fee is paid from the refund so an account that locked its entire balance can still exit.)
-4. Clear `Anchor` (`nil`).
-5. `Balance = Balance + locked - fee`.
-6. `UpdateAccount(From, acc)`.
+4. If `acc.Balance() > MaxNanoPAC - (locked - fee)`, fail overflow. A valid state cannot
+   reach this, since `Balance + LockedDeposit` never exceeds the supply, but the check
+   is still required (PIP-54).
+5. Clear `Anchor` (`nil`).
+6. `Balance = Balance + locked - fee`.
+7. `UpdateAccount(From, acc)`.
 
 After delete, the account record MUST be written as 12 bytes again.
 
@@ -345,13 +364,26 @@ After delete, the account record MUST be written as 12 bytes again.
 
 ### 7. Transaction pool
 
-Implementations MUST give `TypeAnchor` its own pool of **10% of `MaxSize`**, the same
-share as BatchTransfer. Each pool is bounded on its own: the existing pools already
-sum to 100% of `MaxSize`, so the shares now sum to 110%. The Transfer pool keeps its
-size. Fee estimation uses the same `fixedFee()` as Transfer.
+The pool is local node policy, not consensus: a block is valid whatever mix and order
+of valid transactions it carries.
 
-When a proposer builds a block, anchor transactions come after all other transactions.
-If the block is full, anchors are the first to be left out.
+Implementations SHOULD give `TypeAnchor` its own pool of **10% of `MaxSize`**, the same
+share as BatchTransfer, so anchors cannot crowd out payments and payments cannot evict
+anchors. Fee estimation uses the same `fixedFee()` as Transfer.
+
+In the reference node, `MaxSize` is not a global cap: it is the unit in which each pool's
+own cap is expressed, and every pool is bounded on its own (Transfer 50%, Bond, Unbond,
+Withdraw, Sortition and BatchTransfer 10% each). The existing shares already sum to 100%,
+so with anchors the pools hold at most `1.1 × MaxSize` transactions. The Transfer pool
+keeps its size on purpose: taking the anchor share from it would let a node that upgrades
+hold fewer pending payments than before. An operator who wants the old total lowers
+`MaxSize`.
+
+A proposer SHOULD place anchor transactions after all other transactions, so when the
+block is full, anchors are the first to be left out. Anchors are never urgent: a slot
+keeps its last state until the next Set lands. A deferred anchor waits in its pool until
+its lock time expires (`TransactionToLiveInterval`); the owner then signs it again. A
+fee-based order inside the anchor pool is out of scope for this PIP.
 
 ### 8. `AnchorType` (non-consensus)
 
@@ -440,7 +472,11 @@ message AnchorListItem {
 `ListAnchors` reads current state only and is **not** a consensus index. The reference node
 keeps an in-memory list of anchor holders, rebuilt from the stored accounts at startup and
 updated on every commit, so a page costs one read per listed account instead of a scan of
-all accounts. Order MUST be ascending `Account.Number` so pagination is deterministic.
+all accounts. The rebuild adds no pass over the store: the node already walks every
+account record at startup to count accounts, and only records longer than 12 bytes (the
+accounts with an anchor) are decoded. The list costs 28 bytes of memory per anchor (account number and address).
+A persistent index would avoid the rebuild; it is a possible later optimization and does
+not affect consensus. Order MUST be ascending `Account.Number` so pagination is deterministic.
 This is enough for explorers and Stamp galleries without a third-party indexer. Heavy
 filtering by `AnchorType` is an app concern; the node MAY ignore unknown query fields.
 
@@ -524,10 +560,18 @@ Delete removes current validity. Old txs, memos, and explorer history may still 
 an anchor once existed. Clients MUST use `GetAnchor` / `GetAccount.anchor`, not transaction
 history, as the source of truth for "is this live?" and for timestamps.
 
-`CreatedAt*` is when the slot was created. `UpdatedAt*` is when the current content
-(`RootHash`, `ManifestURI`, `AnchorType`) was set: it is the attestation date of the
-current digest. A Set that only adds deposit, or sends the same content again, does not
-move it. After delete both are gone.
+`CreatedAt*` is when the slot was created. `UpdatedAt*` is when the current `RootHash`
+was set: it is the attestation date of the current digest. A Set that keeps the same
+`RootHash` does not move it, even when it adds deposit, moves `ManifestURI` or changes
+`AnchorType`: those say where to find the bytes and how to read the digest, they do not
+attest anything new. After delete both are gone.
+
+Delete is not a dated proof of revocation. After Delete, `GetAnchor` answers
+`found = false` and the timestamps are gone, so the state alone cannot tell "never
+anchored" from "anchored, then deleted", nor say when the delete happened. Only the
+Delete transaction records that, and pruned nodes drop it. An application that needs a
+revocation that survives pruning keeps the slot and publishes a root that states the
+revocation (for example a revocation registry, `AnchorType = 0x03`) instead of deleting.
 
 ## Off-chain application profile (`PAC-ANCHOR-1`)
 
@@ -565,7 +609,8 @@ share a root) and hashes leaves and inner nodes the same way (an inner node pass
 64-byte file).
 
 1. Each item has a UTF-8 name (1 to 65535 bytes, unique in the set) and
-   `item_hash = BLAKE2b-256(content)`.
+   `item_hash = BLAKE2b-256(content)`. A set has at least one item: an empty set has no
+   root.
 2. Order the items by name, bytewise.
 3. `leaf = BLAKE2b-256(0x00 || uint16be(len(name)) || name || item_hash)`. The leaf binds
    each name to its content.
@@ -584,6 +629,14 @@ share a root) and hashes leaves and inner nodes the same way (an inner node pass
      ]
    }
    ```
+
+   `items` MUST be in strict name order (bytewise), which also rules out duplicate
+   names, so a set has exactly one manifest. A verifier MUST reject a manifest that is
+   empty, out of order, has a duplicate or invalid name, or a hash that is not 64 hex
+   characters. Writers use lowercase hex. Unknown keys are ignored. Writers MUST NOT
+   repeat a key in an object: parsers disagree on which copy wins. This cannot make a
+   verifier accept a different set, since the root commits to every name and hash, but
+   it can make two verifiers disagree.
 
 7. An inclusion proof is the item's index in name order, `n`, and the audit path of
    RFC 9162 section 2.1.3.1. A verifier runs the algorithm of RFC 9162 section 2.1.3.2
@@ -609,8 +662,9 @@ share a root) and hashes leaves and inner nodes the same way (an inner node pass
    document deliberately carries **no root**: a verifier reads `root_hash` from the
    anchor on chain and MUST NOT trust a root that travels with the proof. A verifier
    MUST reject a document whose `v` or `alg` differ, whose name is empty, longer than
-   65535 bytes or not UTF-8, whose hashes are not 64 hex characters, whose `index` is
-   outside `[0, size)`, or whose `path` has more than 64 entries.
+   65535 bytes or not UTF-8, whose hashes are not 64 hex characters, whose `size` is
+   above 2^53 - 1 (the largest integer every JSON client reads exactly), whose `index`
+   is outside `[0, size)`, or whose `path` has more than 64 entries.
 
 To tell the two forms apart, a verifier that fetched `ManifestURI` first checks
 `BLAKE2b-256(bytes) == root_hash` (single blob). Otherwise it parses the bytes as a
@@ -708,9 +762,9 @@ Consensus tests MUST include at least:
 20. **Supply**: sum of `Balance + LockedDeposit` across accounts is conserved except for
     fees (fees follow the existing treasury accumulation path).
 21. **Timestamps**: create sets all four fields from the including block. Update keeps
-    `CreatedAt*`. It refreshes `UpdatedAt*` only when `RootHash`, `ManifestURI` or
-    `AnchorType` changes; a deposit top-up with the same content keeps it. Payload cannot
-    carry timestamps.
+    `CreatedAt*`. It refreshes `UpdatedAt*` only when `RootHash` changes; a deposit
+    top-up, a new `ManifestURI` or a new `AnchorType` with the same `RootHash` keeps it.
+    Payload cannot carry timestamps.
 22. **Timestamp forgery**: the Set encoding has no timestamp fields, and the decoder reads
     exactly the declared fields. Bytes inserted after the payload are read as part of
     the transaction (its signature), never as timestamps, so the transaction fails
@@ -719,6 +773,9 @@ Consensus tests MUST include at least:
 24. **ListAnchors** pagination is deterministic by `Account.Number`.
 25. **Delete** then `GetAnchor.found == false`.
 26. **Sandbox** `CurrentUnixTime` equals the committed block `UnixTime`.
+27. **Replay**: a Delete replayed after the slot was re-created fails
+    (`TransactionCommitted`) and leaves the new slot unchanged, at every height up to
+    the expiry of its lock time (then `LockTimeExpired`), also after a node restart.
 
 ## Reference Implementation
 
@@ -748,12 +805,15 @@ a Merkle root from another tree. Capping at 64 keeps the suffix bounded.
 
 **Why pay a deposit instead of a one-way fee?**
 A one-way fee still leaves dead slots forever. A refundable lock prices occupation of
-**current** state and makes exit rational. With ~thousands of accounts, worst-case extra
-state is `< 2 kB × N_accounts`, but the lock still prevents "set and forget" litter.
+**current** state and makes exit rational. The extra state is at most 220 bytes per
+anchor, and the number of anchors can never exceed the supply divided by
+`MinAnchorDeposit`.
 
 **Why `MinAnchorDeposit = 1 PAC`?**
-It reuses `MinimumStake`, is trivial to remember, and is far above the default fee.
-It is a constant, not an economic-policy knob, so it does not belong in genesis JSON.
+It is an initial value that prices a byte of anchor state like a byte of validator state
+(section 3): up to 220 bytes for `1 PAC`, against 120 bytes for a `1 PAC` `MinimumStake`.
+It stays a protocol constant rather than a genesis field or a dynamic price: the chain has
+no price oracle, and a later PIP can change it with a protocol version.
 
 **Why fee-from-refund on delete?**
 Otherwise an account that locked its entire `Balance` could never delete the slot.
@@ -767,9 +827,11 @@ and cannot be chosen by the signer.
 **Why not put timestamps in the payload?**
 Then a user could claim any date. They MUST come from the block the committee signed.
 
-**Why does a deposit top-up not move `UpdatedAt*`?**
+**Why does only a `RootHash` change move `UpdatedAt*`?**
 `UpdatedAt*` is the attestation date of the current digest. A notary client must not lose
-that date because the owner added deposit or sent the same content again.
+that date because the owner added deposit, moved the file to another URI or relabelled
+its type. A client that wants to know when the metadata changed can read the Set
+transactions while they are not pruned.
 
 **Why `ListAnchors` and ZMQ if discovery is off-chain?**
 Without them every app reimplements a full-node scanner. The anchor list is a local,
@@ -840,8 +902,9 @@ bytes do not.
 
 ### State bloat
 
-Upper bound: one suffix per account, ≤ 220 extra bytes. Occupation costs
-`MinAnchorDeposit` until delete. There is no per-block growth from unused slots.
+Upper bound: one suffix per account, ≤ 220 extra bytes, and at most
+`supply / MinAnchorDeposit` anchored accounts. Occupation costs `MinAnchorDeposit` until
+delete. There is no per-block growth from unused slots.
 
 ### Block-time honesty
 
@@ -861,18 +924,32 @@ Anyone can create their own slot. Nobody can overwrite or delete another account
 
 ### Replay
 
-Normal `LockTime` / TTL rules apply. No extra nonce. A replayed Delete after a later
-re-create would delete the **new** slot if it is still in TTL and the account still
-signs… Replay requires the original signature, which is bound to the original payload
-(including `Action` and, for Set, the digest). A Set replay may update the slot back to
-an old digest if the signed payload is still inside TTL; that is the same class of issue
-as replaying a Transfer and is mitigated by `TransactionToLiveInterval` (one day).
+Normal `LockTime` / TTL rules apply; no extra nonce is needed. A node rejects any
+transaction whose ID it has already executed (`TransactionCommitted`), and it remembers
+executed IDs for `TransactionToLiveInterval` blocks, the same window in which a lock time
+stays valid. An executed Set or Delete can therefore never run a second time: inside the
+window its ID is known, after it its lock time has expired. In particular, a Delete
+replayed after the owner re-created the slot fails and cannot remove the new slot
+(test 27).
+
+What remains is ordering, not replay. Two transactions that are signed but not yet
+included, for example Set A then Set B, may land in either order, and the proposer
+chooses. This holds for every transaction type. A client that needs a given order waits
+until the first transaction is committed before it signs the next.
+
+### Trust in a remote node
+
+The anchor is part of `stateRoot`, so the answer of a node the user runs is consensus
+truth. A client that asks somebody else's node (a public RPC, an explorer) trusts that
+node, exactly as it does for a balance: `GetAnchor` carries no proof against `stateRoot`
+(see Non-Goals). `GetAnchor` alone does not make a remote client trustless.
 
 ## Use Cases (informative)
 
 These are application patterns. None of them are protocol rules.
 
-* DID / profile document: URI + hash, delete to revoke the profile.
+* DID / profile document: URI + hash, delete to retire the profile (see Semantics:
+  a delete is not a dated revocation).
 * Revocation registry: publish a Merkle root; update the root; delete to retire the issuer.
 * Document integrity: stamp a PDF hash (the Stamp client).
 * Ticket / event lists: Merkleize off-chain, one root on-chain.
