@@ -1,13 +1,13 @@
 ---
 pip: 50
 title: Native State Anchoring (Pruning-Resistant Live State Slot)
-description: Live per-account commitment slot, timestamps, and node APIs.
+description: One live, deposit-backed commitment slot per account, with protocol timestamps and node APIs sufficient for off-chain applications.
 author: Johan (@johan256x)
 status: Draft
 type: Standards Track
 category: Core
 created: 2026-03-11
-updated: 2026-09-16
+updated: 2026-09-26
 requires: 51, 54
 ---
 
@@ -260,25 +260,25 @@ No hash, URI, type, or deposit fields follow. Decoders MUST NOT read further pay
 
 ### 5. `BasicCheck` (stateless)
 
-All of the following MUST fail the transaction before pool / execution.
+All of the following MUST fail the transaction before pool / execution:
 
-#### Common
+**Common**
 
 1. `From` is an account address.
 2. `Action` is `0` or `1`.
 3. `Value() >= 0` and `Value() <= MaxNanoPAC` (already applied by `tx.BasicCheck`).
 4. `Fee >= 0`, `Fee <= MaxNanoPAC`, and the transaction is not treated as free.
 
-#### Set
+**Set**
 
-1. `32 <= HashLen <= 64` and `len(RootHash) == HashLen`.
-2. `URILen <= 128` and `len(ManifestURI) == URILen`.
-3. `ManifestURI` is valid UTF-8 (empty is valid).
-4. `Deposit >= 0` and `Deposit <= MaxNanoPAC`.
+5. `32 <= HashLen <= 64` and `len(RootHash) == HashLen`.
+6. `URILen <= 128` and `len(ManifestURI) == URILen`.
+7. `ManifestURI` is valid UTF-8 (empty is valid).
+8. `Deposit >= 0` and `Deposit <= MaxNanoPAC`.
 
-#### Delete
+**Delete**
 
-1. Payload contains only `From` and `Action`.
+9. Payload contains only `From` and `Action`.
 
 The protocol MUST NOT interpret `RootHash` or `AnchorType`. All-zero `RootHash` is legal.
 
@@ -312,10 +312,12 @@ Let `D = payload.Deposit`.
 9. Set `LockedDeposit = newLocked`.
 10. Overwrite `RootHash`, `ManifestURI`, `AnchorType` with payload values.
 11. Let `h = sbx.CurrentHeight()` and `t = sbx.CurrentUnixTime()`.
-12. If this is a create (`previous Anchor == nil`):
-    `CreatedAtHeight = h`, `CreatedAtTime = t`.
-    If this is an update: leave `CreatedAt*` unchanged.
-13. Always set `UpdatedAtHeight = h`, `UpdatedAtTime = t`.
+12. If this is a create (`previous Anchor == nil`): set `CreatedAtHeight = h`,
+    `CreatedAtTime = t`, `UpdatedAtHeight = h` and `UpdatedAtTime = t`.
+13. If this is an update, leave `CreatedAt*` unchanged. If `RootHash`, `ManifestURI` or
+    `AnchorType` differ from the values stored before step 10, set `UpdatedAtHeight = h`
+    and `UpdatedAtTime = t`. Otherwise (a deposit top-up, or the same content sent
+    again), leave `UpdatedAt*` unchanged.
 14. `UpdateAccount(From, acc)`.
 
 Create and update are the same action. The three public fields are replaced entirely
@@ -343,9 +345,13 @@ After delete, the account record MUST be written as 12 bytes again.
 
 ### 7. Transaction pool
 
-Implementations MUST give `TypeAnchor` its own pool, sized like Transfer
-(the remaining share of `MaxSize` after reserved bond/unbond/withdraw/sortition/batch
-pools). Fee estimation uses the same `fixedFee()` as Transfer.
+Implementations MUST give `TypeAnchor` its own pool of **10% of `MaxSize`**, the same
+share as BatchTransfer. Each pool is bounded on its own: the existing pools already
+sum to 100% of `MaxSize`, so the shares now sum to 110%. The Transfer pool keeps its
+size. Fee estimation uses the same `fixedFee()` as Transfer.
+
+When a proposer builds a block, anchor transactions come after all other transactions.
+If the block is full, anchors are the first to be left out.
 
 ### 8. `AnchorType` (non-consensus)
 
@@ -372,11 +378,15 @@ display the same fields on the account page. This is the contract off-chain apps
 An anchor is **found** iff the account exists and `Anchor != nil`.
 Historical Anchor transactions MUST NOT be treated as active.
 
+`GetAnchor` answers `found = false` for any well-formed address without an anchor,
+including validator and treasury addresses, which can never hold one. Only a malformed
+address is an error (`InvalidArgument`).
+
 #### 9.1 `AnchorInfo`
 
 ```protobuf
 message AnchorInfo {
-  bytes  root_hash         = 1; // hex in JSON-RPC
+  bytes  root_hash         = 1; // base64 in JSON (JSON-RPC and gRPC-gateway)
   string manifest_uri      = 2;
   uint32 anchor_type       = 3;
   int64  locked_deposit    = 4; // nano PAC
@@ -386,6 +396,15 @@ message AnchorInfo {
   uint32 updated_at_time   = 8; // Unix seconds
 }
 ```
+
+JSON encoding follows the node's existing JSON surfaces; it is not specific to anchors:
+
+* `root_hash` is standard base64 (RFC 4648, padded), like every protobuf `bytes` field.
+* JSON-RPC writes `int64` and `uint32` fields as JSON numbers and omits fields whose
+  value is zero; clients MUST read a missing field as `0`.
+* gRPC-gateway writes `int64` fields as JSON strings and `uint32` fields as numbers.
+* `locked_deposit` can exceed 2^53. Clients MUST NOT parse it as a floating-point
+  number (for example, JavaScript clients need `BigInt`).
 
 `GetAccount` MUST include `optional AnchorInfo anchor = 6;` (unset = no active slot).
 Apps MAY use `GetAccount` alone. `GetAnchor` is the dedicated shortcut.
@@ -418,9 +437,10 @@ message AnchorListItem {
 }
 ```
 
-`ListAnchors` walks current state (`IterateAccounts`), skips accounts with `Anchor == nil`,
-and is **not** a consensus index. Order MUST be ascending `Account.Number` so pagination
-is deterministic. This is enough for explorers and Stamp galleries without a third-party
+`ListAnchors` reads current state only and is **not** a consensus index. The reference node
+keeps an in-memory list of anchor holders, rebuilt from the stored accounts at startup and
+updated on every commit, so a page costs one read per listed account instead of a scan of
+all accounts. Order MUST be ascending `Account.Number` so pagination is deterministic. This is enough for explorers and Stamp galleries without a third-party
 indexer. Heavy filtering by `AnchorType` is an app concern; the node MAY ignore unknown
 query fields.
 
@@ -472,22 +492,29 @@ Nodes that enable ZeroMQ MUST publish a new topic:
 TopicAnchorInfo = 0x0005  // name: "anchor_info"
 ```
 
-Body (after the 2-byte topic and sequence, same framing as other ZMQ topics):
+One message per anchor transaction, in block order. The framing is the same as every
+other Pactus ZMQ topic: all integers are **big-endian**, the topic comes first and the
+sequence number comes last.
 
 | Field | Size | Notes |
 | --- | --- | --- |
+| Topic | 2 | `0x0005`, big-endian `uint16` |
 | Address | 21 | Account |
 | Action | 1 | `0` Set, `1` Delete |
-| Height | 4 | Including block, little-endian `uint32` |
+| Height | 4 | Including block, big-endian `uint32` |
 | HashLen | 1 | `0` on delete |
 | RootHash | HashLen | Omitted on delete |
+| Sequence | 4 | Per-topic message counter, big-endian `uint32` |
+
+A Set message is `33 + HashLen` bytes (65 to 97); a Delete message is 33 bytes.
 
 Apps SHOULD treat ZMQ as a cache invalidation hint and re-read `GetAnchor` for the
-canonical fields (timestamps, URI). Missed events MUST be recoverable via `ListAnchors`
-or `GetAccount`.
+canonical fields (timestamps, URI). A gap in the sequence number means messages were
+missed. Missed events MUST be recoverable via `ListAnchors` or `GetAccount`.
 
-The in-process `eventPipe` SHOULD emit the same information so the HTML/gRPC layers stay
-consistent.
+Messages are derived from the committed block on the node's internal event pipe, so
+they are only sent after the block is committed. The HTML and gRPC layers read the
+committed state directly and stay consistent with them.
 
 ## Semantics
 
@@ -497,7 +524,10 @@ Delete removes current validity. Old txs, memos, and explorer history may still 
 an anchor once existed. Clients MUST use `GetAnchor` / `GetAccount.anchor`, not transaction
 history, as the source of truth for "is this live?" and for timestamps.
 
-`CreatedAt*` is the first attestation. `UpdatedAt*` is the last. After delete both are gone.
+`CreatedAt*` is when the slot was created. `UpdatedAt*` is when the current content
+(`RootHash`, `ManifestURI`, `AnchorType`) was set: it is the attestation date of the
+current digest. A Set that only adds deposit, or sends the same content again, does not
+move it. After delete both are gone.
 
 ## Off-chain application profile (`PAC-ANCHOR-1`)
 
@@ -518,8 +548,9 @@ Verification (client):
 
 1. `GetAnchor(address)`. If `found == false`, the attestation is inactive.
 2. Compare `root_hash` to `BLAKE2b-256(local_bytes)`.
-3. Display `created_at_height` / `created_at_time` and `updated_at_*` from the slot.
-   Do **not** recover the date from a pruned transaction.
+3. Display `updated_at_height` / `updated_at_time` as the date the current digest was
+   attested, and `created_at_*` as the creation of the slot. Do **not** recover the date
+   from a pruned transaction.
 4. If `manifest_uri` is set, fetching it is a client policy. Treat it as untrusted.
    After fetch, hash the bytes and require equality with `root_hash`.
 
@@ -527,30 +558,84 @@ Verification (client):
 
 One native slot per account. Many files ⇒ one Merkle root off-chain.
 
-1. Order items deterministically (UTF-8 path, bytewise).
-2. Leaf `i` = `BLAKE2b-256(content_i)` (32 bytes).
-3. Build a tree with Pactus `simplemerkle` (`HashMerkleBranches` of left||right,
-   duplicate last leaf if odd).
-4. `RootHash` = 32-byte Merkle root.
-5. `ManifestURI` locates a UTF-8 JSON manifest of the form below.
-6. Inclusion proof for one item is the standard Merkle path of that tree. Store and
-   transmit the path **off-chain**. The chain only holds the root.
+The tree has the shape of RFC 9162 (Certificate Transparency) with BLAKE2b-256, and its
+root also commits to the number of items. Apps MUST NOT use the node's `util/simplemerkle`
+for this: that Bitcoin-style tree duplicates the last node (`[a,b,c]` and `[a,b,c,c]`
+share a root) and hashes leaves and inner nodes the same way (an inner node passes for a
+64-byte file).
 
-Example manifest:
+1. Each item has a UTF-8 name (1 to 65535 bytes, unique in the set) and
+   `item_hash = BLAKE2b-256(content)`.
+2. Order the items by name, bytewise.
+3. `leaf = BLAKE2b-256(0x00 || uint16be(len(name)) || name || item_hash)`. The leaf binds
+   each name to its content.
+4. `MTH` of one leaf is that leaf. For `n > 1` leaves,
+   `MTH = BLAKE2b-256(0x01 || MTH(first k leaves) || MTH(remaining leaves))`, where `k` is
+   the largest power of two smaller than `n`. No node is ever duplicated.
+5. `RootHash = BLAKE2b-256(0x02 || uint64be(n) || MTH(all leaves))` (32 bytes).
+6. `ManifestURI` locates a UTF-8 JSON manifest, items in name order:
 
 ```json
 {
   "v": 1,
   "alg": "blake2b-256",
   "items": [
-    { "name": "contract.pdf", "hash": "<64 hex chars>" }
+    { "name": "contract.pdf", "hash": "<64 hex chars: item_hash>" }
   ]
 }
 ```
 
+7. An inclusion proof is the item's index in name order, `n`, and the audit path of
+   RFC 9162 section 2.1.3.1. A verifier runs the algorithm of RFC 9162 section 2.1.3.2
+   with the prefixes above, then requires
+   `BLAKE2b-256(0x02 || uint64be(n) || result) == RootHash`. A proof cannot claim another
+   position or another number of items. Proofs travel **off-chain**; the chain only holds
+   the root.
+8. A proof exchanged between applications uses this JSON document (UTF-8):
+
+```json
+{
+  "v": 1,
+  "alg": "blake2b-256",
+  "address": "<optional: the anchor owner, to read root_hash from a node>",
+  "item": { "name": "b.txt", "hash": "<64 hex chars: item_hash>" },
+  "index": 1,
+  "size": 3,
+  "path": ["<64 hex chars>", "<64 hex chars>"]
+}
+```
+
+   `path` lists the sibling hashes from the leaf up; it is `[]` for a one-item set. The
+   document deliberately carries **no root**: a verifier reads `root_hash` from the
+   anchor on chain and MUST NOT trust a root that travels with the proof. A verifier
+   MUST reject a document whose `v` or `alg` differ, whose name is empty, longer than
+   65535 bytes or not UTF-8, whose hashes are not 64 hex characters, whose `index` is
+   outside `[0, size)`, or whose `path` has more than 64 entries.
+
+To tell the two forms apart, a verifier that fetched `ManifestURI` first checks
+`BLAKE2b-256(bytes) == root_hash` (single blob). Otherwise it parses the bytes as a
+manifest and recomputes the root from it.
+
 `AnchorType` `0x00` remains correct for a raw Merkle root. Use `0x03` when the tree is
 specifically a revocation registry, `0x01` for a service manifest document, `0x02` for a
 DID document (single blob or its hash), `0xFF` for encrypted blobs.
+
+The node repository ships a reference implementation in `util/anchorprofile` (`Root`,
+`Prove`, `Verify`, `Manifest`, `ProofDocument`). The node itself never uses it. Test
+vectors, checked against an independent implementation:
+
+| Input | `RootHash` |
+| --- | --- |
+| Single blob `hello` | `324dcf027dd4a30a932c441f365a25e86b173defa4b8e58948253471b81b72cf` |
+| `a.txt`=`hello`, `b.txt`=`world`, `c.txt`=`!` | `39125630b77b5d7035a1fb07e1b2854b0c911f4bfa7605a9b59476ad1bf163b7` |
+| `file-0.txt` to `file-4.txt`, content `content 0` to `content 4` | `6fc9d50176e7a1abe6c0875d9e655142370e93487a69badf586e60f9afe35e64` |
+
+Proof document of `b.txt` in the three-file vector above (it verifies against
+`39125630…b7`):
+
+```json
+{"v":1,"alg":"blake2b-256","item":{"name":"b.txt","hash":"9a3440c9d1529b122faceef33739b6e814616658d53faaf6e4f129fb20edfb13"},"index":1,"size":3,"path":["26bb722ed5fac59aaa2de435d19877b74be151b15bffbe62296ba2168b7e6805","427a194a554ee2fa4dd1c53edc68c8ad515ad8780c0b1d6941ab367f6da476b2"]}
+```
 
 ### Proof page (informative)
 
@@ -558,7 +643,7 @@ A verifier page needs, and only needs:
 
 * account address;
 * `AnchorInfo` from a node the user trusts (or their own node);
-* the content bytes (or Merkle leaf + path + manifest);
+* the content bytes (or, for a file set: the file content and its proof document);
 * optional: block header at `updated_at_height` if the user wants to cross-check time
   against a full node. A pruned node already printed `updated_at_time` from state.
 
@@ -579,6 +664,16 @@ Activation follows [PIP-51](./pip-51.md):
    nodes MUST still persist accounts as 12-byte records.
 
 No genesis replay. No bootstrap committee. No rollback.
+
+The 75% threshold is the proposer rule of PIP-51, not a validation rule. The support a
+node sees comes from the protocol versions validators announce on the network, which is
+local information that two nodes may see differently; validating blocks against it could
+split the network. A node therefore accepts any valid, certified block of version 5, as
+for every earlier version upgrade. What stops an early switch is consensus itself: nodes
+that do not implement version 5 reject such blocks, so a version-5 block needs a
+certificate from more than 2/3 of committee power running version-5 software. Making the
+75% threshold a hard guarantee would need a deterministic, on-chain support signal, which
+is a question for PIP-51 and out of scope here.
 
 Testnet SHOULD activate first, with the same encoding and `MinAnchorDeposit`.
 
@@ -613,8 +708,13 @@ Consensus tests MUST include at least:
 20. **Supply**: sum of `Balance + LockedDeposit` across accounts is conserved except for
     fees (fees follow the existing treasury accumulation path).
 21. **Timestamps**: create sets all four fields from the including block. Update keeps
-    `CreatedAt*` and refreshes `UpdatedAt*`. Payload cannot carry timestamps.
-22. **Timestamp forgery**: a Set decoded with extra trailing timestamp bytes MUST fail.
+    `CreatedAt*`. It refreshes `UpdatedAt*` only when `RootHash`, `ManifestURI` or
+    `AnchorType` changes; a deposit top-up with the same content keeps it. Payload cannot
+    carry timestamps.
+22. **Timestamp forgery**: the Set encoding has no timestamp fields, and the decoder reads
+    exactly the declared fields. Bytes inserted after the payload are read as part of
+    the transaction (its signature), never as timestamps, so the transaction fails
+    signature verification.
 23. **GetAccount** includes `anchor` when present; omits it when not.
 24. **ListAnchors** pagination is deterministic by `Account.Number`.
 25. **Delete** then `GetAnchor.found == false`.
@@ -622,8 +722,10 @@ Consensus tests MUST include at least:
 
 ## Reference Implementation
 
-None in `pactus-project/pactus` at the time of this revision. A follow-up PR against
-the node is expected only after this PIP is **Accepted**.
+A prototype lives on the `pip-50-state-anchor` branch of `pactus-project/pactus`.
+Any pull request from it stays a **draft** until this PIP is **Accepted**. It sets
+`ProtocolVersionLatest = 5`, so once nodes run it they signal support for version 5,
+and activation (PIP-51) starts as soon as 75% of committee power upgrades.
 
 ## Rationale
 
@@ -665,14 +767,24 @@ and cannot be chosen by the signer.
 **Why not put timestamps in the payload?**
 Then a user could claim any date. They MUST come from the block the committee signed.
 
+**Why does a deposit top-up not move `UpdatedAt*`?**
+`UpdatedAt*` is the attestation date of the current digest. A notary client must not lose
+that date because the owner added deposit or sent the same content again.
+
 **Why `ListAnchors` and ZMQ if discovery is off-chain?**
-Without them every app reimplements a full-node scanner. The walk is the same
-`IterateAccounts` the node already has; ZMQ is the same event bus as `tx_info`. That is
-Interface work, not a new consensus index.
+Without them every app reimplements a full-node scanner. The anchor list is a local,
+non-consensus index rebuilt from the account store; ZMQ is the same event bus as
+`tx_info`. That is interface work, not a new consensus index.
 
 **Why `PAC-ANCHOR-1` in a Core PIP?**
 So two independent clients hash the same PDF the same way. It is explicitly non-consensus.
 Leaving it out would force the first app to become an accidental standard.
+
+**Why not the node's `simplemerkle` for file sets?**
+It is the Bitcoin tree: it duplicates the last node and does not separate leaves from inner
+nodes, so two different file lists can share a root and an inner node can be proven as a
+file. The RFC 9162 shape with prefixes, a name-bound leaf and a size-bound root has none of
+these problems and is a published, widely implemented standard.
 
 ## Alternatives Considered
 
