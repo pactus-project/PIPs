@@ -1,7 +1,7 @@
 ---
 pip: 50
 title: Native State Anchoring (Pruning-Resistant Live State Slot)
-description: One live, deposit-backed commitment slot per account, with protocol timestamps and node APIs sufficient for off-chain applications.
+description: One live, deposit-backed commitment slot per account, with protocol timestamps and node APIs.
 author: Johan (@johan256x)
 status: Draft
 type: Standards Track
@@ -271,14 +271,14 @@ All of the following MUST fail the transaction before pool / execution:
 
 **Set**
 
-5. `32 <= HashLen <= 64` and `len(RootHash) == HashLen`.
-6. `URILen <= 128` and `len(ManifestURI) == URILen`.
-7. `ManifestURI` is valid UTF-8 (empty is valid).
-8. `Deposit >= 0` and `Deposit <= MaxNanoPAC`.
+1. `32 <= HashLen <= 64` and `len(RootHash) == HashLen`.
+2. `URILen <= 128` and `len(ManifestURI) == URILen`.
+3. `ManifestURI` is valid UTF-8 (empty is valid).
+4. `Deposit >= 0` and `Deposit <= MaxNanoPAC`.
 
 **Delete**
 
-9. Payload contains only `From` and `Action`.
+1. Payload contains only `From` and `Action`.
 
 The protocol MUST NOT interpret `RootHash` or `AnchorType`. All-zero `RootHash` is legal.
 
@@ -440,9 +440,9 @@ message AnchorListItem {
 `ListAnchors` reads current state only and is **not** a consensus index. The reference node
 keeps an in-memory list of anchor holders, rebuilt from the stored accounts at startup and
 updated on every commit, so a page costs one read per listed account instead of a scan of
-all accounts. Order MUST be ascending `Account.Number` so pagination is deterministic. This is enough for explorers and Stamp galleries without a third-party
-indexer. Heavy filtering by `AnchorType` is an app concern; the node MAY ignore unknown
-query fields.
+all accounts. Order MUST be ascending `Account.Number` so pagination is deterministic.
+This is enough for explorers and Stamp galleries without a third-party indexer. Heavy
+filtering by `AnchorType` is an app concern; the node MAY ignore unknown query fields.
 
 #### 9.3 Build unsigned transaction
 
@@ -575,15 +575,15 @@ share a root) and hashes leaves and inner nodes the same way (an inner node pass
 5. `RootHash = BLAKE2b-256(0x02 || uint64be(n) || MTH(all leaves))` (32 bytes).
 6. `ManifestURI` locates a UTF-8 JSON manifest, items in name order:
 
-```json
-{
-  "v": 1,
-  "alg": "blake2b-256",
-  "items": [
-    { "name": "contract.pdf", "hash": "<64 hex chars: item_hash>" }
-  ]
-}
-```
+   ```json
+   {
+     "v": 1,
+     "alg": "blake2b-256",
+     "items": [
+       { "name": "contract.pdf", "hash": "<64 hex chars: item_hash>" }
+     ]
+   }
+   ```
 
 7. An inclusion proof is the item's index in name order, `n`, and the audit path of
    RFC 9162 section 2.1.3.1. A verifier runs the algorithm of RFC 9162 section 2.1.3.2
@@ -593,17 +593,17 @@ share a root) and hashes leaves and inner nodes the same way (an inner node pass
    the root.
 8. A proof exchanged between applications uses this JSON document (UTF-8):
 
-```json
-{
-  "v": 1,
-  "alg": "blake2b-256",
-  "address": "<optional: the anchor owner, to read root_hash from a node>",
-  "item": { "name": "b.txt", "hash": "<64 hex chars: item_hash>" },
-  "index": 1,
-  "size": 3,
-  "path": ["<64 hex chars>", "<64 hex chars>"]
-}
-```
+   ```json
+   {
+     "v": 1,
+     "alg": "blake2b-256",
+     "address": "<optional: the anchor owner, to read root_hash from a node>",
+     "item": { "name": "b.txt", "hash": "<64 hex chars: item_hash>" },
+     "index": 1,
+     "size": 3,
+     "path": ["<64 hex chars>", "<64 hex chars>"]
+   }
+   ```
 
    `path` lists the sibling hashes from the leaf up; it is `[]` for a one-item set. The
    document deliberately carries **no root**: a verifier reads `root_hash` from the
@@ -620,7 +620,7 @@ manifest and recomputes the root from it.
 specifically a revocation registry, `0x01` for a service manifest document, `0x02` for a
 DID document (single blob or its hash), `0xFF` for encrypted blobs.
 
-The node repository ships a reference implementation in `util/anchorprofile` (`Root`,
+The reference implementation adds the package `util/anchorprofile` (`Root`,
 `Prove`, `Verify`, `Manifest`, `ProofDocument`). The node itself never uses it. Test
 vectors, checked against an independent implementation:
 
@@ -722,7 +722,7 @@ Consensus tests MUST include at least:
 
 ## Reference Implementation
 
-A prototype lives on the `pip-50-state-anchor` branch of `pactus-project/pactus`.
+A prototype lives on the `pip-50-state-anchor` branch of the `johan256x/pactus` fork.
 Any pull request from it stays a **draft** until this PIP is **Accepted**. It sets
 `ProtocolVersionLatest = 5`, so once nodes run it they signal support for version 5,
 and activation (PIP-51) starts as soon as 75% of committee power upgrades.
