@@ -1,1773 +1,1256 @@
 ---
 pip: 56
-title: Native Asset Layer
-description: Fungible, non-fungible and semi-fungible assets executed off-chain by a bonded operator committee and settled on Pactus through bounded, BLS-attested anchors.
+title: Native Assets
+description: Fungible, non-fungible and semi-fungible assets as native Pactus state, capped per block to protect PAC.
 author: CarbonFlake (@carbonflake)
 status: Draft
 type: Standards Track
 category: Core
 created: 2026-10-02
-requires: 51, 53, 54
+updated: 2026-10-11
+requires: 39, 51, 54
 ---
 
 ## Abstract
 
-This PIP adds native assets to Pactus without a virtual machine and without making every validator store or
-replay asset balances.
+This PIP adds native assets to Pactus with seven payloads, one new state tree and a cap per block, and nothing else:
+no virtual machine, no committee, no new cryptography. An asset is a record with a symbol, a number of decimals, a
+capped supply and a metadata hash. Balances are kept per account. Assets are signed, paid and replay-protected like
+every other Pactus transaction, with the same accounts and keys.
 
-Asset balances and operations live in an **Asset Layer** run by a committee of bonded **operators**. Pactus
-keeps one small settlement record: the current asset-state root, a data commitment, a PAC escrow, a deposit
-queue and the operator registry. Operators advance it with an **anchor**: a transaction of at most about
-2.4 KB, whatever the number of operations it covers, carrying one aggregate BLS signature from a quorum of the
-committee.
+| Payload | Does |
+| --- | --- |
+| `AssetCreate` | Creates an asset and credits its initial supply to the creator |
+| `AssetAccept` | Opts the signer in to an asset against a refundable deposit. Nobody can receive units before accepting |
+| `AssetAcceptFor` | Lets a sponsor pay the deposit and the fee of an acceptance that the account signed, so that an account with no PAC can opt in |
+| `AssetClose` | Closes a balance of the signer, burning what is left if the signer allows it, and returns its deposit |
+| `AssetTransfer` | Moves units to 1 to 8 recipients. A transfer to the zero address burns them |
+| `AssetMint` | Lets the issuer create more units, up to the `MaxSupply` fixed at creation |
+| `AssetSetRate` | Lets the issuer move the transfer rates of an asset, inside the bounds fixed at creation |
 
-Three asset shapes exist: fungible, non-fungible and semi-fungible. Minting, burning and mutable parameters are
-capabilities, not extra types. A fungible asset may carry a bounded transfer policy (a team share and a burn
-share). Users pay execution fees in PAC through an escrowed fee credit.
+Fungible tokens, NFTs and semi-fungible tokens are the same record with different parameters, not different types.
 
-**Version 1 is a committee-attested design with fraud proofs, and is transitional.** Pactus validators check
-that a bonded committee signed a transition, not that it is correct. Anyone who holds the batch data can prove
-a single wrong step: an anchor stays pending for a day, a proven fraud reverts it and burns its signers'
-bonds, and nothing is paid out on Pactus until the day has passed. Pactus does not check that the data is
-available, which is the main thing v1 does not solve. The PAC escrow is capped on a ramp, seats have terms,
-and if the committee stops anchoring for 30 days anyone can freeze the layer: users then recover their fee
-credit with a Merkle proof, record their native positions in an on-chain registry, and the committee can
-resume. The anchor carries an attestation-type byte so that a later PIP can add validity proofs without
-changing the settlement record.
+**Nobody can be given an asset against their will.** An account holds an asset only after it has accepted it with its
+own signature, and a deposit is locked for its record, by the account itself or by a sponsor that pays for a new user.
+Transfers and mints never add a record to the state: they only change a balance that its owner opened. The owner gets
+the deposit back when it closes a balance, and the freed place is reused. This is what stops unsolicited airdrops, and
+it ties the number of balances in use to the PAC locked for them.
+
+An asset may carry an optional **transfer policy**: a team rate and a burn rate, in basis points, that every transfer
+applies with a few lines of integer arithmetic. The rates are variable but bounded: each has a minimum and a maximum
+that are fixed at creation, and only the issuer can move a rate between them.
+
+A sender can put up to 8 recipients in one transaction, which costs one signature for up to 8 transfers. Asset
+transactions are ordinary entries of a block, and a block carries at most `MaxAssetTxPerBlock` (100) of them, so they
+take at most 10 % of its 1 000 entries and PAC always keeps the rest. If asset traffic stays at that cap, a later
+version can let the proposer pack asset transactions into bundles of one entry each (Future Extensions). A balance is
+paid for with a deposit that is returned when it is closed; an asset record, which is permanent, is paid for once.
+This PIP has no exchange, but it leaves room for one: section 6 reserves what a later PIP on liquidity pools needs, so
+that such a PIP changes nothing here. It is meant for testnet first: mainnet waits for the testnet plan of the
+Reference Implementation section.
 
 ## Motivation
 
-Pactus has no smart-contract layer. A token today means off-chain indexers, memos, or another chain. Putting
-tokens into consensus does not scale: a block holds at most 1000 transactions every 10 seconds (100 per
-second for everything), every validator would hold every balance and replay every transfer, and that state
-would grow with token usage instead of PAC usage.
+Pactus has no smart-contract layer. A token today means a memo, an off-chain indexer, or another chain. Putting tokens
+into consensus naively has two costs: tokens compete with PAC for the capacity of a block, and every validator stores
+every balance, with no way to reuse the room of the ones that nobody uses any more.
 
-This PIP separates the two jobs. **Pactus** stays small: it orders anchors, verifies one aggregate signature
-per anchor, holds escrowed PAC and keeps the operator registry, at a cost independent of the number of
-operations. **The Asset Layer** executes operations, keeps balances and retains the data; its capacity depends
-on operator hardware. In v1 every operator re-executes every batch, so adding operators adds no capacity
-(section 6.3).
+This PIP keeps the design as small as the problem allows, in the spirit of Pactus: robust, reliable and light.
 
-Pactus prefers off-chain solutions to off-chain problems, and the Asset Layer is off-chain. Three things only
-Pactus consensus can give:
+* **Robust.** Seven payloads and one rule per payload. Every amount is bounded and every sum checked before it is
+  added ([PIP-54](./pip-54.md)). The only authorities an asset can have are a mint capped at creation and rates that
+  move inside bounds fixed at creation.
+* **Reliable.** Assets rest on the trust of PAC and on nothing else: the validators check every rule, and nobody else
+  is trusted. Nothing depends on an operator, an indexer or an off-chain data store. The new rules are consensus code,
+  though, and a bug in them can harm the whole chain, as [PIP-54](./pip-54.md) showed: hence the bounds, the tests,
+  and the testnet plan that mainnet waits for (Reference Implementation).
+* **Light.** No per-block hook, no new signature scheme, no epoch, no registry. The load that assets put on L1 is
+  bounded by a constant, not by a market.
 
-1. **One canonical head with Pactus finality.** The head advances only through a Pactus transaction.
-2. **Custody of PAC.** Fee credit is backed by PAC held in escrow under rules every validator enforces: payouts
-   never exceed credited deposits, and an uncredited deposit can be reclaimed.
-3. **Enforceable accountability.** Only Pactus can lock operator bonds, accept evidence of double-signing and
-   burn them.
-
-Everything else stays off-chain. The on-chain footprint is seven payload types, one settlement record, a
-deposit queue and, after a halt, two registries of exit claims and receipts (section 4).
-
-The commands are few: create an asset, transfer, mint, burn, update a bounded parameter, request a PAC
-withdrawal. They cover a fungible token, an NFT collection and a semi-fungible collection. Exchanges, lending,
-oracles, governance, rebasing, freezing and clawback are outside this PIP.
-
-## Goals
-
-* Native fungible, non-fungible and semi-fungible assets with no VM.
-* A Pactus cost per anchor that is bounded and independent of operation count.
-* PAC-denominated fees with escrowed funds that a user can recover: an uncredited deposit can be reclaimed, and
-  fee credit can be recovered with a Merkle proof if the layer stops for 30 days.
-* A halt that is neither final nor silent: the committee can resume, and a holder can record a native position
-  on Pactus with a proof.
-* A PAC escrow cap that starts low and ramps up.
-* A proof of one wrong step that stops a false head, makes its signers pay, and keeps Pactus from paying
-  anything for it until a challenge window has passed.
-* On-chain accountability for conflicting attestations, seat terms against entrenchment, and replacement of
-  inactive members.
-* Operator revenue from user fees only, with floors that price state growth.
-* Byte-exact encodings and test vectors for every consensus object and for the state transition.
-* A versioned attestation slot so that validity proofs can replace committee attestation later.
-
-## Non-Goals
-
-* A validity proof in v1.
-* A guarantee that batch data is available (sections 1.2 and 3.7).
-* Using a native asset on Pactus. After a halt a receipt records who owned what (section 3.5), but nothing
-  spends it: a successor layer, defined by a later PIP, would honor it.
-* Forced inclusion of operations that operators refuse. Without a validity proof Pactus cannot tell a
-  legitimate rejection from censorship.
-* A rescue committee. If more than `n - T` operators are gone, the layer cannot resume (section 3.6).
-* A general policy language, the off-chain protocol operators use among themselves, or a subsidy for operators.
+The commands are few: create, accept, close, transfer, mint, and set a rate. Exchanges, allowances, lending, oracles,
+governance, freezing, clawback and metadata updates are outside this PIP; section 6 leaves room for a later PIP on
+exchanges and liquidity pools.
 
 ## Specification
 
-Integers are little-endian and fixed width unless a field is marked *varint*.
-`Address` is the 21-byte Pactus address; its first byte is the address type (`0` treasury, `1`
-validator, `2` BLS account, `3` Ed25519 account, `4` secp256k1 account). `Hash` is BLAKE2b-256, the hash Pactus
-already uses (`crypto/hash`). `||` is byte concatenation. "Zero address" is 21
-zero bytes. Amounts on Pactus are `int64` nano PAC and every sum MUST be
-rejected before it exceeds `MaxNanoPAC`, as in PIP-54. Quantities inside the
-Asset Layer are `uint64` and every operation MUST use checked arithmetic.
+Integers are little-endian and fixed width unless a field is marked *varint*. `Address` is the 21-byte Pactus address,
+and the zero address is the treasury address (21 zero bytes). An *account address* is a BLS, Ed25519 or secp256k1
+account address: in this PIP the treasury address is never one, although the `IsAccountAddress()` of the node accepts
+it, and neither is a validator address. `Hash` is BLAKE2b-256, the hash Pactus already uses, `||` is byte
+concatenation, and a quoted string is its ASCII bytes. Fields are encoded in the order listed, using the encodings of
+the existing payloads: `Address` as in `Transfer` (one byte for the treasury address), and *varint* as the `Amount` of
+`Transfer` and the number of recipients of `BatchTransfer` ([PIP-39](./pip-39.md)). Decoding MUST consume exactly the
+declared fields, and trailing bytes make a payload invalid. A *varint* MUST use its shortest encoding, and a longer
+one is invalid, as the varint decoder of the node already requires, so that a payload has a single encoding. Every
+count and length (recipients, symbol) MUST be checked against its bound before anything is allocated or read.
+Byte-level test vectors come with the reference implementation.
 
-### 1. Overview and trust model
+### 1. Parameters
 
-#### 1.1 Roles
-
-| Role | Does | Does not |
-| --- | --- | --- |
-| Pactus validators | Execute the seven new payloads, verify one BLS aggregate per anchor, commit the settlement state | Store balances, download or replay asset operations |
-| Operators | Bond PAC, execute and attest batches, retain all batch data, serve state | Mint or move PAC outside the rules of section 3 |
-| Users | Sign asset operations with a type-4 secp256k1 key, deposit PAC for fee credit | Need to know operators exist when moving PAC on Pactus |
-
-#### 1.2 Trust model
-
-Let `n` be the committee size of an epoch. The **quorum** is `T = max(floor(2n/3) + 1, n - floor((n - 1) / 6))`:
-two thirds, or all but `floor((n - 1) / 6)` operators if that is more. For `n = 21` it is `T = 18`, so 3
-operators may be offline; for `n = 51`, `T = 43`; for `n = 7`, `T = 6`. An anchor is accepted with `T`
-signatures, and an honest operator signs only a batch that it holds in full and has re-executed (section 5.7).
-If fewer than `T` operators are faulty, at least one signer of every head is honest and holds the batch. This
-is the rule of the Arbitrum AnyTrust data-availability committee (all but one signature, at least two honest
-members), applied to a committee that also validates.
-
-| Property | Holds if |
-| --- | --- |
-| Pactus consensus, ordinary PAC, validator stake | Independent of the committee. A faulty committee cannot reach them |
-| A final head is a correct execution | Fewer than `T` operators signed an incorrect head, **or** a party that holds the batch data submits a fraud proof within `ChallengeWindow` and a validator includes it |
-| A wrong head that is challenged in time does no harm on Pactus | Always: it is reverted, nothing is paid for it, and its signers lose their bonds |
-| The layer keeps advancing | At least `T` operators are online and honest |
-| The data needed to check or rebuild state exists | Fewer than `T` operators are faulty. With `T` or more nothing guarantees it. **Pactus does not check that data is held** |
-| A user recovers fee credit, or proves a native position, after a halt | The final head is correct, and some node still holds the state needed for the Merkle proof. A receipt is a record, not a way to spend |
-| A frozen layer can resume | At least `T` operators return |
-| A conflicting pair of attested heads is punished | Always for the operators who signed both (at least `2T - n` of them) |
-
-A committee of `T` or more colluding operators (18 of 21) can attest an incorrect head. It is pending for
-`ChallengeWindow` blocks, and any one party with the batch data can stop it and be paid for it. The attack
-therefore needs the committee to **keep the batch from every other party** for the whole window, or to count
-on nobody checking. If it succeeds, native assets can be reassigned or destroyed and the PAC credited in escrow
-can be drained, up to `MaxEscrow(h)` (50 000 PAC, reaching 500 000 PAC after 180 days). Ordinary PAC balances
-are never reachable. The bond is slashed for a double signature in one epoch and for a head proven wrong; it is
-not insurance for asset value. A caught committee loses `T` bonds, 180 000 PAC at the launch values.
-
-#### 1.3 Parameters
-
-The values below are initial proposals for community review. They are constants of the protocol version in the
-Pactus node, and a later version may change them (section 1.3.1).
+The values below are initial proposals for community review. They are constants of the protocol version in the node,
+and a later version may change them ([PIP-51](./pip-51.md)). A change never alters an existing asset.
 
 | Name | Value | Meaning |
 | --- | --- | --- |
-| `EpochLength` | 8640 blocks (one day) | The committee is fixed during an epoch. `epoch(h) = floor(h / EpochLength)` |
-| `MaxCommittee` | 21 at activation | Maximum seats. A seat is a record with `ActiveFromEpoch != 0` and `ExitEpoch == 0`. At most 64 |
-| `MaxOperatorRecords` | 42 | Maximum registry records (seated, waiting, exiting): twice `MaxCommittee` |
-| `SeatTerm` | 180 epochs | After a term, a waiting operator can take the seat |
-| `MaxRotationsPerEpoch` | 1 | Seats `Seat` may retire for an expired term in one epoch |
-| `MaxRotationsPerTerm` | 6 | The same, in one term window `floor(e / SeatTerm)`. Below `T` on purpose |
-| `WaitingEpochs` | 30 | Epochs after which a waiting record can be pruned when the registry is full |
-| `MinCommittee` | 7 | An anchor is invalid when the epoch committee is smaller |
-| `OperatorBond` | 10 000 PAC at activation | Exact bond of a new operator. A record keeps the amount it posted |
-| `OperatorUnbondDelay` | 181 440 blocks (21 days) | Delay after leaving before the bond can be withdrawn. The Pactus `UnbondInterval` default |
-| `MinDeposit` | 10 PAC | Smallest escrow deposit |
-| `MaxEscrow(h)` | 50 000, 150 000, then 500 000 PAC | Maximum PAC in escrow. Steps at 777 600 blocks (90 days) and 1 555 200 blocks (180 days) after `ActivationHeight`. Only a later PIP may raise the final value |
-| `HaltTimeout` | 259 200 blocks (30 days) | Blocks without an anchor after which anyone may freeze the layer |
-| `DepositExpiryEpochs` | 2 | A deposit made in epoch `e` can be credited until the end of epoch `e + 1`; from `e + 2` it can only be reclaimed |
-| `MaxDepositsPerAnchor` | 1 024 | Deposits one anchor may consume. MUST stay at or above `MaxTransactionsPerBlock` (1 000 today) |
-| `MaxExitClaimsPerBlock` | 32 | `ExitClaim` transactions a block may contain |
-| `MaxExitsPerResume` | 262 144 | PAC exit claims one `AssetResume` may apply. Resumes are serial, one per `ChallengeWindow`; claims can arrive at up to 276 480 per day |
-| `MaxPayoutsPerAnchor` | 64 | PAC payouts one anchor may make |
-| `AnchorRefund` | 10 000 000 nano PAC (0.01 PAC) | Largest refund of one anchor to its submitter: the default fixed fee of the reference node |
-| `MaxBatchBytes` | 33 554 432 | Largest canonical batch (32 MiB) |
-| `MaxRefLag` | 30 blocks | Largest lag of a batch `RefHeight` behind an operator's finalized height (sections 3.7 and 5.6) |
-| `ChallengeWindow` | 8 640 blocks (one day) | Blocks during which an anchor or resume is pending and can be challenged |
-| `MaxPending` | 864 | Records that may be pending at once |
-| `MaxSteps` | 1 048 575 (2^20 - 1) | Steps in one batch. `DataRoot` and `TraceRoot` have at most `2^20` leaves, audit paths at most 20 siblings |
-| `MaxFraudProofBytes` | 98 304 | Payload size of an `AssetFraud` |
-| `MaxFraudProofsPerBlock` | 2 | `AssetFraud` transactions a block may contain |
-| `OpenWindow` | 1 440 blocks (four hours) | Time to answer a request to open a leaf (section 3.8) |
-| `OpenBond` | 10 PAC | Bond of a request to open a leaf, paid to the responder if answered |
-| `MaxOpenRequests` | 4 | Open requests a record may have at once |
-| `MaxFinalizePerBlock` | 4 | Records the finalization hook may finalize in one block (section 3.7) |
+| `MaxAssetTxPerBlock` | 100 | Most asset transactions in one block, 10 % of its 1 000 entries. Bounds the entries and the work that assets take from a block |
+| `MaxRecipients` | 8 | Recipients of one `AssetTransfer`, as `BatchTransfer` |
+| `MaxDecimals` | 9 | Same as PAC |
+| `MaxAssetSupply` | 2^63 - 1 | Largest quantity of any asset, the largest `int64` |
+| `AssetCharge` | 0.1 PAC | Paid to the treasury, once, by every `AssetCreate`, for a record that is never removed (3.5) |
+| `HoldingDeposit` | 0.1 PAC | Locked by every holding that is placed, and returned by `AssetClose` (3.5) |
 
-`ChallengeWindow + OpenWindow` MUST be shorter than `OperatorUnbondDelay`, so that an operator cannot leave
-before it can be slashed.
+### 2. State
 
-##### 1.3.1 Changing a parameter
+#### 2.1 The asset tree
 
-A change is a new value in the code of a protocol version, applied from the first epoch that starts after the
-version activates (PIP-51). There is no transaction and no vote.
+A new Merkle tree, `assetMerkle`, has the shape of `accountMerkle`, with its own hashing (below): a new record is
+appended at the next index. The tree never shrinks and an `AssetRecord` never moves, so an `AssetID` never changes
+meaning. A holding can be replaced, though: a balance that its owner closes becomes a free slot, and the next balance
+reuses it. This PIP defines four kinds of record: a header at index 0, assets, balances (called holdings) and free
+slots; the other kinds are reserved for later PIPs (section 6). `NoRecord` is the value `0xFFFFFFFF`. The tree holds
+at most 2^31 records, at indexes 0 to 2^31 - 1, because the leaf index of the trees of the node is an `int32`;
+`NoRecord` is therefore never an index, and a payload that would append a record to a full tree is invalid. The
+deposits and `AssetCharge` keep the tree far below this bound (Security Considerations). Index 0 is the header, so no
+`AssetID` is 0, and the `BasicCheck` of every payload of this PIP that names an asset rejects an `AssetID` of 0
+(section 6 reserves it for PAC). The root depends only on the records: a node that rebuilds the tree from its store,
+in whatever order it reads the records, MUST obtain the same root as a node that built it block by block, at every
+size up to this bound.
 
-* **`OperatorBond`.** A record keeps the amount it posted (`Bond`, section 2.3); a `Bond` after the change pays
-  the new amount. Withdrawals, unbonding and slashes use the record's own amount, so no existing operator is
-  affected.
-* **`MaxCommittee`.** A raise frees seats at the next epoch, filled by `Bond` and `Seat` as for any vacancy.
-  `T` follows the size of each epoch's committee. A version MUST NOT lower `MaxCommittee` or
-  `MaxOperatorRecords`.
-
-A version that changes a parameter MUST keep `MaxCommittee <= 64` (the signer bitmap is at most 8 bytes),
-`MinCommittee <= MaxCommittee <= MaxOperatorRecords`, and `MaxRotationsPerTerm < T` of a full committee. At 51
-seats with `MaxRotationsPerTerm = 6`, taking `T = 43` seats by rotation needs eight windows, so such a version
-SHOULD review `MaxRotationsPerTerm`.
-
-#### 1.4 Names used below
-
-`ChainID` is the Pactus genesis hash (`Genesis.Hash()`); a node already knows it
-and the sandbox MUST expose it. Every signed message in this PIP starts with a
-distinct ASCII domain string and includes `ChainID`, so a signature made for one
-purpose or one network is never valid for another.
-
-### 2. Settlement state on Pactus
-
-#### 2.1 Activation and state root
-
-The feature activates with protocol version `V`, the next unassigned version when
-this PIP is accepted (`6` if PIP-50 activates first). The payload types below take the seven next
-free numbers, 8 to 14, on the assumption that PIP-50 uses type 7. Other Drafts also add payload types
-without fixing numbers (PIP-48 adds `SetDelegation`, PIP-33 adds lock and unlock): the version that
-activates first takes the next free numbers, and the editors renumber this PIP when assigning. No vector of
-this PIP contains a payload type number, so renumbering changes none of them. `V` MUST NOT activate
-before epoch 1, so that the epoch value `0` can mean "none" in the fields below.
-
-Pactus block headers commit to the **pre-state** of the block. For a block whose
-version is below `V` the root is unchanged:
-
-```text
-stateRoot = HashMerkleBranches(accountMerkle.Root(), validatorMerkle.Root())
-```
-
-For a block whose version is `V` or higher:
-
-```text
-assetRoot = HashMerkleBranches(Hash(SettlementState),
-                               HashMerkleBranches(HashMerkleBranches(depositMerkle.Root(),
-                                                                     anchorMerkle.Root()),
-                                   HashMerkleBranches(exitMerkle.Root(), exportMerkle.Root())))
-stateRoot = HashMerkleBranches(HashMerkleBranches(accountMerkle.Root(),
-                                                  validatorMerkle.Root()),
-                               assetRoot)
-```
-
-`depositMerkle`, `anchorMerkle`, `exitMerkle` and `exportMerkle` are trees of the same kind
-as `accountMerkle` (`util/persistentmerkle`): leaf `i` of `depositMerkle` holds
-`Hash(DepositRecord_i)`, leaf `Seq` of `anchorMerkle` holds the leaf of the anchor or resume
-with that sequence (sections 3.3 and 3.7), leaf `i` of `exitMerkle` holds the leaf of the
-`i`-th PAC exit claim and leaf `i` of `exportMerkle` holds the leaf of the `i`-th receipt
-(sections 2.4 and 3.5). Before the first anchor the settlement state is the
-**initial settlement**: all counters zero, no operators, `Frozen = 0`,
-`ExportsVoidBefore = 0`,
-`ActivationHeight` equal to the height of the first block of version `V`,
-`HeadSeq = 0`, `StateRoot = EmptyStateRoot` (section 5.2), `DataRoot` = 32 zero
-bytes, `HeadHash = GenesisHeadHash` (section 2.5), `TipSeq = 0`, `TipHash = GenesisHeadHash`,
-`TipStateRoot = EmptyStateRoot`, and four empty trees. The first
-block of version `V` therefore commits to the initial settlement in its header
-root.
-
-Nodes persist the settlement state, deposit records and the block in the same
-store batch that already persists accounts and validators.
-
-#### 2.2 `SettlementState`
-
-`Hash(SettlementState)` is the hash of this encoding:
+`HeaderRecord` (kind `0`), 13 bytes in this PIP (section 6 lets a later version append fields), at index 0 from the
+first block of version `V`:
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `Version` | `uint8` | `1` |
-| `ActivationHeight` | `uint32` | Height of the first block of version `V` |
-| `Frozen` | `uint8` | `0` active, `1` frozen (claims open), `2` resuming (PAC claims closed, exits being applied). Section 3.5 |
-| `ExportsVoidBefore` | `uint32` | Height at which the last resume completed, `0` if none. A receipt with `Height` below it is void |
-| `HeadSeq` | `uint64` | Sequence of the **final** head. `0` before the first anchor |
-| `HeadHash` | `Hash` | Section 2.5, of the final head |
-| `StateRoot` | `Hash` | Asset Layer state root of the final head. Exits and receipts are proven against it |
-| `DataRoot` | `Hash` | Batch data commitment of the final head |
-| `TipSeq` | `uint64` | Sequence of the latest anchor or resume, pending or final. `TipSeq >= HeadSeq`; the records above `HeadSeq` are pending |
-| `TipHash` | `Hash` | Head hash of the tip. The next anchor names it as `PrevHead` |
-| `TipStateRoot` | `Hash` | State root of the tip. The next batch starts from it |
-| `PendingOut` | `int64` | PAC that pending anchors will pay out when they are final |
-| `PendingConsumed` | `int64` | PAC of deposits that pending anchors will credit |
-| `OpenBonded` | `int64` | PAC held as bonds of open requests (section 3.8) |
-| `LastAnchorHeight` | `uint32` | Height of the block that carried the last anchor or resume, or of the last revert. `0` if none |
-| `TipFeeShareEpoch` | `uint32` | Epoch of the last fee share of the tip chain (section 3.3). `0` if none |
-| `RotationEpoch` | `uint32` | Epoch of the last rotation by expired term. `0` if none |
-| `RotationCount` | `uint8` | Rotations by expired term made in `RotationEpoch` |
-| `RotationWindow` | `uint32` | Term window of the last rotation by expired term. `0` if none |
-| `RotationWindowCount` | `uint8` | Rotations by expired term made in `RotationWindow` |
-| `NextOperatorIndex` | `uint32` | Index given to the next operator |
-| `DepositCount` | `uint64` | Deposits ever made. Next deposit sequence |
-| `DepositCursor` | `uint64` | Cursor of the tip: deposit sequences below this value are consumed, reserved or skipped |
-| `ExitCount` | `uint64` | PAC exit claims made (kind 0). Next leaf of `exitMerkle` |
-| `ExitCursor` | `uint64` | PAC exit claims below this value have been applied to the Asset Layer state by a resume |
-| `ExportCount` | `uint64` | Receipts recorded (kinds 1, 2 and 3). Next leaf of `exportMerkle` |
-| `Escrow` | `int64` | PAC held for deposits and fee credit |
-| `Consumed` | `int64` | Cumulative PAC of deposits credited by **final** anchors |
-| `Paid` | `int64` | Cumulative PAC paid out by **final** anchors and by exit claims |
-| `BondedTotal` | `int64` | PAC held as operator bonds |
-| `OperatorCount` | `uint8` | At most `MaxOperatorRecords` |
-| `Operators` | records | Section 2.3, ascending `Index` |
+| `Kind` | `uint8` | `0` |
+| `FreeHead` | `uint32` | Index of the free slot freed last, or `NoRecord` |
+| `DepositTotal` | `int64` | PAC locked by the deposits of all holdings, in nano PAC |
 
-Invariants after every transaction: `0 <= Paid <= Consumed`,
-`Escrow >= Consumed - Paid`, and, at the time a deposit is accepted,
-`Escrow <= MaxEscrow(h)`. The value
-`Escrow - (Consumed - Paid)` is the PAC of deposits that no final anchor has credited: pending
-(`Status 0`) and reserved by a pending anchor (`Status 3`).
-
-#### 2.3 Operator record
+`AssetRecord` (kind `1`), 82 to 93 bytes, or 123 to 134 with a transfer policy:
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `Index` | `uint32` | Never reused |
-| `Owner` | `Address` | Account that bonded and receives the bond back |
-| `PublicKey` | 96 bytes | BLS12-381 public key, same ciphersuite as Pactus validators |
-| `Bond` | `int64` | The amount posted: `OperatorBond` of the version in force at the `Bond` action, or `0` if slashed |
-| `ActiveFromEpoch` | `uint32` | `0` while the operator is **waiting** for a seat. Else the first epoch in which it is in the committee |
-| `TermEndEpoch` | `uint32` | `0` while waiting. Else `ActiveFromEpoch + SeatTerm` |
-| `ExitEpoch` | `uint32` | `0` while not exiting. Else the first epoch without the operator |
-| `WithdrawableHeight` | `uint32` | `0` while not exiting |
-| `JoinedEpoch` | `uint32` | Epoch in which the record was bonded |
-| `Flags` | `uint8` | Bit 0: slashed |
+| `Kind` | `uint8` | `1` |
+| `Symbol` | `uint8` length, then bytes | 1 to 12 bytes of `A-Z0-9` |
+| `Decimals` | `uint8` | At most `MaxDecimals` |
+| `MaxSupply` | `int64` | Cap on `Issued`, fixed at creation |
+| `Issued` | `int64` | Units created so far. Never decreases for an asset created by `AssetCreate` (section 6) |
+| `Burned` | `int64` | Units destroyed so far. Never decreases for an asset created by `AssetCreate` (section 6) |
+| `Issuer` | `Address` | The creator, an account address. The only account that may mint or set a rate. The zero address is reserved for assets of later PIPs (section 6) |
+| `MetaHash` | 32 bytes | Hash of an off-chain description, fixed at creation. All zero if none |
+| `PolicyPresent` | `uint8` | `0` or `1`. Fixed at creation |
 
-A record is **seated** if `ActiveFromEpoch != 0` and `ExitEpoch == 0`. It is
-**waiting** if `ActiveFromEpoch == 0` and `ExitEpoch == 0`. The waiting list is
-the waiting records in ascending `Index`.
-
-The committee of epoch `e`, `Committee(e)`, is the records with
-`1 <= ActiveFromEpoch <= e` and (`ExitEpoch == 0` or `e < ExitEpoch`), in ascending
-`Index`. Membership never changes inside an epoch, because every registry
-transaction sets `ActiveFromEpoch` or `ExitEpoch` to a later epoch.
-
-#### 2.4 `DepositRecord`
+If `PolicyPresent` is `1`, the record continues with the transfer policy:
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `From` | `Address` | Account that paid. Receives any reclaim |
-| `For` | `Address` | Type-4 address credited in the Asset Layer |
-| `Amount` | `int64` | Nano PAC |
-| `Height` | `uint32` | Block that included the deposit |
-| `Status` | `uint8` | `0` pending, `1` reclaimed, `2` credited, `3` reserved by a pending anchor |
+| `Collector` | `Address` | An account address that receives the team share. Fixed at creation. If it is not the issuer, the team rate starts at 0 and rises only once it has accepted the asset (sections 3.2 and 3.6) |
+| `TeamRate` | 3 x `uint16` | `Current`, `Min`, `Max`, in basis points. `Min` and `Max` are fixed at creation |
+| `BurnRate` | 3 x `uint16` | `Current`, `Min`, `Max`, in basis points. `Min` and `Max` are fixed at creation |
+| `TeamCap` | `int64` | Largest team share of one transfer entry. `MaxAssetSupply` means no cap. Fixed at creation |
 
-A deposit **expires in epoch `e`** when `e >= epoch(Height) + DepositExpiryEpochs`.
-It is **creditable in epoch `e`** when `Status == 0` and it has not expired in `e`.
-Whether a deposit is creditable in a given epoch depends only on its record and the
-epoch, never on later transactions of that epoch.
+A basis point is 1/10 000, so a rate of 10 000 is 100 %. Only `Current` ever changes after creation. A rate is
+**fixed** when `Min == Max` and **variable** otherwise, so no separate flag is needed. An asset without a policy
+behaves as if both rates were 0.
 
-Its leaf hash is `Hash(From || For || Amount || Height || Status)`. A node MAY
-delete the body of a record whose `Status` is `1` or `2`; it MUST keep the leaf hash. The body of a
-record in `Status 3` is needed to finalize or to challenge the anchor that reserved it.
+`HoldingRecord` (kind `2`), 46 bytes:
 
-#### 2.5 Heads and attestations
+| Field | Type | Notes |
+| --- | --- | --- |
+| `Kind` | `uint8` | `2` |
+| `AssetID` | `uint32` | The index of the `AssetRecord` |
+| `Owner` | `Address` | An account address |
+| `Balance` | `int64` | Units held, `0 <= Balance <= MaxSupply` of the asset. May be zero |
+| `Deposit` | `int64` | The PAC locked when the record was placed. `AssetClose` returns exactly this amount, out of which the close pays its fee |
+| `LockedUntil` | `uint32` | The `Expiry` of the acceptance that placed the record (section 3.9), or 0. An `AssetClose` of the holding is valid only if `h > LockedUntil`, `h` being the height of the block |
+
+`FreeRecord` (kind `3`), 5 bytes, the place of a closed holding:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `Kind` | `uint8` | `3` |
+| `Next` | `uint32` | Index of the next free slot, or `NoRecord` |
+
+The `AssetID` of an asset is the index of its `AssetRecord`. There is at most one `HoldingRecord` for a given
+`(AssetID, Owner)`. In this PIP, only `AssetCreate` (for its signer, the creator), `AssetAccept` (for its signer) and
+`AssetAcceptFor` (for the account whose signed acceptance it carries) place one, and a later PIP places one only with
+the signature of the account that will hold it (section 6), so the signature of its owner is always behind a record.
+`AssetTransfer` and `AssetMint` never place a record: they need the recipient's record to exist. Only `AssetClose`
+removes one, and only for its owner. A node keeps a local index from `(AssetID, Owner)` to the record index. The index
+is not consensus state and can be rebuilt from the tree.
+
+**Hashing.** The tree has the shape of the trees of the node: a tree of one leaf has that leaf as its root, an inner
+node hashes its two children, and the last node of a level of odd length is paired with itself. Its leaves and inner
+nodes are hashed in separate domains, and a leaf commits to its index:
 
 ```text
-GenesisContent = Hash("PAC-ASSET-GENESIS-1" || EmptyStateRoot)
-GenesisHeadHash = Hash("PAC-ASSET-HEAD-1" || uint64(0) || 32 zero bytes || GenesisContent)
-
-DepositDigest(oldCursor, newCursor, D) =
-    Hash("PAC-ASSET-DEPOSITS-1" || uint64(oldCursor) || uint64(newCursor) ||
-         for each deposit d in D, ascending sequence:
-             uint64(d.Seq) || d.From || d.For || uint64(d.Amount))
-
-PayoutsDigest(P) =
-    Hash("PAC-ASSET-PAYOUTS-1" || uint32(len(P)) ||
-         for each payout p in P: uint32(p.StepIndex) || p.To || uint64(p.Amount))
-
-ContentHash = Hash("PAC-ASSET-ANCHOR-1" || StateRoot || DataRoot || TraceRoot || uint32(DataSize) ||
-                   uint32(OpCount) || uint64(NewCursor) || DepositDigest || PayoutsDigest ||
-                   uint64(FeeShare) || uint64(Refund) || uint32(EvictIndex))
-
-AttestMessage = "PAC-ASSET-ATTEST-1" || ChainID || uint32(Epoch) || uint64(Seq) ||
-                PrevHead || ContentHash                         (126 bytes)
-
-HeadHash = Hash("PAC-ASSET-HEAD-1" || uint64(Seq) || PrevHead || ContentHash)
-
-ExitDigest(oldCursor, newCursor, E) =
-    Hash("PAC-ASSET-EXITS-1" || uint64(oldCursor) || uint64(newCursor) ||
-         for each PAC exit claim e in E, ascending index:
-             uint8(e.Kind) || e.Key || uint64(e.Amount))
-
-ResumeContentHash = Hash("PAC-ASSET-RESUME-1" || StateRoot || DataRoot || TraceRoot ||
-                         uint32(DataSize) || uint64(NewExitCursor) || ExitDigest)
+leaf(i)    = Hash(0x00 || i || Bytes(record i))      (i as a uint32)
+node(l, r) = Hash(0x01 || l || r)
 ```
 
-A resume (section 3.6) is attested with the same `AttestMessage` as an anchor, using
-`ResumeContentHash` in place of `ContentHash`, and its head is hashed the same way.
+The tag keeps a leaf from ever being taken for an inner node, whatever the length of a record, in this PIP or a later
+one. The index keeps a record from being taken for the record at another index: two records can have the same bytes
+(two `AssetRecord` with the same fields), and without the index a tree that ends with such a record could have the
+same root as a tree with more copies of it, so the root would not commit to the number of records. The trees of
+accounts and validators keep their hashing, and their roots do not change.
 
-`D` is the set of deposit records with sequence in `[oldCursor, newCursor)` that are
-creditable in the `Epoch` of the attestation. Records in that range that are not
-creditable are skipped and credit nothing. The vectors of the Test Cases section cover these digests.
+**Free slots.** The free slots form a stack: `FreeHead` is the slot freed last, and the `Next` of each slot is the
+slot freed before it. When a holding is placed, it takes the slot at `FreeHead` if there is one, and `FreeHead` becomes
+the `Next` of that slot; otherwise it is appended at the next index. When a holding is closed, its record becomes a
+`FreeRecord` whose `Next` is the old `FreeHead`, and `FreeHead` becomes its index. An `AssetRecord` is always appended
+and never takes a free slot, so that an `AssetID` is never an index that has held another record; in an `AssetCreate`,
+the `AssetRecord` is appended first and the holding of the creator is placed after it. Every node obtains the same
+indexes, because the order of the transactions of a block is fixed. The tree keeps the length of its peak: after many
+balances have been closed, their slots stay as 5-byte free records and wait for the next balance.
 
-### 3. Payload types
+#### 2.2 State root
 
-Seven payload types are added. All seven pay the ordinary fixed fee of Pactus; none
-is free. Unknown actions fail decoding.
+For a block below the version `V` that activates this PIP, the state root is unchanged, and once a block of version
+`V` is committed no block of a lower version is valid (Backwards Compatibility). For a block of version `V` or higher,
+the root that the block header commits to, which is the state before the block as today, becomes:
+
+```text
+assetRoot = assetMerkle.Root()          (hashed as in section 2.1; the tree holds at least the header record)
+stateRoot = HashMerkleBranches(HashMerkleBranches(accountMerkle.Root(), validatorMerkle.Root()), assetRoot)
+```
+
+Asset state MUST be part of the root: a store that the root does not cover would let two nodes commit the same block
+with different balances. It is persisted in the same store batch as accounts and validators.
+
+#### 2.3 Invariants
+
+After every transaction, for every asset:
+
+* `0 <= Burned <= Issued <= MaxSupply <= MaxAssetSupply`;
+* the units held by its records equal `Issued - Burned`: in this PIP, the sum of its holdings;
+* `Issued` and `Burned` never decrease, for an asset created by `AssetCreate` (section 6);
+* if it has a policy whose `TeamRate.Current` is above 0, its `Collector` has a holding of the asset (sections 3.2,
+  3.6 and 3.8).
+
+And for the tree:
+
+* a holding is placed only with the signature of its owner (in this PIP, by `AssetCreate`, `AssetAccept`, or
+  `AssetAcceptFor`, which carries it), and removed only by `AssetClose`, for its owner, at a height `h > LockedUntil`
+  and after burning what is left of its balance, so a transfer or a mint never changes the number of records or the
+  PAC locked, and nobody holds a record that it did not sign for;
+* the `Deposit` of the holdings add up to `DepositTotal`, and the PAC that accounts have lost to deposits is exactly
+  `DepositTotal`: balances, stake, treasury and the PAC totals of the header (`DepositTotal` in this PIP) are
+  conserved by every asset transaction, the fee being paid where the fee of any other transaction goes;
+* the free slots, followed from `FreeHead` by `Next`, are exactly the records of kind 3, each reached once, and the
+  chain ends with `NoRecord`; the header is the only record of kind 0, at index 0.
+
+### 3. Payloads
+
+Seven payload types are added, all of them signed by users. They take the next free numbers, 8 to 14, on the
+assumption that [PIP-50](./pip-50.md) uses type 7; other Drafts also add payload types, so the editors renumber when
+assigning. No test of this PIP depends on a type number.
 
 ```go
-TypeAssetOperator = Type(8)
-TypeAssetEscrow   = Type(9)
-TypeAssetAnchor   = Type(10)
-TypeAssetEvidence = Type(11)
-TypeAssetResume   = Type(12)
-TypeAssetFraud    = Type(13)
-TypeAssetOpen     = Type(14)
+TypeAssetCreate    = Type(8)
+TypeAssetTransfer  = Type(9)
+TypeAssetMint      = Type(10)
+TypeAssetSetRate   = Type(11)
+TypeAssetAccept    = Type(12)
+TypeAssetClose     = Type(13)
+TypeAssetAcceptFor = Type(14)
 ```
 
-#### 3.1 `AssetOperator` (type 8)
+#### 3.1 Rules common to all seven
 
-| Field | Type | Size | Notes |
-| --- | --- | --- | --- |
-| `From` | `Address` | 21 | Signer. An account address |
-| `Action` | `uint8` | 1 | `0` Bond, `1` Unbond, `2` Withdraw, `3` Seat, `4` Prune |
+* `Signer()` is `From`. Only **account addresses** (BLS, Ed25519, secp256k1) are valid. `BasicCheck` of every asset
+  payload MUST reject the treasury address and validator addresses as `From`, with an explicit test and not through
+  `IsAccountAddress()`, which accepts the treasury (Security Considerations).
+* The transaction is signed, expires (its `LockTime` is valid for `TransactionToLiveInterval`, 8 640 blocks or one day
+  on mainnet) and is protected against replay like every other transaction. No nonce is added. It is not one of the
+  free transactions of the node (`IsFreeTx()`), so its fee follows the rules of a `Transfer`: consensus bounds it by
+  `MaxNanoPAC`, and pools require their minimum, the fixed fee of 0.01 PAC by default.
+* `Value()` is the PAC that the payload takes from `From` besides the fee (section 3.5): a charge that goes to the
+  treasury, a deposit that is locked, or both. It is computed from the payload and the constants of section 1, without
+  reading the state, and subtracted from `From` together with the fee. Every sum that involves `Value()`, the fee, a
+  deposit or a balance MUST be rejected before it exceeds `MaxNanoPAC` ([PIP-54](./pip-54.md)). In this PIP,
+  `AssetClose` is the one payload that gives PAC back to `From`.
+* Every asset quantity is an `int64` with `1 <= quantity <= MaxAssetSupply`, except the `InitialSupply` of
+  `AssetCreate` and the `MaxBurn` of `AssetClose`, which may be 0. A sum of quantities MUST be checked before it is
+  added, in the form `total > MaxAssetSupply - amount`.
+* An asset transaction is an ordinary transaction: it travels through the network and the pools, and sits in a block,
+  as one. A block carries at most `MaxAssetTxPerBlock` of them (section 4).
+* A recipient is an account address. Treasury and validator addresses are rejected, because nothing could move the
+  units from them. The only exception is the zero address as a recipient of `AssetTransfer` (section 3.3). Any other
+  recipient MUST already hold a `HoldingRecord` of the asset, possibly with a balance of 0: it MUST have accepted the
+  asset (section 3.7).
+* A payload that names an asset rejects an `AssetID` of 0 in `BasicCheck` (section 2.1).
+* `PAC(a)` is the PAC balance of the account `a`, in nano PAC. A holding has its own `Balance`, in units of the asset,
+  and the two are never mixed: a check on PAC always says `PAC(From)`.
+* `Check` reads the state and changes nothing. `Execute` applies the whole transaction or none of it.
 
-Action `0` Bond adds:
+#### 3.2 `AssetCreate` (type 8)
 
-| Field | Size | Notes |
+| Field | Type | Notes |
 | --- | --- | --- |
-| `PublicKey` | 96 | BLS public key. MUST decode to a non-identity point of the prime-order subgroup, as `crypto/bls` already requires of public keys and signatures |
-| `PoP` | 48 | BLS signature over `"PAC-ASSET-POP-1" \|\| ChainID \|\| PublicKey \|\| From` made with that key |
-
-Actions `1`, `2` and `4` add `OperatorIndex` (`uint32`). Action `3` adds nothing.
-`Value()` is `OperatorBond` for Bond and `0` otherwise. While `Frozen != 0`
-(section 3.5), Bond, Seat and Prune are rejected; Unbond and Withdraw still work.
-There is no action that evicts an operator for inactivity: the committee evicts
-through the anchor (section 3.3, rule 11).
-
-The proof of possession defeats rogue-key attacks and names the owner, so nobody can replay another party's key.
-
-**Bond.** `Check`: `PoP` is valid; no registry record has this `PublicKey`; the
-`PublicKey` is not the key of any Pactus validator (an operator key MUST NOT be a
-validator key, so one key never signs both consensus votes and attestations); fewer
-than `MaxOperatorRecords` records exist; `NextOperatorIndex < 0xFFFFFFFF` (that value
-means "no operator" in an anchor); `Balance >= OperatorBond + fee`.
-`Execute`: subtract `OperatorBond + fee` from `Balance`; add `OperatorBond` to
-`BondedTotal`; append a record with `Index = NextOperatorIndex` (then increment),
-`Owner = From`, `JoinedEpoch = epoch(h)`, `ExitEpoch = 0`, `Flags = 0`. If fewer than
-`MaxCommittee` records are seated **and** the waiting list is empty, the record is
-seated: `ActiveFromEpoch = epoch(h) + 1` and
-`TermEndEpoch = ActiveFromEpoch + SeatTerm`. Otherwise it is waiting: those two
-fields are `0`. A newcomer therefore never passes an operator already waiting.
-
-**Unbond.** `From` is the record `Owner`; `ExitEpoch == 0`. A waiting record never
-had power: its bond is credited to `Owner` at once and the record is deleted, as in
-`Prune`. Otherwise set `ExitEpoch = epoch(h) + 1` and
-`WithdrawableHeight = ExitEpoch * EpochLength + OperatorUnbondDelay`. A seated
-record whose epoch has not started (`ActiveFromEpoch = epoch(h) + 1`) therefore
-never joins a committee. The seat is free for `Seat` as soon as `ExitEpoch` is set.
-
-**Withdraw.** `ExitEpoch != 0` and `h >= WithdrawableHeight`. `From` is any account;
-the bond is credited to `Owner`. A slashed record has `Bond = 0`. `BondedTotal` decreases
-by the bond and the record is deleted.
-
-**Seat.** `From` is any account. Let `W` be the first record of the waiting list;
-it MUST exist. One of two cases applies:
-
-* *Free seat:* fewer than `MaxCommittee` records are seated. Promote `W`.
-* *Expired term:* otherwise let `X` be the seated record with
-  `TermEndEpoch <= epoch(h)` that has the lowest `(TermEndEpoch, Index)`; it MUST
-  exist. Let `e = epoch(h)` and `w = floor(e / SeatTerm)`. If `RotationEpoch != e`,
-  set `RotationEpoch = e` and `RotationCount = 0`. If `RotationWindow != w`, set
-  `RotationWindow = w` and `RotationWindowCount = 0`. `RotationCount` MUST be below
-  `MaxRotationsPerEpoch` and `RotationWindowCount` below `MaxRotationsPerTerm`; then
-  increment both. Set `X.ExitEpoch = e + 1` and
-  `X.WithdrawableHeight = X.ExitEpoch * EpochLength + OperatorUnbondDelay`
-  (no slash), then promote `W`.
-
-To promote `W`: `ActiveFromEpoch = epoch(h) + 1` and
-`TermEndEpoch = ActiveFromEpoch + SeatTerm`. In the second case `X` leaves and `W`
-joins at the same epoch boundary, so the committee size does not change. A seat whose term has expired stays with its holder while the waiting list is empty. One call changes one seat.
-
-**Prune.** `From` is any account. Requires a waiting record, a full registry
-(`OperatorCount == MaxOperatorRecords`) and `epoch(h) - JoinedEpoch >= WaitingEpochs`.
-Effect: `BondedTotal` decreases by the bond, the bond is credited to the `Owner`, and
-the record is deleted. A pruned operator may bond again, at the back of the queue.
-
-#### 3.2 `AssetEscrow` (type 9)
-
-| Field | Type | Size | Notes |
-| --- | --- | --- | --- |
-| `From` | `Address` | 21 | Signer |
-| `Action` | `uint8` | 1 | `0` Deposit, `1` Reclaim, `2` Freeze, `3` ExitClaim |
-
-Deposit adds `For` (`Address`, 21) and `Amount` (*varint*); `Value()` is
-`Amount`. Reclaim adds `DepositSeq` (`uint64`); `Value()` is `0`. Freeze adds
-nothing. ExitClaim is defined in section 3.5. For Freeze and ExitClaim `Value()` is
-`0`.
-
-**Deposit.** `Frozen == 0`. `For` MUST be a type-4 secp256k1 address, not the zero
-address. `Amount >= MinDeposit`. `Balance >= Amount + fee`;
-`Escrow + Amount <= MaxEscrow(h)`; `DepositCount < 2^31 - 1`. Effect: subtract
-`Amount + fee`; add `Amount` to `Escrow`; append record `DepositCount` with
-`Height = h`; increment `DepositCount`.
-
-**Reclaim.** The record exists, `Status == 0`, `From` equals the record `From`, and
-the deposit has expired in `epoch(h)` (section 2.4). Effect: set `Status = 1`;
-subtract `Amount` from `Escrow`; credit `Amount` to the record `From`.
-
-A reclaim cannot race with an anchor: an anchor of epoch `e` credits only deposits creditable in `e`, a reclaim in `e` needs a deposit that has expired in `e`, and the two sets are disjoint. Operators SHOULD consume a deposit in the epoch in which it is made.
-
-#### 3.3 `AssetAnchor` (type 10)
-
-An anchor proposes a new head. It is **pending** for `ChallengeWindow` blocks, during which
-anyone who holds the batch data can prove that it is wrong (section 3.7). If nobody does, the
-head becomes final and the effects of the anchor on Pactus (payouts, refund, fee share,
-deposit credit, eviction) are applied (section 3.7, Finalization).
-
-| Field | Type | Size | Notes |
-| --- | --- | --- | --- |
-| `From` | `Address` | 21 | Submitter. Any account. Pays the Pactus fee, has no authority |
-| `AttestationType` | `uint8` | 1 | `0` = committee, with fraud proofs. `1` is reserved for validity proofs, which a later PIP would define. Other values invalid |
-| `Epoch` | `uint32` | 4 | |
-| `Seq` | `uint64` | 8 | |
-| `PrevHead` | `Hash` | 32 | |
-| `StateRoot` | `Hash` | 32 | Root after the last step of the batch |
-| `DataRoot` | `Hash` | 32 | `ListRoot` of the header and the steps (section 5.6) |
-| `TraceRoot` | `Hash` | 32 | `ListRoot` of the state roots before and after each step (section 5.6) |
-| `DataSize` | `uint32` | 4 | Bytes of the canonical batch |
-| `OpCount` | `uint32` | 4 | Number of operation steps in the batch |
-| `NewCursor` | `uint64` | 8 | |
-| `DepositDigest` | `Hash` | 32 | |
-| `PayoutCount` | `uint8` | 1 | `<= MaxPayoutsPerAnchor`. The number of withdrawal operations of the batch |
-| `Payouts` | `PayoutCount` × 33 | | `StepIndex` (`uint32`, 4), `To` (`Address`, 21), `Amount` (`int64`, 8). One for each `REQUEST_WITHDRAWAL` operation, in order |
-| `FeeShare` | `int64` | 8 | Nano PAC paid in equal parts to the operators (rule 10). `0` for none |
-| `Refund` | `int64` | 8 | Nano PAC paid to `From`, the submitter, to cover its Pactus fee. `0 <= Refund <= AnchorRefund` |
-| `EvictIndex` | `uint32` | 4 | `Index` of an operator that the committee evicts, or `0xFFFFFFFF` for none (rule 11) |
-| `BitmapLen` | `uint8` | 1 | `ceil(n / 8)` |
-| `Signers` | `BitmapLen` | | Bit `i` (LSB first in each byte) is the operator at position `i` of `Committee(Epoch)` |
-| `Signature` | 48 | | Aggregate BLS signature over `AttestMessage` |
-
-Maximum payload: `280 + 3 + 33 × 64 = 2395` bytes. `Value()` is `0`.
-
-`BasicCheck`: `From` is an account address; `AttestationType == 0`;
-`1 <= DataSize <= MaxBatchBytes`; `OpCount <= MaxSteps`;
-`PayoutCount <= MaxPayoutsPerAnchor`; every payout `Amount > 0` and `To` is an
-account address (types 2, 3 or 4); the `StepIndex` values strictly increase; `0 <= FeeShare <= MaxNanoPAC`;
-`0 <= Refund <= AnchorRefund`; the sum of payout amounts, `FeeShare` and `Refund`
-does not overflow; `BitmapLen <= 8`; decoding reads exactly the declared fields.
-
-`Check` (stateful). Each rule below MUST hold, in this order. `Tip` is the latest anchor,
-pending or final; `Head` is the latest final one.
-
-1. `Frozen == 0` and `Epoch == epoch(h)`.
-2. Let `C = Committee(Epoch)` and `n = |C|`. `n >= MinCommittee`.
-3. `BitmapLen == ceil(n / 8)`, no bit at position `>= n` is set, and the number
-   of set bits `s` satisfies `s >= T`, with `T` as in section 1.2.
-4. `LastAnchorHeight < h` (one anchor or resume per block).
-5. `Seq == TipSeq + 1`, `PrevHead == TipHash` and `TipSeq - HeadSeq < MaxPending`.
-6. `DepositCursor <= NewCursor <= DepositCount`,
-   `NewCursor - DepositCursor <= MaxDepositsPerAnchor`, and if
-   `NewCursor > DepositCursor` the record `NewCursor - 1` has `Height < h`.
-   `DepositCursor` is the cursor of the tip. Records are appended in block order, so this
-   makes every consumed deposit strictly older than the including block.
-7. Let `D` be the records in `[DepositCursor, NewCursor)` that are creditable in
-   `Epoch`, and `A` the sum of their amounts.
-   `DepositDigest == DepositDigest(DepositCursor, NewCursor, D)`. The number of steps of
-   the batch is `N = |D| + OpCount + 1`, and `N <= MaxSteps`. Every payout has
-   `|D| < StepIndex <= |D| + OpCount`, and `PayoutCount <= OpCount`.
-8. With `Pay` the sum of the payout amounts:
-   `Paid + PendingOut + Pay + FeeShare + Refund <= Consumed + PendingConsumed + A`.
-9. Let `Pk` be the aggregate of the public keys of the signers. `Pk` MUST NOT be the
-   identity. `Signature` is valid for `AttestMessage` under `Pk`.
-10. If `FeeShare > 0`: let `M` be the records of `C` that are not slashed and
-    `m = |M|`. Then `m >= 1`, `TipFeeShareEpoch != Epoch`, `FeeShare mod m == 0` and
-    `FeeShare / m >= 1`.
-11. If `EvictIndex != 0xFFFFFFFF`: a seated record has that `Index` and
-    `ActiveFromEpoch <= Epoch`, and after the eviction at least `MinCommittee`
-    records remain seated. The committee cannot evict itself below the size at which
-    it can anchor.
-
-`Execute` (submission). Pactus records the anchor, it does not yet pay anything:
-
-* Create the **anchor record**: all fields of the payload, `SignerIndexes` (the `Index` of every operator whose bit is set, decoded against `Committee(Epoch)` as it is in this block), an empty list of open requests, the submission height `h`, the
-  submitter `From`, `OldCursor = DepositCursor`, `PrevFeeShareEpoch = TipFeeShareEpoch`,
-  `A`, `Pay`, and `RefundPaid = min(Refund, fee of this anchor transaction)`. Its leaf in
-  `anchorMerkle`, at index `Seq`, is `Hash(0x50 || record)`.
-* Set `TipSeq = Seq`, `TipHash = HeadHash` of the anchor (section 2.5), `TipStateRoot = StateRoot`.
-* Set `DepositCursor = NewCursor` and `Status = 3` (reserved) on every record of `D`, so that
-  no one can reclaim a deposit that this anchor credits.
-* `PendingConsumed += A`; `PendingOut += Pay + FeeShare + RefundPaid`; if `FeeShare > 0`,
-  `TipFeeShareEpoch = Epoch`; `LastAnchorHeight = h`.
-
-Eviction is the committee's decision, not the submitter's: the submitter chooses which signatures go into the
-bitmap, so a measure of inactivity computed from it could be aimed at one operator. `T` operators can therefore
-evict the others, which adds no power beyond section 1.2.
-
-The refund is a fixed amount that the committee attests, because the submitter chooses its fee after the
-attestation. Any account that gets a valid anchor into a block receives `RefundPaid`, so a silent operator cannot
-keep an anchor from being relayed. The cap by the transaction fee stops a proposer from including its own anchor
-at zero fee and keeping the refund; the difference stays in escrow as slack, as does the remainder of a fee share
-that does not divide by the number of members. The fee share and the refund are the only ways fee revenue leaves
-the Asset Layer.
-
-Verification cost per anchor is one aggregate signature check, at most `MaxCommittee` public-key additions, at
-most 1 024 deposit records and one record appended, whatever the number of operations.
-
-#### 3.4 `AssetEvidence` (type 11)
-
-| Field | Type | Size | Notes |
-| --- | --- | --- | --- |
-| `From` | `Address` | 21 | Reporter. Any account |
-| `OperatorIndex` | `uint32` | 4 | |
-| `Epoch` | `uint32` | 4 | |
-| `Seq` | `uint64` | 8 | |
-| `PrevHead` | `Hash` | 32 | |
-| `ContentA`, `SigA` | `Hash`, 48 | 80 | First attestation |
-| `ContentB`, `SigB` | `Hash`, 48 | 80 | Second attestation |
-
-The payload is 229 bytes. `Value()` is `0`. An attestation made for one epoch cannot
-be anchored in another (rule 1 of section 3.3 and the `Epoch` field of the signed
-message), so only two attestations of the **same epoch** can conflict; that is the
-only case this payload punishes. `Check`: the record exists and is not slashed;
-`ContentA != ContentB`; the operator is in `Committee(Epoch)` (using the record's
-`ActiveFromEpoch` and `ExitEpoch`); `SigA` verifies under the operator key over
-`"PAC-ASSET-ATTEST-1" || ChainID || Epoch || Seq || PrevHead || ContentA`, and
-`SigB` likewise over `ContentB`.
-
-`Execute`: set `Flags |= 1`; `ExitEpoch = epoch(h) + 1` if the record has none;
-`WithdrawableHeight = ExitEpoch * EpochLength`; `BondedTotal -= Bond`;
-credit `floor(Bond / 2)` to `From` and the rest to the treasury account; set
-`Bond = 0`. Evidence is admissible while the record still exists, which is at
-least `OperatorUnbondDelay` blocks after the operator leaves the committee. It
-remains admissible while the layer is frozen or resuming.
-
-#### 3.5 Halt, freeze, exit claims and receipts
-
-If the committee stops anchoring, fee credit would be stranded in escrow and holders of
-native assets would depend on a committee that is gone. After `HaltTimeout` blocks
-without an anchor or a resume, anyone can freeze the layer. While it is frozen, holders
-take back fee credit from Pactus and record their native positions, with Merkle proofs
-against the last **final** head, and the committee can resume the layer (section 3.6).
-
-**Freeze** (`AssetEscrow`, action `2`). `Check`: `Frozen` is `0` or `2`, `HeadSeq >= 1`,
-`TipSeq == HeadSeq` (nothing is pending) and `h - LastAnchorHeight >= HaltTimeout`.
-`Execute`: `Frozen = 1`. A freeze from state `2` (a resume that stalled) reopens PAC claims;
-the claims already applied by that resume stay applied.
-
-| `Frozen` | Name | Anchor | PAC claims (kind 0) | Receipts (kinds 1, 2, 3) | Deposit |
-| --- | --- | --- | --- | --- | --- |
-| `0` | active | accepted | rejected | rejected | accepted |
-| `1` | frozen | only `AssetResume` | accepted | accepted | rejected |
-| `2` | resuming | only `AssetResume` | rejected | accepted | rejected |
-
-In states `1` and `2`, Bond, Seat and Prune are rejected. Reclaim of an expired pending
-deposit, Unbond, Withdraw, Evidence, `AssetFraud`, `AssetOpen` and every ordinary Pactus
-transaction work in every state.
-
-**ExitClaim** (`AssetEscrow`, action `3`). It proves one entry of the Asset Layer state
-tree against the `StateRoot` of the final head. There are four kinds:
-
-| `Kind` | What it proves | Selector fields | `Value` |
-| --- | --- | --- | --- |
-| `0` | Fee credit of `From` | none | 16 bytes: `uint64 Nonce \|\| uint64 Credit` |
-| `1` | The holding of `From` | `AssetID` (32), `TokenID` `uint64` | 8 bytes: `uint64` quantity |
-| `2` | An asset record | `AssetID` (32) | `ValueLen` `uint8` (1 to 225), then the `AssetRecord` bytes |
-| `3` | An item record | `AssetID` (32), `TokenID` `uint64` | 49 bytes: `ItemRecord` |
-
-The payload is `From` (21), `Action` (1), `Kind` (1), the selector fields, `Value`,
-`ProofBitmap` (32, section 5.2.1) and `Siblings` (32 × popcount of the bitmap, at most
-256). The largest payload is 8 505 bytes, a kind 2 with the largest `AssetRecord`. A
-block MUST NOT contain more than `MaxExitClaimsPerBlock` ExitClaim transactions of any
-kind. Pactus gossip messages are limited to 1 MB; with these caps a block of the new payload types stays near 0.92 MB (section 6).
-
-`BasicCheck`: `Kind` is in `0..3`; `Value` has the length of its kind; for kinds `0` and
-`1`, `From` is a type-4 address.
-
-`Check`:
-
-1. Kind `0` needs `Frozen == 1`. Kinds `1`, `2` and `3` need `Frozen` to be `1` or `2`.
-2. The state-tree key is: `Hash("PAC-ASSET-K/ACCT" || From)` for kind `0`;
-   `Hash("PAC-ASSET-K/HOLD" || AssetID || TokenID || From)` for kind `1`;
-   `Hash("PAC-ASSET-K/ASSET" || AssetID)` for kind `2`;
-   `Hash("PAC-ASSET-K/ITEM" || AssetID || TokenID)` for kind `3`.
-3. The proof verifies `Value` at that key against the `StateRoot` of the final head.
-4. Kind `0`: `Amount` is the `Credit` of `Value`, and `1 <= Amount <= MaxNanoPAC`. Kind `1`:
-   the quantity is at least `1`. Kinds `2` and `3`: `From` is any account.
-5. No PAC claim (kind `0`) that no resume has applied yet (leaf index `ExitCursor` or above), and no receipt (kinds `1`, `2`, `3`) recorded at a height of `ExportsVoidBefore` or above, has the same key. A claim that a resume applied has had its credit removed from the Asset Layer state, and a receipt below `ExportsVoidBefore` is void, so neither may block a later freeze: the account may hold new credit by then.
-6. Kind `0`: `Paid + Amount <= Consumed`.
-
-`Execute` for kind `0`: append the leaf `Hash(0x00 || Key || int64(Amount) || uint32(h))` to
-`exitMerkle` at index `ExitCount` and increment `ExitCount`; `Paid += Amount`;
-`Escrow -= Amount`; credit `Amount` to `From` (creating the account if needed). `Execute` for
-kinds `1`, `2` and `3`: append the leaf `Hash(uint8(Kind) || Key || Hash(Value) || uint32(h))`
-to `exportMerkle` at index `ExportCount` and increment `ExportCount`. A node MUST keep the
-key, amount and height of every PAC claim, and the kind, key and value of every receipt, so
-that it can reject a second claim and answer a resume.
-
-**Receipts.** A receipt records one fact of the final head: that an address held a quantity, that an asset has a
-definition, or that an item exists. It has no spending power on Pactus; it lets ownership after a halt rest on a
-proof against a root that Pactus holds. A holding is recorded only by its owner, a definition or an item by
-anyone. A receipt is void if the layer resumes: `ExportsVoidBefore` is set to the height of the resume, and a later
-freeze produces valid receipts again. The positions never leave the Asset Layer state.
-
-Claims and receipts are proven against the final head, never against a pending one, so a head
-that is still open to challenge cannot be used to take PAC out. The fee pool, which belongs
-to the operators, is not claimable and stays in escrow. If the final head overstated credits,
-PAC claims are paid in order of inclusion until `Consumed - Paid` is exhausted. A receipt is
-only as true as the head it is proven against: if that head is false, so are the receipts
-(section 1.2).
-
-#### 3.6 `AssetResume` (type 12)
-
-A frozen layer can be resumed by the committee. A resume is an attested step that applies
-to the Asset Layer state the PAC claims that holders have already been paid on Pactus. It
-can take several steps. Like an anchor, a resume is pending for `ChallengeWindow` blocks and
-can be challenged (section 3.7).
-
-| Field | Type | Size | Notes |
-| --- | --- | --- | --- |
-| `From` | `Address` | 21 | Submitter. Any account |
-| `AttestationType` | `uint8` | 1 | `0` |
-| `Epoch` | `uint32` | 4 | |
-| `Seq` | `uint64` | 8 | |
-| `PrevHead` | `Hash` | 32 | |
-| `StateRoot` | `Hash` | 32 | |
-| `DataRoot` | `Hash` | 32 | |
-| `TraceRoot` | `Hash` | 32 | |
-| `DataSize` | `uint32` | 4 | |
-| `NewExitCursor` | `uint64` | 8 | |
-| `ExitDigest` | `Hash` | 32 | |
-| `BitmapLen` | `uint8` | 1 | `ceil(n / 8)` |
-| `Signers` | `BitmapLen` | | As in an anchor |
-| `Signature` | 48 | | Over `AttestMessage` with `ResumeContentHash` |
-
-The payload is at most 258 bytes. `Value()` is `0`. `BasicCheck`: `From` is an account
-address; `AttestationType == 0`; `1 <= DataSize <= MaxBatchBytes`; `BitmapLen <= 8`.
-
-`Check`:
-
-1. `Frozen` is `1` or `2`, and `Epoch == epoch(h)`.
-2. Let `C = Committee(Epoch)` and `n = |C|`. `n >= MinCommittee`, and the bitmap and the
-   threshold are as in rule 3 of section 3.3.
-3. `LastAnchorHeight < h`, and nothing is pending: `TipSeq == HeadSeq`.
-4. `Seq == HeadSeq + 1` and `PrevHead == HeadHash`.
-5. `ExitCursor <= NewExitCursor <= ExitCount` and
-   `NewExitCursor - ExitCursor <= MaxExitsPerResume`. If `Frozen == 1`, also
-   `NewExitCursor <= ExitCountBefore(Epoch)`, the number of PAC claims made in an epoch
-   before `Epoch`. The number of steps of the batch is `N = NewExitCursor - ExitCursor`.
-6. `ExitDigest == ExitDigest(ExitCursor, NewExitCursor, E)`, where `E` is the PAC claims
-   in `[ExitCursor, NewExitCursor)`.
-7. The aggregate of the signers' keys is not the identity, and `Signature` is valid for
-   `AttestMessage` with `ResumeContentHash`.
-
-`Execute` (submission): create the resume record, with `SignerIndexes` as an anchor does (its leaf in `anchorMerkle` is
-`Hash(0x50 || record)`), set `TipSeq = Seq`, `TipHash` and `TipStateRoot`, and
-`LastAnchorHeight = h`. Nothing else changes until finalization.
-
-At finalization (section 3.7) of a resume: `HeadSeq`, `HeadHash`, `StateRoot` and `DataRoot`
-take its values; `ExitCursor = NewExitCursor`; if `Frozen == 1`, set `Frozen = 2`; then if
-`ExitCursor == ExitCount`, set `Frozen = 0` and `ExportsVoidBefore` to the height of that
-block.
-
-Rule 5 keeps a resume free of races: the first resume covers only claims of earlier epochs, which no later
-transaction can change, and it moves the layer to state `2`, which closes PAC claims so that the set to apply
-stops growing; later steps apply the rest. Claims made while a resume is pending are not covered by it. If the
-committee stops again in state `2`, anyone can freeze again after `HaltTimeout`, which reopens claims. A resume
-needs `T` operators; if more than `n - T` are gone the layer stays frozen, and the exits and receipts of
-section 3.5 are what protects users.
-
-#### 3.7 Challenge window, finalization and fraud proofs (type 13)
-
-v1 does not make Pactus check that a head is correct. It lets anyone who holds the data
-prove, on one step, that it is not, and it makes the signers pay.
-
-**Finalization.** At the start of every block of version `V` or higher, before its
-transactions, the node finalizes pending records in order of `Seq`, at most `MaxFinalizePerBlock` of them: while `HeadSeq < TipSeq`
-and the record of `HeadSeq + 1` is pending, has no open request (section 3.8) and has
-`SubmitHeight + ChallengeWindow <= h`.
-Finalizing an anchor:
-
-* `HeadSeq`, `HeadHash`, `StateRoot` and `DataRoot` take the values of the record.
-* `Status` of the records of its `D` changes from `3` to `2`; `Consumed += A`;
-  `PendingConsumed -= A`.
-* Each payout `To` is credited (creating the account if needed), and `RefundPaid` is credited
-  to the submitter.
-* If `FeeShare > 0`, let `m'` be the number of records of `Committee(Epoch)` that are not
-  slashed at that moment. If `m' >= 1`, each of their owners is credited `FeeShare / m'`,
-  rounded down; what is not paid stays in escrow as slack.
-* `Paid` and `Escrow` change by the amounts actually paid, and `PendingOut -= Pay + FeeShare
-  + RefundPaid`.
-* If `EvictIndex` is set and rule 11 of section 3.3 still holds, that record gets
-  `ExitEpoch = epoch(h) + 1` and `WithdrawableHeight = ExitEpoch * EpochLength +
-  OperatorUnbondDelay`, without slashing. Otherwise the eviction is skipped.
-* Its leaf in `anchorMerkle` becomes `Hash(0x46 || HeadHash)`.
-
-Finalizing a resume is described in section 3.6. At most one record is submitted per block, but records held back
-by an open request (section 3.8) can become due together; `MaxFinalizePerBlock` bounds that burst, and a backlog
-drains at `MaxFinalizePerBlock - 1` records per block without changing any record's window.
-
-**`AssetFraud`.**
-
-| Field | Type | Size | Notes |
-| --- | --- | --- | --- |
-| `From` | `Address` | 21 | Reporter. Any account |
-| `Seq` | `uint64` | 8 | The pending record that is challenged |
-| `Kind` | `uint8` | 1 | `0` Step, `1` FinalRoot, `2` Header, `3` Start |
-| `StepIndex` | `uint32` | 4 | Kind `0`: `1..N`. Other kinds: `0` |
-| `Body` | | | By kind, below |
-
-The payload is at most `MaxFraudProofBytes`, and a block holds at most
-`MaxFraudProofsPerBlock` of them. `Value()` is `0`. A `Proof` is a length `uint8` followed by
-that many 32-byte siblings of a `ListRoot` audit path (section 5.6). A `Witness` is a `Key`
-(32), a `ValueLen` `uint16` (`0xFFFF` for an absent entry) and the `Value`, then a
-`ProofBitmap` (32) and the `Siblings` of a membership proof (section 5.2.1).
-
-| Kind | Body |
-| --- | --- |
-| `0` Step | `StepLen` `uint16`, `StepData`, `Proof` against `DataRoot`; `HeaderData` (70 bytes) and its `Proof` against `DataRoot`, present only if the step is an operation; `PreRoot` (32) and its `Proof` against `TraceRoot`; `PostRoot` (32) and its `Proof` against `TraceRoot`; `WitnessCount` `uint8` (at most 8) and the `Witness`es |
-| `1` FinalRoot | `FinalRoot` (32) and its `Proof` against `TraceRoot` |
-| `2` Header | `HeaderData` (70 bytes) and its `Proof` against `DataRoot` |
-| `3` Start | `StartRoot` (32) and its `Proof` against `TraceRoot` |
-
-`Check`:
-
-1. The record `Seq` is pending (`HeadSeq < Seq <= TipSeq`, not reverted) and
-   `h < SubmitHeight + ChallengeWindow`.
-2. Let `N` be the number of steps of the record (section 3.3 rule 7 or section 3.6 rule 5) and
-   `n = N + 1`, the number of leaves of `DataRoot` and of `TraceRoot`. The leaf of the
-   header and of `R_0` has index `0`, the leaf of step `s` and of `R_s` has index `s`.
-3. Every audit path and membership proof in the payload verifies, with `PreRoot` at index
-   `StepIndex - 1` and `PostRoot` at index `StepIndex` of `TraceRoot`, and every witness
-   verifies against `PreRoot`. A payload with a proof that does not verify, or without a
-   witness that the step needs, is invalid and has no effect.
-4. The payload shows fraud:
-   * Kind `0`: the step at position `StepIndex` is of the kind that its position requires
-     (`StepIndex <= |D|` credit; the next `OpCount` operation; the last one pool; for a resume,
-     all are exit steps), **and** at least one of these holds. (a) `StepData` does not decode
-     as that kind. (b) For a credit step, it differs from the `StepIndex`-th record of `D`; for
-     a pool step, it differs from the `FeeShare` and `Refund` of the record; for an exit step,
-     it differs from the PAC claim of the same rank; for an operation step, it is a
-     `REQUEST_WITHDRAWAL` and the payouts of the record have no entry with this `StepIndex`
-     and the same `To` and `Amount`, or it is not a `REQUEST_WITHDRAWAL` and they have an
-     entry with this `StepIndex`. (c)
-     Executing the step from the witnesses (section 5.9) breaks a rule of section 5.5, or of
-     the step. (d) Executing the step gives a root different from `PostRoot`.
-   * Kind `1`: `FinalRoot` differs from `StateRoot` of the record.
-   * Kind `2`: the header is wrong: version other than `1`, a batch kind that does not match
-     the record, `Epoch` or `Seq` other than those of the record, `PrevStateRoot` other than the
-     `StateRoot` of the record before it (final or pending), `RefHeight` above `SubmitHeight` or
-     more than `MaxRefLag` blocks before the first block of `Epoch` (for a resume: other than `0`),
-     `CreditCount` other than `|D|`, `OpCount` other than that of the record, `Reserved` other
-     than `0`, or `NewCursor` other than that of the record. For a resume, `|D|` and `OpCount`
-     are `0`, and `NewCursor` is its `NewExitCursor`.
-   * Kind `3`: `StartRoot` differs from `PrevStateRoot` of the record.
-
-`Execute` (also run by an `AssetOpen` timeout, section 3.8):
-
-* **Revert.** Records `Seq` to `TipSeq` become reverted (leaf `Hash(0x52 || HeadHash)`).
-  For each reverted anchor, `Status` of its `D` goes from `3` back to `0`;
-  `PendingConsumed` and `PendingOut` are reduced by its sums. If record `Seq` is an anchor,
-  `DepositCursor = OldCursor` and `TipFeeShareEpoch = PrevFeeShareEpoch` of that record (a
-  resume changes neither). `TipSeq = Seq - 1`, `TipHash` and `TipStateRoot` take the values of
-  the record before it (or of the final head), and `LastAnchorHeight = h`. The bond of every
-  open request (section 3.8) of a reverted record is returned to its requester and leaves
-  `OpenBonded`. A reverted record pays nothing.
-* **Slash.** For each operator in the `SignerIndexes` of record `Seq` (never the bitmap, which can no longer be decoded once a record of an old committee has been deleted) whose operator record still exists and is not
-  slashed: `Flags |= 1`, `ExitEpoch = epoch(h) + 1` if it has none,
-  `WithdrawableHeight = ExitEpoch * EpochLength`, `BondedTotal -= Bond`, and the bond is
-  collected. Of the total `S` collected, `floor(S / 2)` is credited to `From` and the rest to
-  the treasury account. Signers of later records that were reverted with it are not slashed:
-  they signed a head that is no worse than the one they built on.
-
-`OperatorUnbondDelay` is longer than `ChallengeWindow`, so an operator cannot leave before it
-can be slashed for a pending anchor.
-
-**Roots that cannot be opened.** A committee could commit to a root that is not a real tree, so that no path to
-the wrong step exists. Section 3.8 lets anyone demand that a leaf be opened on Pactus, and treats a root that
-nobody can open as fraud.
-
-**What this does not guarantee.** A proof needs the batch data. If the committee withholds it from everyone,
-nobody can prove fraud and a false head becomes final (section 1.2, Security Considerations). What changes is that
-the committee must hide the batch from every other party for a day.
-
-#### 3.8 `AssetOpen` (type 14)
-
-A fraud proof opens leaves of `DataRoot` and `TraceRoot`, which works only if they are roots of real trees.
-`AssetOpen` lets anyone ask for a leaf to be opened on Pactus; if nobody can open it, the anchor is treated as
-proven wrong.
-
-| Field | Type | Size | Notes |
-| --- | --- | --- | --- |
-| `From` | `Address` | 21 | Requester, responder or reporter. Any account |
-| `Action` | `uint8` | 1 | `0` Request, `1` Respond, `2` Timeout |
-| `Seq` | `uint64` | 8 | The record |
-| `Tree` | `uint8` | 1 | `0` `DataRoot`, `1` `TraceRoot` |
-| `Index` | `uint32` | 4 | A leaf index, `0..N` |
-
-Action `1` adds `LeafLen` `uint16`, `Leaf` and a `Proof` (a length `uint8` and that many 32-byte
-siblings of a `ListRoot` audit path). `Value()` is `OpenBond` for a Request and `0` otherwise.
-
-**Request.** `Check`: the record is pending and `h < SubmitHeight + ChallengeWindow`; `Index <= N`;
-no open request of the record has the same `Tree` and `Index`; the record has fewer than
-`MaxOpenRequests` open requests; `Balance >= OpenBond + fee`. `Execute`: take `OpenBond` from the
-requester, add it to `OpenBonded`, and add the request `(Tree, Index, From, h)` to the record.
-
-**Respond.** `Check`: an open request with this `Tree` and `Index` exists, and `Leaf` is the
-leaf at `Index` of the tree under the root of the record (`DataRoot` or `TraceRoot`, with
-`n = N + 1` leaves). `Execute`: remove the request; credit `OpenBond` to `From`; `OpenBonded`
-decreases by the same amount. The leaf is now public on Pactus, which is how a challenger who
-did not have the data learns what the committee committed to.
-
-**Timeout.** `Check`: an open request exists and `h >= RequestHeight + OpenWindow`. `Execute`:
-the effects of a proven fraud (section 3.7, Revert and Slash), the requester gets its
-`OpenBond` back, and `From`, who may be anyone, is the reporter that receives half of the bond
-slashed.
-
-While a record has an open request it is not finalized and the records after it wait, so a request delays
-finalization by at most `OpenWindow` blocks beyond the challenge window. Unanswered, it costs the signers their
-bonds; answered, it costs the requester `OpenBond`, which goes to the responder. The mechanism does not catch a
-committee that opens every leaf that is asked for and nothing else, so it does not remove the need for public
-data.
-
-### 4. Pactus node changes
-
-* `Sandbox` exposes `Settlement()` (read and write), deposit records, anchor records, the exit
-  and export trees, `ChainID()` and the epoch. Pactus nodes implement a larger part of section 5
-  than before: the proof check of section 5.2.1, the audit paths of section 5.6, and the
-  execution of a single step of section 5.9 with the rules of sections 5.5 and 5.8 (including
-  secp256k1 signature verification). That code runs only to check an `AssetFraud`. The existing
-  `Check` / `Execute` split applies to every payload. `executeBlock` changes in one place: before
-  the transactions of a block of version `V` or higher it finalizes the pending record that is
-  due (section 3.7). That step is a function of the settlement state and the height only, so it
-  is the same on every node, and it runs on the commit path as well as on the validation path.
-* Transaction pool: each new type gets its own pool of 5 % of `MaxSize`. A pool MUST
-  run every check that needs no pairing before it runs one (for an anchor: `Epoch`,
-  `Seq`, `PrevHead`, bitmap length and number of set bits; for evidence: the operator
-  exists and is not slashed, and the two contents differ; for a fraud proof: the record is
-  pending and the payload is within its size limit and its proofs are well formed), and SHOULD
-  limit the number of unverified anchors, evidence, bonds and fraud proofs it accepts per
-  peer. Anchors are deduplicated by `(PrevHead, ContentHash, Signers, Signature)`, so a node
-  pays for one pairing per distinct candidate and an invalid copy of a valid anchor cannot
-  hide it.
-* Verification budget of a block. The work that needs a pairing is bounded by state: at most one anchor or resume
-  (one aggregate verification), at most one evidence per operator that is not yet slashed (two checks each, at
-  most 42 records) and at most one check per free registry record for bonds, about 85 signature verifications in
-  the worst case. An `ExitClaim` costs at most 256 hashes and 32 fit. An `AssetFraud` costs at most 8 membership
-  proofs and one root reconstruction (about 4 000 hashes), three audit paths of 20 hashes and one secp256k1
-  verification, and `MaxFraudProofsPerBlock` fit. An `AssetOpen` costs one audit path. Finalization costs at most
-  `MaxFinalizePerBlock` anchors per block.
-* Block production: a proposer SHOULD place anchors after other transactions. A
-  proposer MUST NOT include more than `MaxExitClaimsPerBlock` ExitClaim transactions or more
-  than `MaxFraudProofsPerBlock` AssetFraud transactions, and `ValidateBlock` MUST reject a
-  block that does. The counts are per-block counters held by the sandbox, not settlement
-  state. A proposer SHOULD give `AssetFraud` priority over anchors, because a fraud proof has a
-  deadline.
-* RPC (mandatory for the official node, on every surface it ships): payload type values `8` to `14` in
-  `PayloadType`; `GetRaw*Transaction` builders for the seven payloads; `GetAssetSettlement`, returning the fields
-  of the settlement state (section 2.2), the committee of the current epoch, `max_escrow` for the current height
-  and the pending sums; `GetAssetDeposit(seq)`; `GetAssetAnchor(seq)` (the record of an anchor or resume, its
-  status and the time left in its window); and `ListAssetOperators`, returning the fields of section 2.3.
-* Explorers that audit supply MUST add `Escrow`, `BondedTotal` and `OpenBonded` to account
-  balances and validator stake. Omitting them looks like a burn.
-
-### 5. The Asset Layer
-
-This part is normative for operators. Pactus validators do not execute batches. They execute
-one step of it, and only to check a fraud proof (sections 3.7 and 5.9). All operators MUST
-compute identical roots from the same batch, because the attestation of section 2.5 binds that
-root, and they MUST agree with that verifier.
-
-#### 5.1 Accounts and signatures
-
-Every sender, recipient, issuer, controller and fixed destination is a type-4
-secp256k1 address, except the withdrawal beneficiary of `REQUEST_WITHDRAWAL`,
-which is any Pactus account address (types 2, 3 or 4). The zero address means "no
-authority" and MUST NOT hold or receive value.
-
-An operation carries its 33-byte compressed public key and 64-byte `r || s`
-signature, as a Pactus transaction does. The signature is verified over
-`"PAC-ASSET-OP-1" || ChainID || SignedBytes` with the secp256k1 scheme of PIP-53.
-Operations are identified by `Hash` of `SignedBytes`, never by signature bytes,
-since the scheme does not force a low `s`.
-
-#### 5.2 State tree
-
-State is a sparse Merkle tree with 256 levels and 32-byte keys.
-
-```text
-Empty[0]  = 32 zero bytes
-Empty[k]  = Hash(0x01 || Empty[k-1] || Empty[k-1])      k = 1..256
-EmptyStateRoot = Empty[256]
-
-leaf node   = Hash(0x00 || key || Hash(value))                 (level 0)
-inner node  = Hash(0x01 || left || right)
-```
-
-At level `j` (counting up from the leaf) bit `255 - j` of the key, most
-significant bit of byte 0 first, selects the branch: `0` left, `1` right. An
-absent key is `Empty[0]` at level 0. A value of zero is never stored: a holding
-of zero, an account record with nonce and credit zero, and a zero fee pool are
-removed. A stored value is therefore never all zero bytes. Item records are never removed.
-
-Keys are `Hash(tag || fields)`:
-
-| Entry | Key | Value |
+| `From` | `Address` | The creator, who becomes the issuer |
+| `Symbol` | `uint8` length, then bytes | 1 to 12 bytes of `A-Z0-9`, and not `PAC` |
+| `Decimals` | `uint8` | At most `MaxDecimals` |
+| `InitialSupply` | *varint* `int64` | `0 <= InitialSupply <= MaxSupply` |
+| `MaxSupply` | *varint* `int64` | `1 <= MaxSupply <= MaxAssetSupply` |
+| `MetaHash` | 32 bytes | Opaque to consensus |
+| `PolicyPresent` | `uint8` | `0` or `1` |
+| `Policy` | as in section 2.1 | Only if `PolicyPresent` is `1`: `Collector`, `TeamRate`, `BurnRate`, `TeamCap` |
+
+The record of the creator is placed if `InitialSupply > 0`, or if the policy is present and `Collector == From`.
+`Value()` is `AssetCharge`, plus `HoldingDeposit` if the record of the creator is placed. `BasicCheck` of a policy:
+`Collector` is an account address; if `Collector` is not `From`, `TeamRate.Current` is 0, and therefore so is
+`TeamRate.Min` (see below); for each rate, `Min <= Current <= Max <= 10 000`; `TeamRate.Max + BurnRate.Max <= 10 000`;
+at least one `Max` is above 0; `1 <= TeamCap <= MaxAssetSupply`. `Check`: `PAC(From) >= Value + fee`, and the tree has
+room for the records that are appended (section 2.1).
+
+`Execute`: debit `Value + fee`; credit `AssetCharge` to the treasury; append an `AssetRecord` with `Issuer = From`,
+`Issued = InitialSupply`, `Burned = 0` and the policy as given; if the record of the creator is placed, place a
+`HoldingRecord` of `From` with `Balance = InitialSupply`, `Deposit = HoldingDeposit` and `LockedUntil = 0`, and add
+`HoldingDeposit` to `DepositTotal`. No record is placed for any other account, the collector included: the collector
+is named by the creator but has not signed, so it must accept the asset itself (section 3.7). That is why a collector
+other than the creator starts at a team rate of 0: the asset can be transferred at once, with no team share, and the
+issuer raises the rate once the collector has accepted (section 3.6). A creator with `InitialSupply == 0` that is not
+the collector holds no record yet: to mint to itself, it accepts the asset like anyone else.
+
+The asset is **minting** if `MaxSupply > InitialSupply`. If they are equal, nobody can ever create another unit and
+nobody holds any authority over its supply: the supply is fixed for ever. Symbols are labels, not names: they are not
+unique, and the `AssetID` is the identity.
+
+#### 3.3 `AssetTransfer` (type 9)
+
+| Field | Type | Notes |
 | --- | --- | --- |
-| Asset | `"PAC-ASSET-K/ASSET" \|\| AssetID` | `AssetRecord` |
-| Item | `"PAC-ASSET-K/ITEM" \|\| AssetID \|\| uint64(TokenID)` | `ItemRecord` |
-| Holding | `"PAC-ASSET-K/HOLD" \|\| AssetID \|\| uint64(TokenID) \|\| Address` | `uint64` quantity |
-| Account | `"PAC-ASSET-K/ACCT" \|\| Address` | `uint64 Nonce \|\| uint64 Credit` |
-| Fee pool | `"PAC-ASSET-K/POOL"` | `uint64` |
+| `From` | `Address` | The holder |
+| `AssetID` | `uint32` | |
+| `MaxRate` | `uint16` | Largest `TeamRate.Current + BurnRate.Current` that the sender accepts, in basis points |
+| `NumberOfRecipients` | *varint* | `1 .. MaxRecipients` |
+| `Recipients[].To` | `Address` | An account address, or the zero address to burn |
+| `Recipients[].Amount` | *varint* `int64` | The gross quantity taken from the sender |
 
-Because keys are hashes, a deployment may split the tree across machines by key
-prefix. The root does not depend on how it is split.
+`Value()` is 0: a transfer appends no record, so it pays only the fee.
 
-##### 5.2.1 Membership proofs
-
-A proof that `value` is stored at `key` under `root`, or that `key` is absent, is a 32-byte
-`Bitmap` and a list of 32-byte `Siblings`. Bit `j` of the bitmap (byte `j / 8`, least significant
-bit first) is set when the sibling at level `j` is explicit; the explicit siblings
-are listed in ascending level. All other siblings are `Empty[j]`. To verify:
+**Rates.** With a policy, each entry whose `To` is not the zero address is split as follows, with `D = 10 000`, the
+current rates of the asset, and integer division throughout:
 
 ```text
-node = Empty[0] if the entry is absent, else Hash(0x00 || key || Hash(value))
-for j in 0..255:
-    sibling = next explicit sibling if bit j of Bitmap is set, else Empty[j]
-    if bit (255 - j) of key (most significant bit of byte 0 is bit 0) is 0:
-        node = Hash(0x01 || node || sibling)
-    else:
-        node = Hash(0x01 || sibling || node)
-accept iff node == root and every explicit sibling was used
+share(a, r) = (a / D) * r + ((a % D) * r) / D
+team        = min( share(Amount, TeamRate), TeamCap )
+burn        = share(Amount, BurnRate)
+net         = Amount - team - burn
 ```
 
-Pactus nodes run this check for `ExitClaim` (section 3.5) and for the witnesses of an
-`AssetFraud` (section 3.7). The cost is at most 256 hashes of 65 bytes.
+`share(a, r)` is exactly `floor(a * r / D)`, written so that no intermediate value leaves the `int64` range: since
+`r <= D`, `(a / D) * r <= a`, and `(a % D) * r < D * D`. No 128-bit product is needed. Because the two rates add up to
+at most `D`, `team + burn <= Amount`, so `net >= 0`. Rounding is down, so a transfer too small to owe one unit of rate
+owes nothing. Without a policy, `team` and `burn` are 0 and `net` is `Amount`. An entry to the zero address pays no
+rate: the whole `Amount` is burned.
 
-#### 5.3 Records
+`BasicCheck`: `MaxRate <= 10 000`; the number of recipients is in range; no `To` appears twice; no `To` equals `From`;
+every amount is in range; the sum of the amounts, checked as in section 3.1, does not exceed `MaxAssetSupply`.
+`Check`: the asset exists; `TeamRate.Current + BurnRate.Current <= MaxRate` (both are 0 without a policy); `From` has
+a holding of at least `total` units; every `To` that is not the zero address has a holding of the asset; `PAC(From) >=
+fee`; no entry to an account has `net == 0`.
 
-`AssetID = Hash("PAC-ASSET-ID-1" || Creator || uint64(CreatorNonce))`, where the
-nonce is the nonce of the creating operation.
+`Execute`: debit the fee in PAC; subtract `total` from the holding of `From` (the holding stays, even at zero, until
+its owner closes it); then, for each recipient in the order of the list: if `To` is the zero address, add `Amount` to
+the `Burned` of the asset; otherwise add `net` to the holding of `To`, add `team` to the holding of `Collector` if
+`team > 0`, and add `burn` to `Burned`. If `team > 0` then `TeamRate.Current` is above 0, so the holding of
+`Collector` exists, by the invariant of section 2.3; a node that does not find it has a fault and stops, as for its
+index (section 5). Each addition applies to the live record, so the result is the same when addresses coincide. No
+record is placed.
 
-`AssetRecord`, in this order:
-`AssetType uint8`, `MintMode uint8`, `BurnMode uint8`, `Decimals uint8`,
-`SymbolLen uint8`, `Symbol`, `MetaHash` (32), `MaxSupply uint64`, `Creator` (21),
-`MintController` (21), `ParamController` (21), `Supply uint64`,
-`PolicyPresent uint8`, then if present `TeamAddress` (21) and three parameters
-(`TeamRate`, `BurnRate`, `TeamCap`), each `Current uint64`, `Min uint64`,
-`Max uint64`, `Mutable uint8`.
+For example, with `Amount = 1 000 000`, `TeamRate = 200` (2 %), `BurnRate = 50` (0.5 %) and `TeamCap = 15 000`:
+`share(Amount, 200) = 20 000`, so `team = 15 000`; `burn = 5 000`; `net = 980 000`. With `Amount = 99` and the same
+rates, `team = 1`, `burn = 0` (0.495 rounds down) and `net = 98`. With `Amount = 49`, both shares round to 0 and the
+recipient gets all 49.
 
-`ItemRecord`: `MetaHash` (32), `ItemMaxSupply uint64`, `ItemSupply uint64`,
-`Burned uint8`.
+`MaxRate` exists because a rate can change between the moment a user signs and the moment the transaction is included
+(section 3.6). A wallet MUST set it to the sum of the current rates that it showed, and MUST NOT set it higher without
+the explicit consent of the user: an issuer that sees a transaction with a loose `MaxRate` in the pool can raise the
+rates just before it. The sender can never pay more than the bounds fixed at creation, and `MaxRate` narrows that
+bound for one transaction. A transfer that fails because a rate moved is signed again with the new value.
 
-`AssetType` values: `1` FUNGIBLE, `2` NON_FUNGIBLE, `3` SEMI_FUNGIBLE. These are
-the only asset types of v1. Fixed supply, mintable, burnable, taxed and
-governance labels are configurations and MUST NOT become types.
+A burn is a transfer to the zero address. It needs no payload of its own and cannot be undone: the units leave the
+supply, and `Issued` is not lowered, so burning never makes room for a new mint.
 
-#### 5.4 Operation envelope
+#### 3.4 `AssetMint` (type 10)
 
-```text
-Version u8 (=1) | Type u8 | Sender (21) | Nonce u64 | Fee u64 | Expiry u32 | Body
-SignedBytes = everything above
-Operation   = SignedBytes | PublicKey (33) | Signature (64)
-```
-
-Types: `1` CREATE_ASSET, `2` TRANSFER, `3` MINT, `4` BURN, `5` UPDATE_PARAMETER,
-`6` REQUEST_WITHDRAWAL.
-
-Bodies:
-
-| Type | Body |
-| --- | --- |
-| CREATE_ASSET | `AssetType u8`, `MintMode u8` (0 none, 1 controller), `BurnMode u8` (0 none, 1 holder), `Decimals u8`, `SymbolLen u8`, `Symbol`, `MetaHash` (32), `MaxSupply u64`, `MintController` (21), `ParamController` (21), `InitialHolder` (21), `InitialSupply u64`, `PolicyPresent u8`, then if present `TeamAddress` (21) and the three parameters as in `AssetRecord` |
-| TRANSFER | `AssetID` (32), `TokenID u64`, `Recipient` (21), `Amount u64`, `MinReceive u64` |
-| MINT | `AssetID` (32), `TokenID u64`, `Recipient` (21), `Amount u64`, `MetaHash` (32), `ItemMaxSupply u64` |
-| BURN | `AssetID` (32), `TokenID u64`, `Amount u64` |
-| UPDATE_PARAMETER | `AssetID` (32), `ParamID u8` (0 `TeamRate`, 1 `BurnRate`, 2 `TeamCap`), `NewValue u64` |
-| REQUEST_WITHDRAWAL | `Beneficiary` (21), `Amount u64` |
-
-A `FUNGIBLE` asset uses token ID zero everywhere. `NON_FUNGIBLE` and
-`SEMI_FUNGIBLE` use nonzero token IDs and zero decimals.
-
-#### 5.5 Execution of one operation
-
-Every operation, in this order:
-
-1. `Version == 1`, `Sender` is a type-4 address and not zero, `PublicKey` derives
-   `Sender`, the signature is valid.
-2. `Nonce` equals the sender's account `Nonce`.
-3. The batch `RefHeight <= Expiry`.
-4. The sender's `Credit >= Fee`. Subtract `Fee` from `Credit` and add it to the
-   fee pool.
-5. Execute the body below.
-6. `Fee` is at least the required fee of section 5.8, computed from what step 5
-   created.
-7. Increment the sender's `Nonce`, which MUST NOT overflow `uint64`.
-
-An operation that fails any step makes the whole batch invalid: a producer drops it before proposing, and
-operators refuse to sign a batch that contains one. A batch that does contain one is wrong in a way that a single
-step shows (section 3.7).
-
-**CREATE_ASSET.**
-
-* `AssetType` in `{1, 2, 3}`. `Symbol` is 1 to 12 bytes of `A-Z0-9` and is not
-  `PAC`.
-* `MintMode` and `BurnMode` are `0` or `1`. `MintController` is the zero address
-  iff `MintMode == 0`, otherwise a type-4 address.
-* `MaxSupply >= 1`.
-* FUNGIBLE: `Decimals <= 18`. `InitialSupply <= MaxSupply`. `InitialHolder` is a
-  nonzero type-4 address iff `InitialSupply > 0`, else the zero address. If
-  `MintMode == 0` then `MaxSupply == InitialSupply`.
-* NON_FUNGIBLE and SEMI_FUNGIBLE: `Decimals == 0`, `InitialSupply == 0`,
-  `InitialHolder` is the zero address, `PolicyPresent == 0`, and
-  `MintMode == 1`. The collection starts empty.
-* `PolicyPresent == 1` only for FUNGIBLE. Then `TeamAddress` is a nonzero type-4
-  address; for each parameter `Min <= Current <= Max` and `Mutable` is `0` or
-  `1`; `TeamRate.Max` and `BurnRate.Max` are at most `10000` and their sum is at
-  most `10000`. `ParamController` is a nonzero type-4 address iff some parameter
-  is mutable, else the zero address. With `PolicyPresent == 0`, `ParamController`
-  is the zero address.
-* The asset record `AssetID` MUST NOT already exist. Create it with `Supply = InitialSupply` and, if
-  `InitialSupply > 0`, credit `InitialHolder`.
-
-**TRANSFER.** `Amount >= 1`; `Recipient` is a nonzero type-4 address; the asset
-exists.
-
-* Without a policy (including NON_FUNGIBLE and SEMI_FUNGIBLE): subtract `Amount`
-  from the sender's holding of `(AssetID, TokenID)`, add it to the recipient's.
-  For FUNGIBLE, `TokenID == 0`. For NON_FUNGIBLE, `TokenID != 0` and
-  `Amount == 1`. For SEMI_FUNGIBLE, `TokenID != 0` and the item exists.
-  `MinReceive` MUST be `0`.
-* FUNGIBLE with a policy (`TokenID` is `0` for every FUNGIBLE asset, with or without a policy), using the current parameter values:
-
-```text
-team      = min( floor(Amount * TeamRate / 10000), TeamCap )
-burn      = floor(Amount * BurnRate / 10000)
-recipient = Amount - team - burn
-```
-
-  A `TeamCap` of `2^64 - 1` means that there is no cap. `Amount * TeamRate` and
-  `Amount * BurnRate` use 128-bit intermediates. Require
-  `recipient >= MinReceive`. Apply, in this order and on the live record when
-  addresses coincide: subtract `Amount` from the sender; add `recipient` to
-  `Recipient`; add `team` to `TeamAddress`; subtract `burn` from `Supply`.
-  `MinReceive` lets a signer bound the effect of a parameter change that lands
-  before the operation.
-
-**MINT.** `MintMode == 1` and `Sender == MintController`. `Amount >= 1`;
-`Recipient` is a nonzero type-4 address.
-
-* FUNGIBLE: `TokenID == 0`, `MetaHash` is 32 zero bytes, `ItemMaxSupply == 0`;
-  `Supply + Amount <= MaxSupply`. `Supply` is the live supply: burned units free capacity under `MaxSupply`
-  (for a NON_FUNGIBLE collection too, although a burned token ID is never reused).
-* NON_FUNGIBLE: `TokenID != 0`, `Amount == 1`, no item record exists for
-  `TokenID` (a burned token ID cannot be minted again), `ItemMaxSupply == 1`,
-  `Supply + 1 <= MaxSupply`. Create `ItemRecord(MetaHash, 1, 1, 0)`.
-* SEMI_FUNGIBLE: `TokenID != 0`. If the item is absent, `1 <= ItemMaxSupply` and
-  `Amount <= ItemMaxSupply`; create `ItemRecord(MetaHash, ItemMaxSupply, Amount,
-  0)`. If it exists, `MetaHash` and `ItemMaxSupply` MUST equal the stored values
-  and `ItemSupply + Amount <= ItemMaxSupply`. In both cases
-  `Supply + Amount <= MaxSupply`.
-
-  Credit `Recipient` and increase `Supply` (and `ItemSupply`).
-
-**BURN.** `BurnMode == 1`; `Amount >= 1`; the sender holds at least `Amount` of the holding `(AssetID, TokenID)`,
-which does not exist, and so holds nothing, unless `TokenID` is `0` for a FUNGIBLE asset and the ID of an existing item otherwise.
-Subtract from the sender's holding and from `Supply` (and `ItemSupply`). For
-NON_FUNGIBLE set `Burned = 1`; the item record stays as a tombstone. A
-controller can never burn another holder's units with this command.
-
-**UPDATE_PARAMETER.** The asset is FUNGIBLE with `PolicyPresent == 1`;
-`Sender == ParamController`; `ParamID <= 2`; that parameter has `Mutable == 1`;
-`Min <= NewValue <= Max`. Set `Current = NewValue`. Formulas, destinations and
-bounds never change.
-
-**REQUEST_WITHDRAWAL.** `Beneficiary` is an account address of type 2, 3 or 4;
-`Amount >= 1`; `Credit >= Amount` after the fee. Subtract `Amount` from `Credit`. The operation
-is a payout of the batch: the anchor lists it with the index of its step (section 5.6). A batch
-holds at most `MaxPayoutsPerAnchor` of them.
-
-#### 5.6 Batches, steps and traces
-
-A batch advances the state by one sequence number. It is a header followed by steps, and
-the state root is recorded after every step.
-
-`ListRoot(L)` of a list of byte strings `L` of length `n >= 1` is the Merkle tree hash of
-RFC 9162 with BLAKE2b-256: `ListRoot([d]) = Hash(0x00 || d)`, and for `n > 1`,
-`ListRoot(L) = Hash(0x01 || ListRoot(L[0:k]) || ListRoot(L[k:n]))`, where `k` is the
-largest power of two smaller than `n`. An audit path is the list of sibling hashes of
-RFC 9162 section 2.1.3.1, bottom up, and is checked as in section 2.1.3.2.
-
-```text
-Header (70 bytes) =
-    Version u8 (=1) | Kind u8 (1 anchor batch, 2 resume batch) | Epoch u32 | Seq u64 |
-    PrevStateRoot (32) | RefHeight u32 | CreditCount u32 | OpCount u32 | Reserved u32 (=0) |
-    NewCursor u64        (NewExitCursor for a resume batch)
-
-Steps, in this order, each encoded as a leaf:
-    CREDIT  0x01 | Seq u64 | For (21) | Amount u64               one per deposit of D
-    OP      0x02 | Length u32 | Operation                         OpCount of them
-    POOL    0x03 | FeeShare u64 | Refund u64                      exactly one, last
-    EXIT    0x04 | Kind u8 | Key (32) | Amount u64               resume batches only, in place of the above;
-                                                                  Kind MUST be 0 in v1, any other value is an invalid step
-
-BatchBytes = Header || for each step: Length u32 || step leaf
-DataRoot   = ListRoot([Header, Step_1, ..., Step_N])
-Trace      = R_0, R_1, ..., R_N      R_0 = PrevStateRoot, R_s = state root after step s
-TraceRoot  = ListRoot([R_0, R_1, ..., R_N])
-DataSize   = length of BatchBytes
-```
-
-`StateRoot` of the anchor is `R_N`. In an anchor batch `N = CreditCount + OpCount + 1`; in a
-resume batch `N` is the number of EXIT steps, and `CreditCount = OpCount = 0`.
-
-A `REQUEST_WITHDRAWAL` operation of a batch **is** a payout: the anchor lists, for each, `StepIndex`, `To` and
-`Amount` in order (section 3.3), at most `MaxPayoutsPerAnchor` per batch. A producer leaves the others in its
-pool, where they change no state.
-
-Execution of an anchor batch:
-
-1. `PrevStateRoot` equals the `StateRoot` of the tip; `Seq` equals `TipSeq + 1`.
-   `RefHeight` is not below the `RefHeight` of the previous batch, and at signing time
-   it is at most the operator's finalized Pactus height `F` and at least
-   `F - MaxRefLag`, with `MaxRefLag = 30` blocks. Pactus can check only the outer bounds: a header is wrong if `RefHeight` is above `SubmitHeight` or more than
-   `MaxRefLag` blocks before the first block of `Epoch` (section 3.7, kind `2`), so `Expiry` is enforced against a
-   colluding committee only to the granularity of one epoch.
-2. Each CREDIT step adds `Amount` to the `Credit` of `For`. The steps MUST be exactly the
-   records of `[DepositCursor, NewCursor)` that are creditable in the batch `Epoch`, as the
-   operator sees them in finalized Pactus state, in ascending sequence.
-3. Each OP step executes the operation (section 5.5, with the state as the previous steps left
-   it).
-4. The POOL step subtracts `FeeShare + Refund` from the fee pool, which MUST cover it.
-   `FeeShare` is `0`, or it satisfies rule 10 of section 3.3 for the batch `Epoch`: no fee
-   share was paid earlier in that epoch, and it is a positive multiple of the number of
-   non-slashed members of `Committee(Epoch)`. `Refund` is at most `AnchorRefund`.
-
-The anchor's `FeeShare` and `Refund` are those of the POOL step. A batch contains at least one
-deposit, operation, fee share or refund.
-
-**Resume batches.** A batch for an `AssetResume` has only EXIT steps, one for each PAC claim in
-`[ExitCursor, NewExitCursor)`: `Kind` is `0`, `Key` is the state-tree key of the claim and
-`Amount` its amount. Executing an EXIT step removes what Pactus has already paid: it sets the
-`Credit` of the account at `Key` to zero, and that credit MUST equal `Amount`. `Out` grows by
-the sum of the amounts, because Pactus has already counted them in `Paid`. Receipts have no
-effect on the state.
-
-**Conservation.** Let `Cred` be the sum of all `Credit`, `Pool` the fee pool, `Dep` the
-cumulative amount of deposits credited and `Out` the cumulative amount paid out by anchors
-(withdrawal payouts, fee shares and refunds). At every head, `Cred + Pool = Dep - Out`. Pactus
-holds `Consumed = Dep` and `Paid <= Out`, the difference being the slack of sections 3.3 and
-3.7, so the PAC in escrow always covers every credit and the fee pool. Operators MUST check
-this equality before signing.
-
-#### 5.7 What operators must do
-
-Before signing an attestation an operator MUST: hold the full batch bytes;
-re-execute the batch step by step from the previous state, obtain every root of the trace,
-and check that `StateRoot` is the last one, that the trace matches `TraceRoot` and the steps
-match `DataRoot`; check the deposit list and `DepositDigest` against its own finalized view
-of Pactus; check the payouts and their step indices; and check conservation. It SHOULD also
-check each step with the verifier of section 5.9, the code that Pactus would run against it.
-An operator signs a state it has computed itself, not one it has been sent. An operator MUST sign at most one
-`ContentHash` for a given `(Epoch, Seq, PrevHead)`; two are slashable. An operator MUST
-write that triple and the `ContentHash` to durable storage before it releases the
-signature, and MUST NOT sign for that triple again if it cannot read that record back,
-for example after losing its disk. A crash or a restore from backup is the most likely
-way for an honest operator to be slashed. The signing key SHOULD live in hardware that
-refuses to sign twice for one triple. If an anchor is not included, anyone resubmits the same attestation. After an epoch change the old attestation is
-dead and operators sign the batch again for the new epoch; that second signature is not slashable, because the two
-attestations differ in `Epoch`.
-
-Operators MUST retain every batch and enough state snapshots to let a new
-operator rebuild the state from a snapshot and replay later batches. They SHOULD
-serve current state with membership proofs against the Pactus-held `StateRoot`,
-so a wallet can check a balance against a root that Pactus finalized.
-
-**Watching.** v1 relies on someone holding the data and checking it, so every operator that
-signed MUST publish each batch and its trace, with the witnesses of every step, to anyone who
-asks, as soon as it signs. Anyone else who can obtain a batch can check it against
-section 5.9 and, if a step is wrong, submit an `AssetFraud` within `ChallengeWindow`. An
-operator outside the majority SHOULD do so for every pending anchor: its bond is not at risk
-when it challenges, and the reward is half of what the signers lose. Pactus does not verify that
-the data is available (section 3.7), so an operator that is given a head without its batch
-SHOULD refuse to sign it, and raise the alarm off-chain.
-
-The committee decides evictions off-chain and carries them in the `EvictIndex` of an
-anchor. An operator SHOULD vote to evict a peer only after it has been unreachable
-for a long time, and SHOULD NOT use a missing signature in a relayed bitmap as
-evidence of inactivity, because the relayer chooses the bitmap.
-
-How operators order operations, propose a batch, and exchange signatures is
-outside this PIP.
-
-#### 5.8 Fees
-
-Every fee is PAC taken from the sender's credit into the fee pool (section 5.5, step
-4). The pool leaves the layer only as the refund and the fee share of an anchor
-(section 3.3). Fees are therefore the only revenue of operators in v1.
-
-An operation MUST pay at least the **required fee**:
-
-```text
-required = Base + NewHolding * h + NewItem * i + CreateAsset * [type == CREATE_ASSET]
-```
-
-where `h` is the number of holding entries the operation creates (a holding entry
-is created when its key had no entry and now holds a nonzero quantity: the
-recipient, the `TeamAddress` and the `InitialHolder` all count), and `i` is the number
-of item records it creates. In nano PAC, 1 PAC being 1 000 000 000:
-
-| Constant | Value | In PAC |
+| Field | Type | Notes |
 | --- | --- | --- |
-| `Base` (every operation type) | 100 000 | 0.0001 |
-| `NewHolding` | 1 000 000 | 0.001 |
-| `NewItem` | 1 000 000 | 0.001 |
-| `CreateAsset` | 1 000 000 000 | 1 |
+| `From` | `Address` | MUST be the `Issuer` |
+| `AssetID` | `uint32` | |
+| `To` | `Address` | An account address. Not the zero address |
+| `Amount` | *varint* `int64` | |
 
-These values are initial proposals. For scale, the default fixed fee of a Pactus
-transaction is 0.01 PAC, so `Base` is one hundredth of it.
+`Value()` is 0. `Check`: the asset exists; `From == Issuer`; `To` has a holding of the asset; `Amount <= MaxSupply -
+Issued`; `PAC(From) >= fee`. `Execute`: debit the fee; add `Amount` to `Issued`; add `Amount` to the holding of `To`. No
+record is placed. A mint pays no transfer rate: it creates units, it does not move them.
 
-The floors are validity rules of the Asset Layer: a batch with an operation below its floor is invalid. They price
-state that every operator must keep for ever. A holding that falls to zero is removed, so creation is not charged
-twice, and the whole `Fee` is kept: there is no refund of an overpayment. Whether a holding is created can depend
-on earlier operations of the same batch, so a wallet SHOULD ask an operator for a quote and add a margin.
+The cap is on units ever issued, not on units alive. A holder can therefore read `MaxSupply` and know the largest
+quantity that will ever exist. An asset with `MaxSupply == InitialSupply` rejects every mint.
 
-#### 5.9 Executing one step, and the verifier on Pactus
+#### 3.5 Charges and deposits
 
-To check an `AssetFraud`, a Pactus node executes a single step. The rules of sections 5.2,
-5.2.1, 5.5, 5.6, 5.8 and of this section are therefore also code of the Pactus node, run only
-for fraud proofs and bounded by the size of one step. A difference between an operator's
-library and that code is a way for an honest operator to be slashed, so operators SHOULD run
-the same code and check their own trace with it before they sign.
+Two kinds of record cost PAC, and they are priced differently because they leave the state differently.
 
-**State needed by a step.** A step reads and writes a small set of entries of the state tree.
-Its **witnesses** give the value of each of them before the step (or that it is absent), each
-with a membership proof against `R_{s-1}` (section 5.2.1, where an absent entry is proved by
-starting from `Empty[0]` instead of a leaf). The verifier needs a witness for every key the
-step reads or writes, and rejects a payload with a missing witness or an extra one.
+* An **asset record** is never removed: every holding refers to it by its index, and the index must keep its meaning.
+  It is paid for once, by `AssetCharge`, which goes to the treasury and is not returned.
+* A **holding** can be closed by its owner. It is paid for by `HoldingDeposit`, which is locked while the record
+  exists and returned as it was posted to the owner of the holding, less the fee of the close, when `AssetClose`
+  removes the record, even when a sponsor posted it (section 3.9). The locked PAC belongs to no account and is counted
+  in `DepositTotal`.
 
-| Step | Keys it reads or writes |
+What each payload takes from `From` besides the fee is computed from the payload and the constants of section 1, so a
+wallet knows it before it signs and nothing depends on the state:
+
+| Payload | `Value()` |
 | --- | --- |
-| CREDIT | `ACCT(For)` |
-| POOL | `POOL` |
-| EXIT | The `Key` of the step, which is an `ACCT` key |
-| `TRANSFER` | `ACCT(Sender)`, `POOL`, `ASSET(AssetID)`, `HOLD(AssetID, TokenID, Sender)`, `HOLD(AssetID, TokenID, Recipient)`; `HOLD(AssetID, 0, TeamAddress)` if the asset has a policy; `ITEM(AssetID, TokenID)` if `TokenID != 0` |
-| `CREATE_ASSET` | `ACCT(Sender)`, `POOL`, `ASSET(new AssetID)`; `HOLD(new AssetID, 0, InitialHolder)` if `InitialSupply > 0` |
-| `MINT` | `ACCT(Sender)`, `POOL`, `ASSET(AssetID)`, `HOLD(AssetID, TokenID, Recipient)`; `ITEM(AssetID, TokenID)` if `TokenID != 0` |
-| `BURN` | `ACCT(Sender)`, `POOL`, `ASSET(AssetID)`, `HOLD(AssetID, TokenID, Sender)`; `ITEM(AssetID, TokenID)` if `TokenID != 0` |
-| `UPDATE_PARAMETER` | `ACCT(Sender)`, `POOL`, `ASSET(AssetID)` |
-| `REQUEST_WITHDRAWAL` | `ACCT(Sender)`, `POOL` |
+| `AssetCreate` | `AssetCharge`, plus `HoldingDeposit` if the record of the creator is placed (section 3.2) |
+| `AssetAccept` | `HoldingDeposit` |
+| `AssetAcceptFor` | `HoldingDeposit`, paid by the sponsor for the owner (section 3.9) |
+| `AssetClose` | 0. The deposit comes back, less the fee (section 3.8) |
+| `AssetTransfer`, `AssetMint`, `AssetSetRate` | 0 |
 
-`ACCT`, `POOL`, `ASSET`, `ITEM` and `HOLD` are the keys of section 5.2. A key that depends on
-the content of another, such as the `TeamAddress` of the asset, is taken from the witness of
-that other key.
+In this PIP, only creation and acceptance place records, so only they take PAC, and each record is paid for by the
+account that signed for it, or by the sponsor of its acceptance. A charge or a deposit is always for a record that is
+in fact placed.
 
-**What a step does.** A CREDIT step adds `Amount` to the `Credit` of `For` (creating the account
-record with nonce `0` if it is absent; an overflow makes the step invalid). A POOL step subtracts
-`FeeShare + Refund` from the pool, which must be at least that large. An EXIT step sets the
-`Credit` of the account at `Key` to zero, and the `Credit` read MUST equal `Amount`. An
-operation step runs the rules of section 5.5 on the values of the witnesses, including the
-signature, the nonce, `Expiry` against the `RefHeight` of the header, the fee floor of section
-5.8, and the writes of its body. A write of an all-zero value removes the entry. A step is
-**invalid** if it breaks any of these rules.
+**Where the PAC goes.** This PIP changes nothing about the fee. Every asset transaction pays it exactly as a
+`Transfer` does, and it goes wherever the fee of any other transaction goes, whatever that path is or becomes: today,
+the subsidy transaction pays the fees of a block, with the block reward, to its proposer (or, under
+[PIP-49](./pip-49.md) delegation, possibly to the owner of its stake). Only `AssetCharge` is explicitly credited to
+the treasury, and never to the proposer, so that a validator cannot refund the cost of the assets it creates itself. A
+deposit is not paid to anyone: it is locked, and it comes back to the owner of the holding when it closes it, never to
+a proposer; a sponsor that posts it gives it to the owner (section 3.9). Explorers that audit the supply MUST count
+`DepositTotal`, and any PAC total that a later version adds to the header (section 6), next to balances and stake, as
+they count the locked deposit of an anchor ([PIP-50](./pip-50.md)); leaving it out looks like a burn. The rates of
+section 3.3 are a different thing: they are quantities of the asset, set by its issuer, and PAC is not involved.
 
-**New root.** Let `new` map each key of the witnesses to its value after the step, which is
-its old value if the step did not write it. `UpdateRoot` computes the root `R_s'` after the
-step from the witnesses alone:
+#### 3.6 `AssetSetRate` (type 11)
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `From` | `Address` | MUST be the `Issuer` |
+| `AssetID` | `uint32` | |
+| `NewTeamRate` | `uint16` | The new `TeamRate.Current`, in basis points |
+| `NewBurnRate` | `uint16` | The new `BurnRate.Current`, in basis points |
+
+`Value()` is 0. `Check`: the asset exists and has a policy; `From == Issuer`; `TeamRate.Min <= NewTeamRate <=
+TeamRate.Max` and `BurnRate.Min <= NewBurnRate <= BurnRate.Max`; if `NewTeamRate` is above 0, `Collector` has a
+holding of the asset, that is, it has accepted it; `PAC(From) >= fee`. `Execute`: debit the fee and set
+`TeamRate.Current` and `BurnRate.Current` to the new values. Nothing else about the policy ever changes: not the
+bounds, the cap or the collector. The new rates apply to every transfer included after this transaction in the same
+block or later. A transaction that sets the current values again does nothing and obeys the same rules. There is no
+nonce, so two `AssetSetRate` signed one after the other may be included in either order; an issuer that wants a given
+final value waits for the first to be included before it signs the second.
+
+An asset whose bounds satisfy `Min == Max` for both rates has fixed rates and can never be changed; its issuer holds no
+authority over them. The bounds are a promise that anyone can read in the state, as `MaxSupply` is.
+
+The rule on `NewTeamRate` above 0 keeps, with the rules of sections 3.2 and 3.8, the invariant of section 2.3:
+whenever the team rate of an asset is above 0, its collector holds the asset. `AssetCreate` starts a collector other
+than the creator at a team rate of 0, `AssetSetRate` cannot raise the rate while the collector has not accepted, and
+the collector cannot close its balance while the rate is above 0. A team share therefore always has a holding to go
+to, and no asset is ever blocked for lack of its collector, not even one whose collector address is wrong: its issuer
+only never receives a team share. A collector that closed its balance at a team rate of 0 must accept again before the
+rate can be raised.
+
+#### 3.7 `AssetAccept` (type 12)
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `From` | `Address` | The account that opts in. An account address |
+| `AssetID` | `uint32` | |
+
+`Value()` is `HoldingDeposit`. `Check`: the asset exists; `From` has no holding of the asset yet; `PAC(From) >=
+Value + fee`; if there is no free slot, the tree has room for one more record. `Execute`: debit `Value + fee`; add
+`Value` to `DepositTotal`; place a `HoldingRecord` of `From` for the asset with `Balance = 0`, `Deposit = Value` and
+`LockedUntil = 0` (section 2.1).
+
+Only the account itself can accept, because only its signature is valid. From then on it can receive transfers and
+mints of the asset. There is no way to refuse a transfer once the record exists: an account that does not want an
+asset simply never accepts it, and an account that accepted one by mistake closes the balance (section 3.8) and
+gets its deposit back. Accepting twice is rejected, so nobody locks a deposit twice for the same record.
+
+A sender cannot open a record for someone else without the signature of that account. With it, a sponsor may pay for
+the record (section 3.9), which opens it but never lets the sponsor move its units. This has no exception: the
+collector that a policy names accepts like anyone else, and until it has, the team rate of the asset stays at 0. Only
+the issuer who named it is affected, so an account that is named as a collector against its will is not harmed and is
+not obliged to do anything. An issuer that wants to distribute an asset publishes the `AssetID`, lets the recipients
+accept, and then sends the units, in one batch of up to 8 per transaction. A wallet that wants to receive an asset
+asks its user, then signs an `AssetAccept`, or an acceptance that a sponsor submits (section 3.9).
+
+#### 3.8 `AssetClose` (type 13)
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `From` | `Address` | The owner of the holding. An account address |
+| `AssetID` | `uint32` | |
+| `MaxBurn` | *varint* `int64` | Most units that the owner agrees to burn with the close. `0 <= MaxBurn <= MaxAssetSupply` |
+
+`Value()` is 0. `Check`: the asset exists; `From` has a holding of the asset with at most `MaxBurn` units;
+`h > LockedUntil`, where `h` is the height of the block and `LockedUntil` that of the holding; the asset does not have
+a policy whose `Collector` is `From` while `TeamRate.Current` is above 0; and the PAC condition below, with `Deposit`
+the amount posted in the record. `Execute`: add the units of the holding to the `Burned` of the asset, with no rate,
+as for a transfer to the zero address; change `PAC(From)` as below; subtract `Deposit` from `DepositTotal`; turn the
+record into a `FreeRecord` and push it on the free stack (section 2.1). The units that were burned are gone with the
+record, so the sum of the holdings still equals `Issued - Burned`.
 
 ```text
-node(d, P):                       P is a d-bit prefix
-    if no witness key has prefix P: return Sibling(d, P)
-    if d == 256: return Empty[0] if new[P] is absent, else Hash(0x00 || P || Hash(new[P]))
-    return Hash(0x01 || node(d+1, P||0) || node(d+1, P||1))
-
-Sibling(d, P):                    d >= 1
-    take a witness whose key has prefix P[0:d-1] and a different bit at position d-1
-    return its sibling at level 256 - d      (explicit if its bit is set, else Empty[256-d])
-
-UpdateRoot = node(0, empty prefix)
+if Deposit >= fee:   Check    PAC(From) <= MaxNanoPAC - (Deposit - fee)
+                     Execute  PAC(From) = PAC(From) + (Deposit - fee)
+otherwise:           Check    PAC(From) >= fee - Deposit
+                     Execute  PAC(From) = PAC(From) - (fee - Deposit)
 ```
 
-The set of keys of a step is a function of its decoded bytes and of the `ASSET` entry that it names, not
-of whether the step is valid: a step that does not decode needs no witness, since that already shows fraud (kind `0`,
-case (a)). Fields such as `Version` are checked when the step is executed, after the keys are known.
+Both branches give `PAC(From) + Deposit - fee` without ever forming that sum: `Deposit` and `fee` both lie in
+`0 .. MaxNanoPAC`, so no subtraction is negative and no value leaves `0 .. MaxNanoPAC` ([PIP-54](./pip-54.md)), and a
+close that leaves the balance at exactly `MaxNanoPAC` is valid.
 
-Every untouched subtree that the recursion reaches is a sibling on the path of some witness,
-so `Sibling` always finds one. The step is accepted by the verifier as correct if it is valid
-and `UpdateRoot` equals `PostRoot`.
+The fee is taken from the refund, so that an account that has locked all its PAC can still close, as with the deposit
+of an anchor in [PIP-50](./pip-50.md). The refund is the `Deposit` recorded when the holding was placed, not the
+current `HoldingDeposit`, so a later change of that constant touches no existing record. The refund goes to the owner,
+even when a sponsor posted the deposit (section 3.9).
 
-### 6. Capacity and load on Pactus
+Only the owner can close, because only its signature is valid. `MaxBurn` makes a close safe in both directions. With
+`MaxBurn` at 0 the close needs an empty balance, and it fails if units have arrived since the owner signed, so it never
+destroys a payment that the owner did not know about. With a larger `MaxBurn` the owner says, in its own signature,
+how many units it agrees to lose: that is how it leaves an asset that it no longer wants, or ignores the dust that
+someone sent it to stop it from closing, with one transaction and one fee. A holder that wants to keep an owner from
+closing must therefore send more units than the `MaxBurn` that the owner chooses, and those units are burned, so the
+grief is paid for with the attacker's own units. A wallet MUST show the units that a close burns before it signs.
 
-This section is informative, except for the caps of sections 3.5 and 3.7. The ceilings follow from the
-parameters. **They are not measured throughput.**
+The collector of an asset cannot close its balance while the team rate is above 0, because every transfer pays its
+team share into that balance (section 2.3). When the team rate is 0 it may close, and then `AssetSetRate` cannot raise
+the rate again until it has accepted the asset again (section 3.6).
 
-#### 6.1 What an asset user costs Pactus
+A holding that a sponsored acceptance opened has the `Expiry` of that acceptance as `LockedUntil`, so its owner closes
+it only from height `Expiry + 1`, once the acceptance has expired: until then the acceptance could open it again
+(section 3.9). Since `Expiry` is at most `TransactionToLiveInterval` blocks after the height at which the holding was
+opened, the lock lasts at most that long. Every other holding has a `LockedUntil` of 0 and can be closed at once.
 
-Transfers, mints, burns, creations and parameter updates cost Pactus nothing: they live in the Asset Layer. Funding
-fee credit is one `Deposit` transaction. A withdrawal is an entry of an anchor (at most 64). Settling a batch of
-any size is one anchor (at most 2 395 bytes, one per block, 864 pending). After a freeze, exiting is one
-`ExitClaim` of at most 8 505 bytes (32 per block), and resuming is one `AssetResume` at a time (at most 258 bytes,
-at most 262 144 claims).
+A closed slot is reused by the next holding that is placed, so closing and accepting again does not grow the tree.
 
-#### 6.2 Ceilings
+#### 3.9 `AssetAcceptFor` (type 14)
 
-* **Pactus alone.** 1 000 transactions per block every 10 seconds: at most 100 per second for every payload type
-  together.
-* **Asset operations.** A batch is at most 33 554 432 bytes and a signed `TRANSFER` is 221 bytes with its
-  length prefix, so a batch holds about 151 800. With at most 864 anchors pending, each for a day, the sustained
-  rate is at most `864 x 151 800 / 86 400`, about 1 500 transfers per second.
-* **Withdrawals.** At most 64 payouts per anchor, about 0.64 per second; a larger backlog waits in the operators'
-  pools. **Deposits:** a block cannot hold more than the next anchor can consume (1 024).
-* **Claims after a freeze.** At most 32 per block, about 3.2 per second: 100 000 holders need about 8.7 hours.
-  Resumes apply 262 144 claims per day, a little less than the 276 480 that can arrive, and the first resume
-  closes PAC claims.
-* **Block size.** A block of only new payload types (32 `ExitClaim`, 2 `AssetFraud`, one anchor, 964
-  `AssetEvidence`) is about 0.92 MB, under the 1 MB gossip limit. It is a bound on bytes, not a valid block.
+A Pactus transaction has one signer, and that signer pays. An account with no PAC therefore cannot send an
+`AssetAccept`. `AssetAcceptFor` separates the consent from the payment: the account signs an acceptance, a short
+message that costs nothing and needs no PAC, and a sponsor submits it in a transaction that the sponsor signs and pays
+for.
 
-#### 6.3 Where the limit moves
+| Field | Type | Notes |
+| --- | --- | --- |
+| `From` | `Address` | The sponsor. It signs the transaction and pays the fee and the deposit |
+| `Owner` | `Address` | The account that accepts. An account address, not `From` |
+| `AssetID` | `uint32` | |
+| `Expiry` | `uint32` | The last block height at which the acceptance is valid |
+| `OwnerPublicKey` | public key | The key of `Owner`, encoded as the public key of a transaction signed with that key type. Always present, since it is part of the payload |
+| `OwnerSignature` | signature | The signature of `Owner` on the acceptance, encoded as the signature of such a transaction |
 
-In v1 every operator re-executes every batch and stores all data, so adding operators adds no capacity. The
-reference implementation MUST report, on stated hardware: operations per second one operator sustains on a mixed
-workload; time to execute and sign a 32 MiB batch; cost of a tree update and a membership proof; time to verify
-an anchor and an `AssetFraud` of each step type; size of the pending state at `MaxPending`; and the effect of an
-anchor per block on block validation time.
+The acceptance is the message:
 
-#### 6.4 Operator economics
+```text
+Acceptance = "PAC-ASSET-ACCEPT-1" || GenesisHash || Owner || AssetID || Expiry
+```
 
-This section is informative and does not claim that running an operator is profitable.
+`GenesisHash` is the hash of the genesis document of the network, as the node computes it, so that an acceptance
+signed for testnet is worthless on mainnet; the other fields are encoded as in the table. `Owner` signs these bytes
+with its key, as it signs the sign bytes of a transaction. They start with a byte that starts no transaction (the
+version of a transaction is 1), so an acceptance never verifies as a transaction, nor a transaction as an acceptance.
 
-* **Revenue** is the fee pool, paid in equal parts to the owners of the non-slashed seats, at most once per
-  epoch, a day late. There is no subsidy.
-* **Settlement cost.** Each anchor pays one Pactus fee (0.01 PAC by default), refunded to the submitter up to
-  `AnchorRefund`: 8.64 PAC per day for an anchor every 10 blocks. An anchor pays for itself only if its batch
-  carries enough fees, about 100 operations at the base fee.
-* **Capital.** 10 000 PAC per seat, locked while bonded and for 21 days after: 210 000 PAC for 21 seats, so seats
-  may fill slowly. A committee smaller than `MaxCommittee` works, down to `MinCommittee`.
-* **Not paid for:** watching other operators' batches, servers, bandwidth and keeping every batch for ever. A
-  silent operator earns the same share until it is evicted or its term ends.
+`Value()` is `HoldingDeposit`, paid by `From`. `BasicCheck`: `Owner` is an account address and is not `From`;
+`OwnerPublicKey` is the key of `Owner`, checked as the node checks the key of the signer of a transaction. `Check`:
+`Expiry >= h`, `h` being the height of the block, and then `Expiry - h <= TransactionToLiveInterval`, so that no sum
+of heights is formed; `OwnerSignature` verifies on the acceptance, built with the genesis hash of the network, which
+the node gives to `Check` so that `BasicCheck` needs no state; the asset exists; `Owner` has no holding of the asset
+yet; `PAC(From) >= Value + fee`; if there is no free slot, the tree has room for one more record. `Execute`: debit
+`Value + fee` from `From`; add `Value` to `DepositTotal`; place a `HoldingRecord` of `Owner` for the asset with
+`Balance = 0`, `Deposit = Value` and `LockedUntil = Expiry` (section 2.1).
 
-The escrow ramp and the fee floors bound usage in the first months, so revenue starts low.
+The deposit is a gift of the sponsor to the owner. The holding is an ordinary holding, locked only until the
+acceptance expires (below): its owner closes it with `AssetClose` and gets the deposit back, less the fee of the
+close, even with no other PAC (section 3.8), and the sponsor never gets it back. With the values of section 1, a
+sponsor therefore pays 0.11 PAC to bring in a user, of which 0.1 PAC ends with the user, and it chooses whom it
+sponsors, as a faucet does.
+
+An acceptance lets its owner receive units of one asset, and nothing else: it never lets the sponsor, or anyone, move
+units or PAC of the owner. Anyone who sees an acceptance can submit it and pay for it, and the owner gets its holding
+either way.
+
+**An acceptance opens at most one holding.** The holding that it opens keeps its `Expiry` as `LockedUntil`, and an
+`AssetClose` of that holding is valid only if `h > LockedUntil` (section 3.8). As long as the acceptance is valid, the
+holding that it opened therefore exists, and a second `AssetAcceptFor` that carries it fails, since `Owner` already
+holds the asset, in the same block or a later one, whoever submits it and whatever signature it carries; once the
+holding can be closed, the acceptance has expired. A holding that its owner closed is therefore never opened again
+with the acceptance that opened it. The rule reads nothing but the asset tree: a node keeps no record of past
+acceptances, and a restart, a snapshot or a sync changes nothing. Its price is that a sponsored holding can be closed
+only after its acceptance has expired, at most `TransactionToLiveInterval` blocks after it was opened, so a wallet
+SHOULD sign an acceptance with a short expiry, such as 360 blocks (one hour on mainnet), which is all the time that a
+sponsor needs. An acceptance that no included transaction carried has opened nothing, and stays valid until its
+expiry, as a transaction that was never included.
+
+### 4. Block capacity
+
+Asset transactions are ordinary entries of the list of transactions of a block. The body of a block, its decoder, its
+limit of 1 000 entries and the transaction root that its hash covers keep their format.
+
+#### 4.1 The cap
+
+An *asset transaction* is a transaction whose payload type belongs to the asset layer: the seven types of section 3,
+and those that later PIPs add to the layer (section 6). Two rules of block validity bound them:
+
+1. A block of a version below `V` carries no asset transaction.
+2. A block carries at most `MaxAssetTxPerBlock` asset transactions.
+
+Every asset transaction of a block is otherwise checked and executed at its place as any transaction is: `BasicCheck`,
+`Check`, `Execute`, its signature, its lock time, the replay check on its transaction ID and its fee, and only the
+first entry of a block is a subsidy transaction. The count reads only the version in the header of the block and the
+payload type of each entry. A validator makes it in `Block.BasicCheck`, right after the limit of 1 000 entries and
+before it verifies any signature, so a block over the cap costs no more than reading it.
+
+Whatever the senders, asset transactions take at most `MaxAssetTxPerBlock` entries of a block, 100 of its 1 000 with
+the values of section 1, so PAC keeps at least 90 % of the entries of every block. In the worst case, a block of 1 000
+entries holds the subsidy transaction, 100 asset transactions and 899 others. The same number bounds the work: each
+asset transaction is verified, executed and written to the state as any transaction is. An `AssetAcceptFor` verifies
+two signatures, the sponsor's and the owner's, so a block verifies at most 1 099 signatures instead of 999 today, and
+blocks full of them are one of the worst cases of the benchmark that sets `MaxAssetTxPerBlock` (Reference
+Implementation). Consensus sets no byte limit on a block. The gossip of the node caps a message at 1 MB, and a block
+of 1 000 entries filled with the largest transactions, 100 `AssetTransfer` and 899 `BatchTransfer` with 8 recipients
+each, is about 0.48 MB.
+
+This is a consensus rule and not a fee market: whatever the demand for assets, it cannot take more than these entries
+and this work from a block.
+
+#### 4.2 Block building
+
+PAC comes first: a proposer SHOULD take the other transactions first, and give asset transactions the entries that are
+left, up to `MaxAssetTxPerBlock`, placing them after the others. It takes them from its asset pool in arrival order,
+and skips any that does not pass `Check` against the state of the block under construction, keeping it in its pool,
+since an earlier transaction of the same block can make a later one valid: an `AssetAccept` or an `AssetAcceptFor`
+before a transfer to the account that signed it. A proposer SHOULD therefore try the skipped ones again after the
+others. Only the asset transactions that it includes count against the cap. What does not fit stays in the pool for
+the next block, until its lock time expires, and the signer then signs it again.
+
+### 5. Node changes
+
+* `Sandbox` exposes reads and writes of asset records, and the node adds the tree, its store prefix and the extended
+  root. `executeBlock` gains no per-block hook: asset transactions are executed in place, like any other, and block
+  validation applies the count of section 4.1.
+* The local index from `(AssetID, Owner)` to a record is a cache, and execution is defined by the tree. A node MUST
+  rebuild or verify it after an unclean shutdown, and MUST stop, not continue, when a lookup disagrees with the tree:
+  two nodes with different indexes would disagree on the validity of a block.
+* Acceptances need no store of their own: their single use follows from the `LockedUntil` of the holding that they
+  open (section 3.9), which is in the asset tree, so restarts, snapshots and sync carry it with the tree, and the
+  replay check of transactions does not change.
+* Block building follows section 4.2. The proposer counts the asset transactions that it includes, after their checks,
+  not the candidates that it takes from its pool.
+* Transaction pool: a pool is local policy, not consensus. Implementations SHOULD give asset transactions their own
+  pool, as each payload type has one today, so asset transactions cannot crowd out payments and payments cannot evict
+  them, and SHOULD let it hold at least `MaxAssetTxPerBlock` transactions (10 % of the default `MaxSize` of 1 000, the
+  share of the pool of `BatchTransfer`, taken from the other pools so that their shares still add up to `MaxSize`): a
+  proposer builds its block from its pool, and a smaller pool could not fill the cap. Fee estimation (`CalculateFee`)
+  gives the same fixed fee as for a `Transfer`, and a wallet adds `Value()` to show the total PAC that a transaction
+  takes. A pool MAY drop an `AssetTransfer` or `AssetMint` whose recipient has not accepted the asset, but only when
+  no transaction in the pool can make it valid (an `AssetAccept` or `AssetAcceptFor` of that recipient), since a
+  proposer includes both in one block (section 4.2). A pool SHOULD run the checks in the order of their cost:
+  `BasicCheck`, then the PAC balance (for an `AssetClose`, the PAC balance plus the deposit that it returns, since it
+  pays its fee from the refund), then the signature, then the asset-state `Check`. It SHOULD also limit the number of
+  pending asset transactions per sender, because each one can be valid alone against the current state while all
+  together are not (several transfers of the same units), and without a limit one funded account can fill the pool
+  with transactions that the proposer will skip.
+* RPC (mandatory for the official node, on every surface it ships): payload type values `8` to `14` in `PayloadType`;
+  `GetRaw*Transaction` builders for the seven payloads, the one for `AssetAcceptFor` taking an acceptance signed by
+  its owner; `GetAssetState`, returning the fields of the header (`FreeHead`, `DepositTotal` and any total that a
+  later version adds) and the number of records of the tree; `GetAsset`, returning the fields of section 2.1, the
+  policy with its current rates and bounds and whether its collector has accepted it (the team rate cannot rise above
+  0 before), and the live supply `Issued - Burned`; and `GetAssetBalance(AssetID, Address)`, which tells an account
+  that has not accepted the asset, or has closed it, from one that holds a balance of 0, and returns the `LockedUntil`
+  of a holding, so that a sender can check before it signs and an owner knows when it can close. A node SHOULD also
+  offer a list of the balances of an address from its local index.
+* Wallet: the wallet of the node builds and signs an acceptance (section 3.9) only after showing the asset, its
+  issuer, the expiry and that the holding cannot be closed up to that height, gives it a short expiry by default (360
+  blocks), and can submit an `AssetAcceptFor` for an acceptance that it receives.
+* Explorers that audit the supply MUST add `DepositTotal`, and any PAC total that a later version adds to the header,
+  to balances, stake and the treasury: that PAC belongs to no account, and leaving it out looks like a burn.
+  `AssetCharge` goes to the treasury, and every other PAC amount keeps its place.
+
+### 6. Room for later PIPs
+
+This PIP has no exchange. A later PIP, for example one for liquidity pools in the style of PancakeSwap v2, adds
+payloads and records to the asset layer. The rules below let it do so without changing any record, payload or
+invariant of this PIP. The values that they reserve are invalid in this PIP and cost nothing.
+
+1. **Asset transactions.** The payloads that a later PIP adds to the asset layer are asset transactions (section 4.1),
+   and they count in `MaxAssetTxPerBlock` with those of this PIP. A later PIP may give its own payloads a lower cap
+   inside `MaxAssetTxPerBlock`, so that they cannot crowd out transfers.
+2. **Records.** Record kinds 4 to 255 are reserved for later PIPs, and no payload of this PIP creates one. Records of
+   every kind live in the asset tree, under its root. Only holdings take free slots: a record of any other kind is
+   appended and never moves, so that its index can serve as its identity, as the `AssetID` does. Records of every kind
+   are hashed as in section 2.1, so their encodings may have any length.
+3. **Units outside holdings.** A later PIP may define records that hold units of an asset, such as the reserves of a
+   pool. The invariant of section 2.3 counts them: the units held by all the records of an asset equal its
+   `Issued - Burned`.
+4. **PAC outside accounts.** A later PIP may define records that hold PAC, such as the PAC side of a pool. It then
+   appends a total of that PAC to the header, as `DepositTotal` is the total of the deposits. A later version may
+   append fields to the header in this way, and rewrites the header in the longer encoding at its first block. Every
+   PAC total of the header belongs to no account, and the conservation of section 2.3 and the supply audits of
+   sections 3.5 and 5 count them all.
+5. **PAC in a pair.** No asset has the `AssetID` 0, and every payload of this PIP that names an asset rejects it. A
+   later PIP may use the `AssetID` 0 to name PAC, for example in a pair or a path of swaps.
+6. **Assets without an issuer.** `AssetCreate` always sets an account as `Issuer`, so no asset of this PIP has the
+   zero address as `Issuer`. A later PIP may create such assets, for example the shares of a pool. No `AssetMint` or
+   `AssetSetRate` can ever pass for them, since `From` is never the treasury, and the PIP that creates them defines
+   how their `Issued` and `Burned` move, as long as the first two invariants of section 2.3 hold: the bounds, and the
+   conservation of units. The third invariant, which makes `MaxSupply` a cap on the units ever issued (section 3.4),
+   is a promise of the issuer of an asset created by `AssetCreate`.
+7. **Signatures, opt-in and charges.** The payloads of a later PIP follow section 3.1. They credit units only to a
+   holding that its owner opened or to records of their own PIP, they place a holding only with the signature of the
+   account that will hold it, in a transaction or in an acceptance, with `HoldingDeposit` and, for an acceptance, its
+   `Expiry` as `LockedUntil` (section 3.9), they remove a holding only for its owner and only at a height
+   `h > LockedUntil`, and they compute `Value()` from the payload and the constants, never from the state. The opt-in
+   of this PIP and its rules on charges therefore stay true.
+8. **Rates.** A payload that moves units between a holding and another record applies to them the split of section
+   3.3, bounded by a `MaxRate` that the owner of the holding signs, or its PIP says why it does not. The team share
+   goes to the holding of the collector, which exists whenever the team rate is above 0 (section 2.3).
+
+### 7. Conventions (informative)
+
+Nothing here is checked by consensus. Wallets and explorers agree on it so that one record can serve several uses.
+
+| Use | `Decimals` | `MaxSupply` | `InitialSupply` | Notes |
+| --- | --- | --- | --- | --- |
+| Fungible token | 0 to 9 | any | any | `MaxSupply == InitialSupply` for a fixed supply |
+| NFT | 0 | 1 | 1 | One unit. Its `AssetID` is its identity |
+| Semi-fungible edition | 0 | N | N | N identical units. A smaller `InitialSupply` leaves room for mints |
+
+* `MetaHash` is the hash of a document that gives the name, description, image and attributes. A wallet fetches the
+  document from where the issuer published it and checks the hash. The memo of the `AssetCreate` transaction MAY carry
+  a pointer to it, within the memo length.
+* A collection is a list of `AssetID`s that the issuer publishes off-chain, for example in a document committed by a
+  [PIP-50](./pip-50.md) anchor. The protocol has no collection object.
+* A wallet shows the **net** amount that a recipient will get, not only the gross `Amount`, and the bounds of the
+  rates, not only their current values. A royalty or a tax on units of an asset, paid to a collector, is expressed
+  with `TeamRate`; a deflationary asset is expressed with `BurnRate`. Rates are meant for fungible assets: on an asset
+  of supply 1 every share rounds to 0. An issuer that wants its team share paid to another account names that account
+  as `Collector`, creates the asset with a team rate of 0, and raises the rate once the collector has accepted the
+  asset; or it names itself, which needs no extra step, and forwards the share when it wants.
+* Receiving an asset takes two steps: the recipient accepts, then the sender sends. A wallet asks its user before it
+  signs an `AssetAccept`, and MAY offer the acceptance as a link or a QR code that carries the `AssetID`. An
+  application that brings in users with no PAC sponsors their acceptances: the wallet signs an acceptance, which needs
+  no PAC, and the application submits it with `AssetAcceptFor` and pays the deposit, which the user gets when it
+  closes the balance, at the earliest once the acceptance has expired. A distribution to many accounts is a claim: the
+  issuer publishes the `AssetID`, accounts accept, and the issuer sends to those that did, 8 at a time. A sale of an
+  NFT starts with the buyer accepting it. A wallet shows the deposits as locked PAC, never as spendable PAC, and
+  SHOULD offer to close the balances that the user no longer wants, which returns their deposits, showing the units
+  that each close would burn.
 
 ## Rationale
 
-**Committee first, validity proofs later.** A proof system that verifies secp256k1 signatures and executes the
-asset rules has no deployed cost data in the Pactus setting, so a PIP that depends on it cannot give byte-exact
-encodings today. A committee attestation can, and `AttestationType` leaves the settlement record, the deposit
-queue, the payouts and the state root unchanged when a later PIP adds proofs. Single-step fraud proofs are the
-bridge: the rules fit in a few pages and need no virtual machine.
+**On-chain, because that is the simplest thing that is also fully trusted.** An asset rule that every validator
+checks adds no assumption to Pactus. An earlier draft of this PIP ran the assets off-chain under a bonded committee
+that checkpointed them on Pactus. That keeps L1 capacity free, but it adds operators, bonds, slashing, epochs and
+quorums, and its correctness and its data availability rest on a federation that Pactus cannot check. The hard cap of
+section 4 answers the same worry about L1 capacity with one counter.
 
-**Not the validators as the committee.** It would make every validator a participant in the Asset Layer. Pactus
-has no slashing, so validator stake cannot back accountability without touching consensus; a separate bond
-cannot. Operators are volunteers who hold state and serve data for a whole term, which a rotating consensus
-committee does not do.
+**A cap, not a market.** A fee market needs a price that nobody knows before the layer is used. A cap on the number of
+asset transactions in a block needs no guess, is trivial to validate and gives PAC a floor that no demand can lower.
+Its price is that asset users can be delayed when asset demand reaches the cap. That is acceptable, and the cap is one
+constant that a later version can raise. Because asset transactions are plain entries, one number bounds both the
+entries and the work that assets take from a block.
 
-**Seats, terms and rotation.** Fixed seats keep aggregation cost constant. A term of 180 epochs with a FIFO
-waiting list lets new operators in without auctions, and a holder keeps an expired seat while nobody waits, so a
-quiet period cannot shrink the committee. Capping rotations at 6 per window, below `T`, means expiry alone never
-gives a party a majority within a window; one per epoch makes them visible. `Prune` stops a party from holding
-the registry with waiting records. Eviction is the committee's decision because the only evidence of inactivity
-is a bitmap that the submitter chooses. None of this removes the need to trust that fewer than `T` seats belong
-to one party.
+**One record for every kind of asset.** A token-ID dimension (items inside a collection) needs item records, per-item
+supply and more rules for each type. Here an NFT is an asset with a supply of one. The cost is that a collection of N
+items is N creations, each priced by the fee and `AssetCharge` and paced by the cap. A later PIP can add collections if
+there is demand, without changing these records.
 
-**A quorum above two thirds.** With two thirds, a committee of 15 can sign among themselves and hide the batch
-from the other 6. A higher quorum checks nothing either, but a head with `T` signatures includes an honest
-operator unless `T` or more are faulty, and an honest operator signs only what it holds. It leaves 3 of 21
-operators free to be offline: a choice between liveness and the attack threshold.
+**Batching inside a transaction.** `BatchTransfer` already shows that up to 8 recipients are a safe size. Inside
+`AssetTransfer`, one signature then moves up to 8 transfers, which is the batching that really lowers the work, since
+it saves signatures. The single-recipient transfer is the case of one.
 
-**One aggregate signature, epochs.** Pactus already verifies BLS aggregates, and one pairing check covers any
-committee size. Epochs keep the committee stable between signing and inclusion; a signature that crosses an
-epoch is re-made, which is cheap because there is no proving step.
+**No bundles in this version.** A proposer could pack the asset transactions of many senders into one entry of a
+block, as a bundle: an unsigned transaction that carries signed transactions, built like the subsidy transaction. It
+would let asset traffic grow past the entries that the cap gives it, but it saves entries only, not signatures, bytes
+or state writes, and a transaction that carries transactions is new to every part of the node that reads a block:
+execution, the store and its stripped public keys, sync, the pools, gRPC, ZMQ and the history of the wallet. With a
+cap of 100 asset transactions, PAC keeps 90 % of every block without bundles. They are left to a later version, if
+asset traffic stays at the cap, after a prototype in the node (Future Extensions).
 
-**Payouts in the anchor.** Listing at most 64 payouts needs no withdrawal tree, proof per claim or claimed-set,
-and a withdrawal that is an operation of the batch needs no provable queue. Claims with proofs exist only after a
-freeze, when no committee can list payouts.
+**Burn is a transfer.** It saves a payload type, a pool and an RPC builder, and the semantics are unambiguous. The
+cost is that a transfer to the zero address by mistake cannot be undone, which wallets guard against.
 
-**Freeze, exit and resume.** Fee credit is the one thing a user has on Pactus that the committee could strand; a
-proof against the last final head returns it without anyone's permission. A rescue committee would let a party
-that bonds enough seats attest any state in a halt it may have caused. The exit pays only PAC; native positions
-are receipts, because Pactus holds no representation of them. A freeze nobody can undo turns a month's outage
-into the end of the layer, so the committee can resume with `T` signatures, which adds no power. Receipts are
-void after a resume rather than debited, so a position recorded in a hurry stays usable in the layer. The first
-resume covers only claims of earlier epochs and closes PAC claims, so the set it applies is fixed when the
-committee signs.
+**Mint capped at creation.** Issuers need minting (editions, game items, a stablecoin). Holders need a bound. A cap
+that is fixed at creation, and that burning does not reopen, is a promise that anyone can read in the state.
+`MaxSupply == InitialSupply` is the strongest form and has no mint authority at all. Transferring or renouncing the
+issuer role is left out: it adds a payload and a way to lose control by mistake.
 
-**No forced inclusion.** Without a validity proof Pactus cannot tell a legitimate rejection from censorship; a
-forced path would turn silent censorship into a signed rejection that nothing can overturn.
+**No allowance.** The approve and spend-from pattern is where most user losses on token chains happen. Leaving it out
+keeps the trust model simple: only the holder can move units, and nobody else can ever be allowed to.
 
-**Fraud proofs on one step, deferred effects.** Pactus cannot run a batch of 150 000 operations, but it can run
-one: the rules are a fixed list of commands with checked arithmetic, a sparse Merkle tree and a signature scheme
-it already verifies. The trace commits to the root after every step, so a challenger shows the step and its two
-roots with no interactive search. Effects are deferred a day because a proven fraud would otherwise arrive too
-late; the window must let a watcher fetch, check and get a transaction into a block. A day is a proposal.
-`AssetOpen` exists because a committee could commit to a root with no valid path to a wrong step. Only the
-signers of the fraudulent anchor are slashed: later signers built on it but did not create it.
+**Transfer rates: variable, but inside bounds that cannot move.** Issuers of fungible assets ask for a share of each
+transfer (a team or royalty share) and for a burn. A rate that nobody can change is too rigid, since an issuer may need
+to lower it, and a rate that its issuer can change freely is a trap. So each rate has a `Min` and a `Max` fixed at
+creation, public in the state like `MaxSupply`, and the issuer moves only the current value between them. `Min == Max`
+gives a rate that is fixed for ever, with no authority at all. The calculation is three lines of integer arithmetic,
+rounds down, never leaves the `int64` range, and a sum of the two rates of at most 100 % means `net` is never negative.
+`MaxRate` in the transfer protects the signer against a change that lands before inclusion. The rates act on units
+of the asset only and have nothing to do with PAC fees.
 
-**No data-availability guarantee.** Guaranteeing availability means erasure-coding batches across independent
-providers and sampling them, a second protocol as large as this one. The cost is that a committee that withholds
-a batch from everyone for a day makes fraud impossible to show. The design does what it can: every signer MUST
-publish the batch on request, an operator that was not given a batch SHOULD refuse to sign, any one party with
-the data is enough, and the reward for a proof is large.
+**One issuer for mint and rates.** An earlier draft had a separate parameter controller, a per-parameter mutable flag
+and a minimum received per transfer. Here `Min < Max` already says that a rate is variable, one `MaxRate` per
+transaction replaces the minimum per recipient, and the issuer is the only authority. A separate controller (a
+multi-signature or a vote) can be added later without changing the records.
 
-**Deposits and expiry by epoch.** Without reclaim, silent operators would hold deposits hostage. A reclaim that
-depended on transaction order inside a block would make a signed anchor fail and force operators to sign other
-content for the same head, which looks like equivocation. With expiry by epoch a deposit is credited or
-reclaimed, never both, and no honest re-signature looks like equivocation. The price is a credit window of one
-to two epochs. `MaxDepositsPerAnchor` is tied to `MaxTransactionsPerBlock` so that an anchor per block always
-drains the queue; `MaxExitClaimsPerBlock` keeps a freeze-time crowd from building a block the 1 MB gossip limit
-cannot relay.
+**Opt-in, so that nobody is given an asset against their will.** Anyone can create an asset with any symbol, and
+without opt-in anyone could put it in any wallet for a fee that is small in PAC: look-alike symbols, links in
+metadata, and a record added to every victim's state. With opt-in, an asset reaches an account only if that account
+signed for it. It also simplifies the rules. A transfer or a mint never places a record, so their execution has no
+creation order to fix, their charge is 0, and a holding is placed only when its owner asks and locks a deposit. The
+cost is two steps to receive an asset, and a recipient that needs a little PAC for the deposit before it can accept,
+unless a sponsor pays it (section 3.9). To the knowledge of the author, the XRP Ledger, Stellar and Algorand also ask
+the receiver to opt in. There is no exception: the creator's own record is placed by the creation it signed, and the
+collector named by a policy must accept like anyone else. Creating the collector's record at creation would let an
+issuer put an asset on any account by naming it. Instead, a collector other than the creator starts at a team rate of
+0, the issuer raises the rate only once the collector has accepted, and the collector cannot close its balance while
+the rate is above 0. A team share therefore always has a holding to go to, and no asset can be blocked for lack of its
+collector, not even by a mistyped address: such an asset only never pays a team share. The price is that a team rate
+fixed for ever above 0 (`Min == Max`) needs the issuer as its own collector, which can then forward the share.
 
-**Fees.** A subsidy would change Pactus monetary policy for a feature with no users. An equal share to each seat
-needs no per-operator counter, and a split weighted by signatures would be steered by the aggregator. The
-refund is fixed because the submitter chooses its fee after the attestation, and it goes to whoever gets the
-anchor included so any relayer can finish one. Floors with a state surcharge price what operators keep for ever.
-A fixed transfer schedule covers the team and burn shares in a page; a policy language needs bytecode, and the
-operation envelope has a `Version` byte for it.
+**A sponsor may pay, but only the owner consents.** A Pactus transaction has one signer, who pays, so the opt-in alone
+would keep every account with no PAC from receiving anything: the main friction of this design for new users.
+`AssetAcceptFor` separates the two roles. The owner signs an acceptance, off-chain and for free, and a sponsor submits
+it and pays. The opt-in stays whole, since a record still needs the signature of its owner, and an acceptance only
+lets its owner receive: unlike a permit on token chains, it never lets anyone spend, so a user tricked into signing
+one loses nothing. An acceptance opens at most one holding, because that holding cannot be closed before the
+acceptance expires, so a holding that its owner closed is never opened again with it. The single use is thus a
+property of the state, not of recent history: a set of used acceptances, kept as the IDs of recent transactions are,
+would make the validity of a block depend on blocks that the state root does not cover, and on every snapshot that
+carries them (Alternatives Considered). The deposit goes to the owner, so the records do not change and an owner with
+no PAC can still close its balance; a sponsor counts it as the cost of bringing in a user.
 
-**Bond and parameters in code.** A larger bond makes a committee costlier to assemble and attack: 18 attackers
-risk 180 000 PAC, more than the 50 000 PAC cap of the first 90 days and less than the 500 000 PAC cap that
-follows. The price is that seats fill more slowly. Neither the bond nor the committee size can be validated
-before the layer has run, so both are constants a protocol version may change (section 1.3.1). The bond
-protects only the PAC; against native assets it is not insurance. The escrow ramp bounds what a compromised
-committee can drain and is fixed in the PIP so nobody has to decide later whether to relax it. `MinReceive`
-lets a signer bound the effect of a parameter change that lands before the operation.
+**A refundable deposit and a free list, so that unused balances are reused.** The XRP Ledger, Stellar and Algorand (to
+the knowledge of the author) lock a reserve that the holder gets back when it closes its line, and
+[PIP-50](./pip-50.md) locks a deposit for an anchor that its owner gets back when it deletes it. A deposit bounds what
+is in use by the PAC that people accept to lock, instead of by what was ever created. The tree of Pactus only appends,
+so a closed balance is not cut out: its record becomes a free slot on a stack, the next balance reuses it, and no
+index moves. A node never has to shrink the tree or move a record. The tree keeps the length of its peak, with free
+slots of 5 bytes in place of the closed balances, and since a slot is appended only when none is free, the deposits
+bound the length of the tree as well as the balances in use. The deposit is refunded as it was posted, so a change of
+the constant never touches an existing record, and the fee is taken from the refund so that nobody is stuck with all
+its PAC locked. Asset records are the exception: they are permanent, since every holding points to one, and they are
+paid for once, which is why `AssetCharge` is not small. Their cost is also what an attacker pays to make the permanent
+part of the state grow, which is the only part of the state that the deposits do not bound.
+
+**Charges known from the payload.** `Value()` is computed from the payload and the constants of section 1, so a wallet
+never has to guess a fee from the state, and no fee code depends on the state. Because, in this PIP, only creation and
+acceptance place records, and which records they place follows from the payload, each charge or deposit is for a
+record that is in fact placed.
+
+**Separate domains in the asset tree.** The leaves and inner nodes of the asset tree are tagged, with the tags of
+Certificate Transparency (RFC 6962), and a leaf commits to its index. The trees of accounts and validators need
+neither: every record there carries its own number, so no two leaves are equal, and the hash of a block commits to the
+number of its transactions next to their root. An asset record carries no number and two of them can be equal, so the
+index goes into the leaf. With it the asset root commits to every record and to their number, and with the tags no
+rule on the length of a record is needed, in this PIP or a later one. The shape of the tree stays that of the node, so
+the change is a tag in the hash of an inner node and a few bytes in the hash of a leaf.
+
+**Room for pools, but no pools.** Exchanges are where token chains lose the most: price manipulation, sandwiches,
+inflated first shares, honeypots. They deserve a PIP of their own, reviewed on its own. This PIP only reserves what
+such a PIP needs (section 6): kinds of record, a header that can grow, the `AssetID` 0 for PAC, assets without an
+issuer for the shares of a pool, and the rule that every payload of the asset layer counts under the same cap. These
+reservations cost no byte and no rule today, and a pool PIP then changes nothing in the records, payloads or
+invariants of this one.
+
+**PAC pays everything.** There is no second fee token. A new holder needs a little PAC for the deposit and the fee to
+accept an asset, unless a sponsor pays them (section 3.9), and for the fee to move it.
 
 ## Alternatives Considered
 
-1. **Native token payloads in Pactus consensus.** Rejected: every validator stores all balances and replays all
-   transfers, and each transfer competes for one of 1 000 slots per block. Putting all operation bytes on Pactus,
-   or a forced inbox, recreates it.
-2. **A smart-contract VM.** Rejected: attack surface out of proportion to the tokens this PIP targets.
-3. **Validity proofs from the start.** Deferred: they need a proof system for secp256k1 signatures and the asset
-   rules, and their cost is unknown. Erasure-coded availability with sampling is also deferred: it is a second
-   protocol.
-4. **Interactive bisection instead of a trace root.** Rejected: several transactions and a timer per dispute,
-   against 32 bytes per step.
-5. **Slashing validator stake, or a rescue committee after a halt.** Rejected: Pactus has no slashing, and a
-   rescue committee is a takeover risk.
-6. **A plain two-thirds quorum, or unanimity.** Two thirds (15 of 21) was rejected after the comparison with
-   Arbitrum AnyTrust: `T = 18` leaves an honest holder of every final batch unless `T` are faulty, at the price of
-   liveness (the layer stops with 4 operators offline, not 7). Unanimity was rejected: two crashed operators
-   would stop the layer and could not be evicted, since eviction travels in an anchor.
-7. **A flat escrow cap of 500 000 PAC from day one, or seats by auction or stake weight.** Rejected in favor of
-   the ramp and the fixed bond.
-8. **Eviction by anyone measured on the bitmap, or rotation without a window cap or approved by the committee.**
-   Rejected: the submitter chooses the bitmap, all launch terms end together, and the committee would control its
-   own composition.
-9. **Reclaim of deposits by block height.** Rejected: a stale anchor would force a second signature on different
-   content.
-10. **A resume that debits receipts or covers all claims with no epoch limit.** Rejected: positions would leave
-    the layer unspendable, or a same-block claim would invalidate an attested resume.
-11. **A refund of the exact fee, to a named operator, or none; a subsidy from block rewards; a free fee market;
-    fees split by signatures.** Rejected: the fee is chosen after the attestation, a named operator could hold up
-    anchors, and the others change monetary policy, price no state or are steered by the aggregator.
-12. **Slashing every signer of every reverted anchor.** Rejected: one bad batch would ruin the committee.
-13. **A shorter or longer window.** Hours would let a committee online at night finalize a bad head unseen; a week
-    would make withdrawals slow. A day is a compromise, not a measurement.
+1. **Off-chain execution checkpointed by a bonded committee** (an earlier draft of this PIP). Rejected as too complex
+   and for its trust assumptions. It remains a possible later PIP if asset demand outgrows the cap.
+2. **A profile over [PIP-50](./pip-50.md) anchors, computed by indexers.** No consensus change, but Pactus enforces
+   nothing: validity is whatever the indexer says.
+3. **A smart-contract VM.** Attack surface out of proportion to the tokens this PIP targets.
+4. **Item records inside an asset (collections).** Set aside: more state and rules, and the single record covers the
+   need at the cost of more creations.
+5. **Shrinking the tree when a balance is closed**, by moving the last record into the hole and dropping the last
+   leaf. It would give the space back for real, but it needs a tree that can drop its last leaf, which the trees of
+   the node do not do (their width only grows), and a second tree so that an `AssetID` never moves. The free list
+   bounds the records in use, and the length of the tree through its peak, with the tree that exists.
+6. **Fees in the assets themselves.** No common unit, and no way for a new holder to pay a first fee. The rates of
+   section 3.3 are not fees of this kind: they are a property of the asset that its issuer chose, and they do not pay
+   for the transaction.
+7. **The node merges transfers of different senders into one transaction with many senders.** Not possible with
+   account signatures, which cover one payload each. Bundles of whole signed transactions are possible (the next
+   alternative).
+8. **Bundles in this version.** The proposer packs the asset transactions of any senders into bundles of up to 8, each
+   of them one entry of the block: either an unsigned transaction built like the subsidy transaction, whose ID covers
+   the IDs of its items, or a new kind of entry in the body of a block, which changes the format of a block, its
+   decoder and its transaction root. Both save entries and not work, and both are new to every part of the node that
+   reads a block. Set aside for this version, whose cap leaves PAC 90 % of every block, and kept as an extension
+   (Future Extensions).
+9. **Rates that are fixed, or that have no bounds.** Fixed rates are possible (`Min == Max`) but not the only choice.
+   Unbounded rates would let an issuer take any share of any transfer.
+10. **The sender pays for the recipient's record, with no opt-in** (to the knowledge of the author, the model of
+    Cardano and Solana, with a refundable reserve in each). Simpler to use, but anyone can put an asset in any wallet,
+    and the recipient has no say in the record that is created for it. Set aside for the opt-in of section 3.7.
+11. **Higher charges and wallets that hide unknown assets.** No consensus change, but it prices spam instead of
+    stopping it, and the records stay in the state. It remains a rule for wallets in any case.
+12. **Balances that are never closed, paid for once.** The simplest rule, but the state only grows and its owners get
+    nothing back, which is weaker than the reserves of the chains above.
+13. **A sponsored acceptance whose deposit returns to the sponsor.** Fairer to the sponsor, but each holding must name
+    its payer (67 bytes instead of 46), and an owner with no PAC could no longer close its balance, since the fee of
+    the close is paid from the refund.
+14. **A second signer that pays the fee of any transaction,** as some chains have. It would help every payload, but it
+    changes every transaction of Pactus, not only the asset layer.
+15. **A set of used acceptances** that nodes keep from the recent blocks, as they keep the IDs of recent transactions.
+    No byte in the state and no delay before a close, but the validity of a block would depend on history that the
+    state root does not cover, which every restart, snapshot and sync would have to rebuild exactly. The `LockedUntil`
+    of section 3.9 gives the same guarantee from the state alone.
 
 ## Backwards Compatibility
 
-This is a consensus upgrade. Nodes that do not implement version `V` reject
-payload types 8 to 14 and cannot compute the extended state root. Existing payload
-types, account records and validator records keep their encoding. Accounts that
-never use the feature are unaffected.
+This is a consensus upgrade. Nodes that do not implement version `V` reject payload types 8 to 14 and cannot compute
+the extended state root. Existing payload types, account records and validator records keep their encoding. Accounts
+that never use the feature are unaffected.
 
-Activation follows PIP-51: implementations advertise version `V`; when more than
-75 % of committee power supports it, proposers raise the block version; from the
-first block of version `V` the extended header root applies, `ActivationHeight` is
-set to that block's height and the seven types are legal. Before that block they
-MUST be rejected as invalid payload types. As with
-every earlier version, the 75 % threshold is a proposer rule, not a validation
-rule: a version-`V` block is valid if it carries a certificate from more than 2/3
-of committee power, which requires that power to run version-`V` software.
-
-The layer does not start by itself. It needs at least `MinCommittee` bonded
-operators whose first epoch has begun. Until then no anchor is valid, and deposits
-expire after their epoch window and can be reclaimed. Testnet SHOULD activate first.
+Activation follows [PIP-51](./pip-51.md): implementations advertise version `V`; when more than 75 % of committee
+power supports it, proposers raise the block version; from the first block of version `V` the extended root applies,
+the asset tree exists with its header record, and the seven types are legal. Before that block they are invalid: rule
+1 of section 4.1, which reads the version in the header of a block, makes a block that carries one invalid, pools
+reject them, and the asset tree does not exist. The activation cannot be undone, and the node already guarantees it:
+when it commits a block of a higher version, it raises the lowest version that it accepts to that version, restores it
+from the last block after a restart, and from then on rejects any block of a lower version and proposes that version
+or higher. Once a block of version `V` is committed, a block of a lower version is therefore invalid, and the
+existence of the asset tree says the same in the state. The format of a block does not change; software that decodes
+the transactions of a block (explorers, indexers, wallets) must learn the seven payloads. State sync and snapshots
+MUST carry the asset tree from then on. Testnet activates first, and mainnet only after the testnet plan of the
+Reference Implementation section has passed.
 
 ## Test Cases
 
-### Vectors
-
-`vectors.md`, submitted in the assets of this PIP next to `gen_vectors.py` (Python 3, standard library only), lists
-test values computed with plain BLAKE2b-256 from the layouts of sections 2.5, 3.5, 3.7, 5.2, 5.2.1 and 5.6, and
-the script checks that a tampered proof or audit path fails. They cover: the empty state root and the genesis
-head; an asset ID, a holding key and a one-entry state root; the transfer policy table below; `ListRoot` and
-audit paths; a batch of one pool step with its correct and fraudulent traces and the `AssetFraud` that proves the
-latter; the digests, `ContentHash`, `HeadHash` and the 126-byte attestation message of an anchor; a membership
-proof with one explicit sibling and an exit-claim leaf; the resume digest and head; and a receipt leaf.
-
-| Name | Value |
-| --- | --- |
-| `EmptyStateRoot` | `933f40aae7a4ce7f2705c889bd9417d6360695ec0852fb3e1326b1c03dc6da13` |
-| `GenesisHeadHash` | `66bd737f4f983634f07fc435ab1efd50c84b62dbf03372cdd14cf847904d413d` |
-| `AssetID` for `Creator` = `0x04` followed by twenty `0x11` bytes, nonce `0` | `ce4429f3e1ee9bbda5a0f75adb9b350dd6beaa761174a3fc9cc4c511e3610622` |
-
-Transfer policy (`TeamRate`, `BurnRate` in basis points):
-
-| Amount | `TeamRate` | `BurnRate` | `TeamCap` | team | burn | recipient |
-| --- | --- | --- | --- | --- | --- | --- |
-| 100 | 200 | 100 | none | 2 | 1 | 97 |
-| 99 | 200 | 100 | none | 1 | 0 | 98 |
-| 1 | 200 | 100 | none | 0 | 0 | 1 |
-| 1 000 000 | 200 | 100 | 5 000 | 5 000 | 10 000 | 985 000 |
-
-### Consensus tests (Pactus node)
-
 Implementations MUST pass at least these. They add no rule to the Specification.
 
-* **Activation and root.** Payload types 8 to 14 are rejected below version `V`; the first block of `V` carries
-  the extended root of the initial settlement; the root changes with `Escrow`, an operator record or a deposit
-  leaf; a restart reloads the same root.
-* **Operators.** Bond with a valid `PoP` is seated when seats are free and nobody waits, waiting otherwise; a
-  wrong `PoP`, an identity or out-of-subgroup key, a duplicate key, a validator's key and a full registry are
-  rejected. Unbond, Withdraw, `EvictIndex`, `Seat` (free seat, expired term, both rotation limits) and `Prune`
-  follow section 3.1, including every refusal listed there. Committee membership never changes inside an epoch.
-* **Escrow.** Deposits below `MinDeposit`, to a non-type-4 address or beyond `MaxEscrow(h)` are rejected, with
-  the ramp at 777 600 and 1 555 200 blocks. Reclaim is refused before expiry, for another account, for a credited
-  deposit and twice. An expired deposit is never in `D`. PIP-54 overflow cases fail before any addition.
-* **Anchor.** A correct anchor is recorded as pending and changes none of `HeadSeq`, `Consumed`, `Paid`, `Escrow`
-  or any balance. Each rule of section 3.3 has a failing case, among them one signature fewer than `T`, a bit past
-  `n`, a wrong bitmap, a second anchor in a block, a wrong `PrevHead`, a full pending list, a cursor out of range,
-  a consumed deposit from the same block, payouts above the escrow, an identity aggregate. An anchor that credits
-  a deposit made in the same block fails, and the same attestation succeeds in the next block. Finalization at
-  `SubmitHeight + ChallengeWindow` pays payouts, `min(Refund, fee)` and the fee share, and finalizes at most
-  `MaxFinalizePerBlock` records.
-* **Evidence.** Two contents for one `(Epoch, Seq, PrevHead)` slash the operator; equal contents, another key, a
-  non-member epoch or different epochs fail; evidence works after `ExitEpoch` and while frozen.
-* **Challenge.** With the vectors, an `AssetFraud` of kind `0` on the fraudulent trace reverts a pending anchor
-  and slashes its signers, half to the reporter; the same proof against a correct trace, a changed sibling, a
-  missing or extra witness or a wrong path has no effect. Reverts restore the cursors and sums, release deposits
-  and slash nobody but the signers of the challenged record. Proofs are refused for a final record and from
-  `SubmitHeight + ChallengeWindow`. Each kind and each case of kind `0` is accepted when wrong and rejected when
-  correct. A block with 3 `AssetFraud` is invalid. `AssetOpen` request, response and timeout behave as in
-  section 3.8, and a record with a random `TraceRoot` is reverted.
-* **Freeze, exit, receipts.** Freeze is refused one block early, with nothing final, with something pending or
-  when frozen. `ExitClaim` kind `0` with the vector proof pays `7 000 000 000` and appends the vector leaf; every
-  tampered field, a duplicate key, `Paid + Amount > Consumed` and a pending head are refused; a block with 33
-  claims is invalid. Receipts follow the vectors, change no balance and are refused in state `0`.
-* **Resume.** A resume that applies every claim of earlier epochs returns the layer to `0` and sets
-  `ExportsVoidBefore`; one that leaves claims moves it to `2`. A claim in the epoch of the first resume does not
-  invalidate it. A stalled state `2` can be frozen again.
-* **Accounting.** Balances, stake, `Escrow`, `BondedTotal`, the treasury and pending amounts sum to the supply
-  after every test. A pruned restart returns the same `GetAssetSettlement`.
-* **Regressions.** A fraud proof slashes exactly `SignerIndexes`, even after a signer was slashed and withdrawn. An
-  account can claim again in a second freeze. A backlog finalizes at most `MaxFinalizePerBlock` per block. A
-  header with a bad `RefHeight` is proven wrong by kind `2`.
-* **Parameters.** With `MaxCommittee = 51` an anchor needs 43 signatures and a 7-byte bitmap; 42 signatures or
-  9 bytes are refused. After `OperatorBond` changes, a record keeps the amount it posted.
-
-### Asset Layer tests (operator libraries)
-
-The vectors reproduce byte for byte. Each asset type with each capability is created, and each rule violation of
-section 5.5 and each fee below a floor is rejected. A policy transfer follows the table above, also when sender,
-recipient and `TeamAddress` coincide. `MinReceive`, `UPDATE_PARAMETER` bounds, NFT and SFT mint and burn rules,
-replays and another `ChainID` fail as specified. Conservation holds after a batch of every operation. A batch
-with one invalid operation, or a bad `RefHeight`, is invalid as a whole. Different tree partitionings give the
-same root. `ListRoot`, audit paths, membership proofs and `UpdateRoot` (shared ancestors, writes, removals) match
-the vectors. Executing each step from its witnesses gives the state of the operator's full execution.
+* **Activation and root.** The seven payload types are rejected below `V`, in a block and in a pool. After the first
+  block of `V`, a block of a lower version is invalid, even after a restart or when the support of the committee
+  falls. The first block of `V` has the extended root, with an asset tree that holds only the header (`FreeHead` at
+  `NoRecord`, `DepositTotal` 0), whose root is therefore `leaf(0)` of section 2.1. The root changes when a record
+  changes, and a restart reloads the same root.
+* **Create.** A fixed asset, a minting asset and an asset with `InitialSupply == 0` are created. Rejected: an empty
+  symbol, 13 bytes, lowercase, a symbol of `PAC`, `Decimals` 10, `MaxSupply` 0 or above `MaxAssetSupply`,
+  `InitialSupply` above `MaxSupply`, insufficient PAC, a treasury or validator `From`. `AssetCharge` reaches the
+  treasury and is never returned. The creator's holding is placed, with a deposit that raises `DepositTotal`, only if
+  `InitialSupply > 0` or the policy names the creator as collector. The asset record is always appended at the end,
+  even when there is a free slot. With a policy, rejected: `Current` outside `[Min, Max]`, a `Max` above 10 000,
+  `TeamRate.Max + BurnRate.Max` above 10 000, all `Max` at 0, `TeamCap` of 0, a treasury or validator `Collector`, and
+  a `Collector` other than `From` with a `TeamRate.Current` above 0, or a `TeamRate.Min` above 0. With a policy that
+  names the creator as collector, the creator's holding exists right after creation, at balance 0 if `InitialSupply`
+  is 0, and is placed once. With a policy that names another account as collector, no record is placed for that
+  account, its PAC balance is unchanged, and the asset can be transferred at once, with no team share.
+* **Accept.** An account accepts an asset: a holding with balance 0 is placed, `HoldingDeposit` leaves its PAC balance
+  and raises `DepositTotal`, nothing reaches the treasury, and the account can then receive. With no free slot the
+  record is appended at the next index; with one, it takes the slot at `FreeHead`. Rejected: an unknown asset, a
+  second `AssetAccept` of the same asset by the same account (nothing is locked twice), insufficient PAC, a treasury
+  or validator `From`. A creator that holds a record from creation (an initial supply, or itself as collector) cannot
+  accept again. An accept and a transfer to that account in one block, in that order, both succeed; in the other order
+  the transfer makes the block invalid. A collector other than the creator that accepts lets the issuer raise the team
+  rate.
+* **Sponsored acceptance.** A sponsor opens a holding for an account with 0 PAC: the PAC of the sponsor falls by the
+  deposit and the fee, `DepositTotal` rises by the deposit, and the PAC of the owner does not change. The owner can
+  then receive, and closes the holding with 0 PAC, getting the deposit back less the fee. Rejected: an
+  `OwnerSignature` that does not verify, an `OwnerPublicKey` that is not the key of `Owner`, an acceptance signed for
+  another asset, another owner, another `Expiry` or another network, an expired acceptance, an `Expiry` more than
+  `TransactionToLiveInterval` blocks after the block, `Owner` equal to `From`, a treasury or validator `Owner`, an
+  owner that already holds the asset, and a sponsor without enough PAC. The signature of a transaction does not verify
+  as an acceptance, and an acceptance does not verify as a transaction. The holding that an acceptance opens has its
+  `Expiry` as `LockedUntil`, and the boundary is exact: for an acceptance with `Expiry = H` included at height `H`, an
+  `AssetClose` of the holding at `H` is rejected and at `H + 1` is valid, and an `AssetAcceptFor` that carries the
+  same acceptance at `H + 1` is rejected as expired. An acceptance opens at most one holding: a second
+  `AssetAcceptFor` with the same acceptance fails in the same block (an `AssetAcceptFor`, an `AssetClose` that is
+  rejected, then the same acceptance again) and in every later block, with another valid signature of the same message
+  too, and the same holds after a restart of the node, a start from a snapshot or a sync. An acceptance whose
+  `AssetAcceptFor` was rejected before inclusion, for example because the owner already held the asset, can still open
+  a holding before its expiry, and once the holding is closed, a new acceptance with a later `Expiry` opens a holding
+  again.
+* **Close and free slots.** An owner closes its holding: its PAC balance rises by the `Deposit` posted in the record,
+  less the fee, `DepositTotal` falls by the same `Deposit`, and the record becomes a `FreeRecord` that is the new
+  `FreeHead`. With `MaxBurn` at 0 the balance must be 0. With a `MaxBurn` at least the balance, the units are added to
+  `Burned`, no rate applies, and the sum of the holdings still equals `Issued - Burned`. Rejected: an unknown asset,
+  an account with no holding, a balance above `MaxBurn` (even by one unit), another account's holding, a holding with
+  `h <= LockedUntil`, the collector while `TeamRate.Current` is above 0, a `MaxBurn` above `MaxAssetSupply`, and a
+  close that would take the PAC balance above `MaxNanoPAC`. At the PAC bounds: with `PAC(From) = MaxNanoPAC`, a close
+  with `Deposit = fee` is valid and one with `Deposit > fee` is rejected; with `fee > Deposit`, a close is rejected at
+  `PAC(From) = 0` and valid at `PAC(From) = fee - Deposit`, which leaves 0. An account with 0 PAC and a deposit that
+  covers the fee can close. A holding placed by `AssetCreate` or `AssetAccept` has a `LockedUntil` of 0 and can be
+  closed at once. After two closes, two accepts take the slots in the reverse order of the closes, the tree grows by
+  no record, and `FreeHead` ends at `NoRecord`. A `HoldingDeposit` that a later version changes does not alter the
+  refund of an old record. A closed account that accepts again gets a record that is unrelated to the old one. Units
+  sent to an owner after it signed a close with `MaxBurn` at 0 make that close fail and cost the owner only the new
+  signature; the same close with a `MaxBurn` above the dust goes through and burns it.
+* **Transfer.** One recipient and eight succeed; nine fail. Rejected: a repeated `To`, `To == From`, a validator
+  recipient, an amount of 0 or below, a `MaxRate` above 10 000, an unknown asset, a balance that is too small, a
+  recipient that has not accepted the asset, and 8 recipients of `2^62` each (the overflow case of PIP-54), which
+  fails before any addition. An asset whose collector has not accepted it, at a team rate of 0, accepts transfers and
+  pays no team share. A transfer to the zero address needs no holding, raises `Burned` and creates no record. A
+  holding that reaches zero stays. `Value()` is 0, and the number of records of the tree is the same before and after
+  any transfer.
+* **Rates.** The example of section 3.3 gives `team = 15 000`, `burn = 5 000` and `net = 980 000`. With the same rates,
+  99 gives `team = 1`, `burn = 0`, `net = 98`, and 49 gives `team = burn = 0`. A transfer of `2^63 - 1` with rates
+  of 10 000 in total is computed without leaving the `int64` range, and `team + burn + net` equals `Amount` for a
+  range of amounts and rates, including values just below and above multiples of 10 000. `TeamCap` limits `team` and
+  not `burn`. An entry whose `net` is 0 is rejected. `MaxRate` below the current sum of the rates fails the transfer,
+  and an asset without a policy accepts `MaxRate` 0. An entry to the zero address pays no rate. The recipient, the
+  collector and `Burned` change as specified when the collector is the recipient or the sender.
+* **Set rate.** The issuer sets a rate inside its bounds and the next transfer uses it. A value outside `[Min, Max]`,
+  a non-issuer, an asset without a policy and an unknown asset fail. An asset with `Min == Max` accepts only that
+  value. Bounds, cap and collector never change. With a collector other than the issuer, raising `TeamRate` above 0
+  fails until the collector accepts, and succeeds after. The collector cannot close its balance while
+  `TeamRate.Current` is above 0; after it closes at a rate of 0, raising the rate fails again until it accepts again.
+  A team rate of 0 is accepted whatever the state of the collector, and an issuer that is its own collector sets any
+  rate within the bounds. After every step, a `TeamRate.Current` above 0 has a collector that holds the asset (section
+  2.3).
+* **Mint.** Only the issuer mints. A mint above `MaxSupply - Issued` fails. After a burn, a mint still cannot pass
+  `MaxSupply` in total. An asset with `MaxSupply == InitialSupply` rejects every mint. A mint to an account that has
+  not accepted the asset fails, including a mint by an issuer to itself when `InitialSupply` was 0 and it holds no
+  record. A mint places no record and has `Value()` 0.
+* **Block cap.** A block with 100 asset transactions and 899 other transactions is valid; a block with 101 asset
+  transactions is invalid, and it is rejected before the signature of any transaction is verified. An asset
+  transaction in a block below `V` makes it invalid. Two asset transactions of one sender in one block run in order,
+  and an asset transaction with a bad signature, an expired lock time, an ID that was already executed or a balance
+  that is too small makes the block invalid. A proposer with more asset transactions in its pool than the cap includes
+  `MaxAssetTxPerBlock` of those that pass their checks.
+* **Invariants.** The invariants of section 2.3 hold after every test, free list and collector included. Balances,
+  stake, treasury and `DepositTotal` sum to the PAC supply after every test: asset transactions only move PAC to the
+  treasury, lock it in a deposit or give it back, and pay the fee.
+* **Determinism.** Two nodes with different local indexes and one restarted from a pruned store obtain the same root
+  and the same `GetAsset`. A tree rebuilt from the store, in the order of the store, has the same root as the tree
+  built block by block, for small trees and for a tree of at least 50 million records. Every payload decodes and
+  re-encodes to the same bytes, and trailing bytes are rejected.
+* **Hostile inputs.** Invalid: a varint that is longer than its shortest encoding, 9 recipients, a symbol length of
+  13, each rejected before any allocation of that size. A block that repeats a transaction ID is invalid, and so is a
+  transaction executed in an earlier block and included again. A signature made for a PAC transaction does not
+  validate an asset payload. A node whose local index disagrees with the tree stops. A rate raised in the pool after a
+  transfer was signed with a tight `MaxRate` makes that transfer fail, and does not charge more. Two `AssetSetRate`
+  included in the opposite order of their signing leave the rates of the later inclusion. An `AssetAccept` and a
+  transfer to the account that signed it, skipped in the first pass of a proposer, are included in the same block
+  after a second pass. Records with the same bytes give different leaves: a tree of 5 records and a tree of 8 records
+  that adds three copies of its last record, an `AssetRecord`, have different roots, and so do trees of n and n + 1
+  records that end with copies of one record. An `Expiry` of `2^32 - 1` is compared without overflow, and rejected
+  while it is more than `TransactionToLiveInterval` blocks ahead. An asset transaction whose `From` is the treasury
+  address is rejected by `BasicCheck` without a signature, by the pool, and in a block, and the balance of the
+  treasury does not change.
+* **Room for later PIPs.** Every payload that names an asset rejects an `AssetID` of 0 in `BasicCheck`. No
+  `AssetCreate` gives an asset the zero address as `Issuer`, and `AssetMint` and `AssetSetRate` never pass with the
+  treasury as `From`. No payload of this PIP creates a record of kind 4 or more. The header has 13 bytes, and the
+  conservation of section 2.3 counts every PAC total of the header.
 
 ## Reference Implementation
 
-None yet. Before this PIP leaves Draft, a pull request will add the seven payloads,
-the settlement state, the exit and export trees, the proof check and the extended root to the
-Pactus node, and a separate library will implement section 5 and pass the Asset Layer tests. The vector generator and its output are attached to this PIP.
+None yet. Before this PIP leaves Draft, a pull request will add the seven payloads, the asset tree, the extended root,
+the block cap and the RPC to the Pactus node, and report on stated hardware: the time to validate a block with
+`MaxAssetTxPerBlock` asset transactions of 8 recipients each, and with as many `AssetAcceptFor`, for BLS, Ed25519 and
+secp256k1 keys, which is what sets the cap; the cost of a tree update, the size of the store per record, and the
+effect on state sync.
+
+### Testnet plan before mainnet
+
+This PIP SHOULD NOT activate on mainnet before its reference implementation has run on testnet through the steps
+below, with the results published. Each step tests a failure, not only the path where everything works.
+
+1. **Load.** Blocks at the cap: 100 `AssetTransfer` with 8 recipients each, for BLS, Ed25519 and secp256k1 senders,
+   and the other 899 entries filled with `BatchTransfer`; and blocks with 100 `AssetAcceptFor`, which verify two
+   signatures each. The time to validate and to commit them, on the smallest hardware that validators are expected to
+   run, sets `MaxAssetTxPerBlock` with a wide margin under the block interval.
+2. **Restarts and snapshots.** Nodes restarted at random, nodes started from a snapshot and nodes synced from the
+   first block keep the state root of the others at every height and, like them, reject the reuse of an acceptance,
+   before and after a restart or a snapshot; a dedicated test does the same with an asset tree of at least 50 million
+   records (Test Cases).
+3. **Activation.** The switch to version `V` under [PIP-51](./pip-51.md), with and without enough support, and the
+   floor of the block version: after the first block of `V`, no block of a lower version is accepted, even after a
+   restart.
+4. **Hostile proposers and peers.** Blocks with 101 or 999 asset transactions, asset transactions below `V`, repeated
+   transaction IDs, the reuse of an acceptance, or asset transactions signed by the treasury are rejected, and
+   rejecting a block over the cap costs no more than reading it.
+5. **Pools under flood.** A flood of asset transactions that are valid alone and invalid together, with the
+   per-sender limit on: payments keep flowing, and the asset lane recovers when the flood stops.
+6. **State over time.** Weeks of mixed traffic, with accepts, closes and creations at the cap: the size of the store,
+   the length of the tree and `DepositTotal` stay within the bounds of Security Considerations, and the invariants of
+   section 2.3 hold at every block.
+7. **Wallets and explorers.** The RPC of section 5 and the wallets show deposits as locked PAC, the net amount of a
+   transfer with rates, the bounds of the rates, whether a collector has accepted, and the units that a close burns. A
+   wallet signs an acceptance only after showing its asset, its issuer, its expiry, which is short by default, and
+   that the holding cannot be closed before that expiry.
 
 ### Open items of this draft
 
-This draft is for review. What it does not have yet:
-
-* **A reference implementation**, as above. No part of this PIP has run inside a Pactus node.
-* **Vectors for whole payloads.** The vectors cover hashes, digests, roots, proofs and attestation messages. They
-  do not include a fully serialized payload, the hash of a `SettlementState`, or an extended header root.
-* **Constants.** Every value of section 1.3 is an initial proposal. The capacity figures of section 6 are derived
-  from those values, not measured on an operator.
-* **Data availability** is not guaranteed (Security Considerations).
-* **Validity proofs** are only a reserved value of `AttestationType`.
-* **Size.** The text may be split into several PIPs (operator registry and bonds; settlement and anchors; the
-  Asset Layer; fraud proofs, halt and resume) if reviewers prefer.
+* **A reference implementation.** No part of this PIP has run inside a Pactus node.
+* **Byte-level vectors** for each payload, for the leaves, inner nodes and root of the asset tree, and for the
+  extended root.
+* **Constants.** Every value of section 1 is an initial proposal, not measured. `MaxAssetTxPerBlock` is set by the
+  benchmark of the Reference Implementation.
+* **The testnet plan.** None of it has run, and mainnet waits for it.
 
 ## Security Considerations
 
-### Committee compromise
+### Arithmetic
 
-`T` colluding operators can attest an incorrect state. What follows depends on whether anyone checks it.
+[PIP-54](./pip-54.md) came from a sum that wrapped. Every quantity here is an `int64` bounded by `MaxAssetSupply`,
+every sum is checked before it is added, and the invariants of section 2.3 are checked in tests. A credit cannot
+overflow, because a balance never exceeds the supply of its asset. The test with 8 recipients of `2^62` is mandatory.
+The same care applies to PAC: `Value() + fee` and every balance are bounded by `MaxNanoPAC` before the sum.
+`AssetClose`, the one payload that gives PAC back, applies the difference between its deposit and its fee in a single
+direction, with no intermediate sum (section 3.8), and no rule adds two heights (section 3.9).
 
-* **If a party with the data challenges within `ChallengeWindow`**, the head is reverted, nothing is paid for it,
-  its reserved deposits are released, and every signer loses its bond (180 000 PAC for `T = 18` at the launch
-  bond), half to the reporter. Nothing is lost on Pactus.
-* **If nobody challenges**, because nobody had the data, nobody checked, or the proof could not be included in
-  time, the head becomes final. Native assets can be reassigned or destroyed, and up to `Consumed - Paid` PAC can
-  be paid to chosen accounts. Uncredited deposits stay reclaimable.
+### State growth
 
-Ordinary PAC, validator stake, other operators' bonds and consensus are not reachable. Users SHOULD limit what
-they entrust to the layer and keep fee credit small. `MaxEscrow(h)` bounds the PAC loss; the value of native
-assets has no bound. At the launch values the bonds of `T` operators exceed the PAC the layer may hold in the
-first 90 days (50 000), not the final cap (500 000), and never bound the value of native assets.
+In this PIP, the state has two parts, and they are bounded differently.
 
-A caught committee is replaced by whoever bonds first in the next epoch, with no limit per epoch: `T` new
-operators that bond together hold `T` of 21 seats. Until `MinCommittee` members exist no anchor is possible. The
-honest minority and the community SHOULD be ready to bond in that epoch. A limit on seatings per epoch would give
-them time, at the price of a slower launch; v1 has none.
+**Balances in use are bounded by the PAC locked for them.** A holding exists only while a deposit of `HoldingDeposit`,
+posted by its owner or by a sponsor, stays locked for it, and closing it returns the deposit to the owner and frees
+the slot, so the number of holdings in use is at most the locked PAC divided by the deposit: with 42 million PAC, at
+most 420 million records of 46 bytes, about 19.3 GB, and only if every coin were locked. The deposit is about 2.2 mPAC
+per byte, the same order as the anchor of [PIP-50](./pip-50.md) (about 4.5) and a validator record (about 8.3).
+Transfers and mints never grow the state, and nobody can make an account hold, or pay for, a record that it did not
+sign for.
 
-Slashing covers conflicting attestations of one epoch and an anchor proven wrong, nothing else. Operators who
-all sign the same wrong head and are never challenged are not punished. At 21 seats a conflicting pair of heads
-implicates at least 15 operators (`2T - n`); a wrong anchor implicates every signer.
+**The length of the tree is bounded by the deposits too.** A holding is appended only when no slot is free, that is,
+when every holding slot holds an open balance. The tree therefore never has more holding slots than the largest number
+of balances that were open at the same time, each with its deposit locked at that moment, and the bound above holds
+for the length of the tree as well as for the balances in use. Closing does not shorten the tree: the slots stay as
+free records of 5 bytes until the next balances take them. To lengthen the tree for good, an attacker must keep a
+deposit locked for every slot until the last one is open, and pay two fees per slot, one to open it and one to close
+it. At the cap, 100 openings per block add 4.6 KB per block, about 40 MB a day, for 8 640 PAC a day in fees, with
+86 400 PAC locked by the end of the day and returned afterwards. The opening fee alone is 2.1 times the price per
+byte, and 8 times the price per record, of the accounts that `BatchTransfer` creates today (0.01 PAC for 8 accounts of
+12 bytes), which Pactus already accepts with no deposit at all.
 
-### Watching, and what can go wrong
+**Asset records are permanent, and they are paid for.** A sender that fills the cap with `AssetCreate` and no initial
+supply adds 13.4 KB per block, about 864 000 records and 116 MB a day, and spends about 95 000 PAC a day on
+`AssetCharge` and fees; one gigabyte of asset records costs about 820 000 PAC. Today a sender can create up to 8 000
+accounts per 1 000-transaction block with `BatchTransfer`, about 830 MB a day, so the permanent part is bounded below
+what Pactus already accepts for accounts. Together, the two parts stay far below the 2^31 records that the tree can
+hold (section 2.1): at most 420 million balances, and asset records that cost `AssetCharge` each, so that 2^31 of them
+would cost about 215 million PAC, five times the supply. `AssetCharge`, `HoldingDeposit` and the cap are constants
+that a later version can change.
 
-The protection of v1 is only as good as the watching, and Pactus does not watch. Operators outside the majority
-receive the batches and have reason to check them.
+A proposer is the one attacker that the fee cannot price out. The fixed fee is a rule of the pools, not of consensus,
+which accepts any fee from 0 to `MaxNanoPAC`, and the fees of a block go to its proposer, or to the owner of its
+stake. A proposer therefore pays no fee, in net, for the asset transactions that it puts in its own blocks, as it pays
+none today for its own `BatchTransfer`. It still pays `AssetCharge` for every asset, which goes to the treasury and
+never back to it, it still locks a deposit for every balance, and it still cannot exceed `MaxAssetTxPerBlock` per
+block, so the bounds above hold for a proposer too; only the figures in fees drop, and only in its own blocks.
 
-* *Nobody checks in time.* A watcher offline for a day is a risk. Operators SHOULD run watchers for each other's
-  anchors and publish what they check.
-* *A proof is not included.* Censoring a proof for a day takes control of every proposer (Pactus has 51 in
-  rotation). `AssetFraud` is bounded to two per block, so a flood of slow proofs could fill the quota; a proposer
-  SHOULD give priority to proofs that verify.
-* *The verifier and an operator's library differ.* Sections 5.5, 5.8 and 5.9 are consensus code and also
-  implemented by operators; a disagreement can slash an honest operator. Operators SHOULD run the Pactus code on
-  their own trace before signing.
-* *A reverted head delays honest operations* until the committee anchors again. A false proof costs its sender
-  the fee.
+An account that accepts an asset by mistake closes the balance and gets its deposit back, less a fee, once the
+acceptance has expired if a sponsor opened it. It cannot refuse units that a holder sends it, but a close with a
+`MaxBurn` above those units goes through anyway, so dust cannot keep an owner from recovering its deposit; the sender
+of the dust loses the units, and the owner loses nothing.
 
-### Data availability and withholding
+### Block capacity
 
-Pactus checks signatures, not data, and v1 does not make data available. A committee that wants a false head
-through can withhold the batch and state from everyone else: nobody can then build a fraud proof, and the head
-becomes final after the window. This is the main thing v1 does not solve.
+The cap keeps assets to at most `MaxAssetTxPerBlock` entries of a block, 100 of its 1 000 (section 4.1), so PAC keeps
+at least 90 % of them, whatever the demand for assets. The same number bounds the **work** of assets, and it must come
+from the benchmark: an `AssetAcceptFor` verifies two signatures, so the worst block verifies 1 099 signatures instead
+of 999. A spammer who fills the asset lane (100 transactions, 1 PAC a block at the fixed fee of the pools) delays
+other asset users; it takes no entry from PAC, and the work and the state that it adds to a block stay within the
+bounds of `MaxAssetTxPerBlock`. A validator counts the asset transactions of a block before it verifies any signature,
+so a block over the cap costs it no more than reading it. Pools are local policy, and the separate asset pool keeps
+asset transactions from filling the memory of a node at the expense of payments.
 
-v1 requires every signer to publish each batch, with its trace and witnesses, to anyone who asks, and an
-operator that was not given the batch SHOULD refuse to sign. Operators outside a colluding majority receive the
-batches and any one is enough; a user whose balance changes without an operation of theirs is a second watcher,
-archives a third. v1 does not verify that any of this happens: a committee of `T` can sign among themselves and
-serve nobody, and the other `n - T` can raise an alarm only off-chain. With a validity proof (a later PIP) a
-withheld batch would no longer let a false head become final: the layer would freeze and holders would exit
-against the last proven head.
+### The issuer
 
-### Halting
+A minting asset gives its issuer the power to create units up to `MaxSupply`. A wallet MUST show whether an asset is
+minting and how much room is left, before the user buys it. The issuer key cannot be replaced: if it is lost, no more
+units are minted and the rates stay where they were; if it is stolen, the thief can mint up to the cap and move the
+rates inside their bounds. An asset with `MaxSupply == InitialSupply` and fixed rates has no such risk. Nobody can
+freeze, claw back or change the metadata of an asset.
 
-If fewer than `T` operators are online no anchor can be produced and nobody can be evicted, since eviction
-travels in an anchor; the same holds below `MinCommittee`. After `HaltTimeout` anyone can freeze the layer;
-holders exit PAC with a Merkle proof and record native positions as receipts, and `T` returning operators can
-resume it (section 3.6).
+### Transfer rates
 
-This does not solve everything. A receipt is evidence for a successor layer that a later PIP would define, not a
-way to move the asset. If more than `n - T` operators are gone for good the layer never resumes, and `n - T + 1`
-operators (4 of 21) can keep it frozen by staying away, with nothing to slash them: the bond does not protect
-liveness. Claims and receipts are proven against the last final head: if it overstated credits, claimants are
-paid first come, first served until `Consumed - Paid` runs out, and if it misstated positions so do the
-receipts. A proof for an old head does not verify against the last one, so wallets cannot prepare claims in
-advance. An attacker that records dust claims can add only a few days to a freeze.
+An issuer with a variable rate can move it to its `Max` at any time, and a `Max` of 100 % is a trap: the asset can be
+sold while the rate is low and then turned into one that keeps every transfer. The bounds are public and can never be
+widened, so the damage is limited to what they say, but only if the user reads them. A wallet MUST show the `Max`
+rates, and whether a rate is variable, before the user buys the asset, SHOULD warn when the two `Max` rates are high,
+and MUST set `MaxRate` on every transfer it builds to the rate it showed, never to the `Max` of the asset unless the
+user asks for it. A rate change that lands between signing and inclusion cannot take more than `MaxRate`. A collector
+that is the issuer, or a key that the issuer controls, receives the team share without any further rule, so users
+judge the asset by the issuer, not by the symbol. The shares round down, so many small transfers can avoid a rate;
+this costs the issuer revenue and nobody else anything. A transfer rate does not apply to a mint or to a burn. A later
+PIP for exchanges or pools follows section 6 on rates.
 
-### Other risks
+The collector of an asset can never be changed. A collector other than the issuer starts at a team rate of 0, and the
+rate rises only once it has accepted the asset (section 3.6), so a collector that cannot accept, for instance a
+mistyped address, never blocks the asset: its issuer only never receives a team share. A wallet MUST have the issuer
+confirm the collector address before it signs an `AssetCreate` with a policy, and SHOULD show whether the collector of
+an asset has accepted it. The acceptance of a collector can be sponsored by the issuer (section 3.9).
 
-* *Censorship.* A user cannot force an operation in v1. A censored user can stop depositing and reclaim
-  uncredited deposits; PAC on Pactus is never affected.
-* *Denial of service on Pactus.* Verification per anchor is constant, one anchor per block, `MaxPending` pending,
-  finalization bounded by `MaxFinalizePerBlock`. A deposit costs the fixed fee and leaves a 32-byte leaf in the
-  deposit tree for ever, like any transaction that creates state.
-* *Eviction and rotation.* `T` operators can evict honest minority members and replace them from the waiting
-  list; they can already attest any state, but a takeover becomes quieter. A well-funded party that bonds early
-  can fill the waiting list. The defenses (6 rotations per window, 1 per epoch, `ceil(T / 6)` windows to take
-  `T` seats: three at 21 seats, six months or more) slow a takeover and make it visible; they do not stop a party
-  that holds `T` seats. A party that fills the waiting list also fills the registry; `Prune` removes records that
-  waited 30 epochs, at the cost of their place in the queue. Operators SHOULD join in different epochs at launch.
-* *Keys.* An operator's signing key is as valuable as its bond, and an honest operator can be slashed by a
-  restore from backup that forgets what the key signed, or by a stolen key used to frame it. Section 5.7
-  requires a durable record before signing. An operator key is never a validator key.
-* *Sequencers.* The sequencer orders operations and can reorder, delay or omit them. Pactus enforces only the
-  outer bounds of `RefHeight`, so against a committee that signs it `Expiry` holds to one epoch. An honest
-  operator signs the first of two batches for the same head and refuses the second.
-* *Capacity squatting.* A party can deposit up to `MaxEscrow(h)` and leave it, preventing others from
-  depositing, at the cost of the capital. It is a denial of service on funding, not a theft.
-* *Wallets.* A wallet MUST display spendable PAC separately from fee credit, MUST show the asset ID and not only
-  the symbol, SHOULD hide unsolicited assets and SHOULD set `MinReceive` for fungible transfers with a mutable
-  policy. A transfer small enough that its team share rounds to zero pays none; splitting costs one fee per piece.
-* *Privacy.* Operations and balances are visible to operators and whoever they serve. This PIP adds no privacy.
+### Identity and spoofing
+
+Symbols are not unique and anyone can create one, such as `USDT`. Opt-in stops an asset from being pushed into a
+wallet, but a user can still accept a look-alike by following a link or a QR code. A wallet MUST show the `AssetID`
+and the issuer address and not only the symbol, MUST NOT trust a symbol, and MUST ask for confirmation, with those two
+values, before it signs an `AssetAccept` or an acceptance. The symbol `PAC` is reserved so that no asset looks like
+the coin. An `AssetID` in a link is a request and not an authorization: nothing happens until the user signs. Symbols
+can also mislead by their digits (`0` and `O`, `1` and `I`), and so can `Decimals`: two assets with one symbol, one
+with 9 decimals and one with none, show quantities that differ by a factor of a billion. A wallet shows the decimals,
+and amounts in the units of the asset that it reads from the state.
+
+### Hostile inputs and what the user signs
+
+* **An `AssetID` is known only after inclusion.** It is the position of the record in the tree, assigned when
+  `AssetCreate` executes. Another creation can land first, so a wallet MUST NOT announce, accept or send an `AssetID`
+  that it has not read from an included `AssetCreate`. Otherwise someone who sees a pending creation can take the ID,
+  give it the same symbol, and have the announced ID accepted.
+* **Metadata is attacker-chosen.** The document behind `MetaHash` can say anything. Wallets and explorers MUST check
+  the hash before they use it, cap its size, accept only fixed content types, run no active content from it, and
+  fetch no address that it embeds without the user asking.
+* **Blind signing.** A wallet MUST show the decoded payload before it signs: the type, the `AssetID`, the symbol, the
+  issuer, each recipient with its gross and net amount, the rates and `MaxRate`, and for a close the units that it
+  burns. It MUST NOT sign a payload that it cannot decode, and a signing device that cannot show these values SHOULD
+  refuse asset payloads.
+* **Pool flooding.** Funded accounts can flood the asset pool with transactions that are valid alone and invalid
+  together. The per-sender limit and the cost-ordered checks of section 5 bound this; the pool is local policy, so a
+  node that does not apply them loses its own memory and nothing else.
+* **Signed acceptances.** An acceptance only lets its owner receive: it is not a permit, and it never authorizes a
+  transfer or the spending of anything. A user tricked into signing one gets, at worst, a holding that it did not
+  want, paid for by someone else, which it can close, once the acceptance has expired, to keep the deposit; the
+  acceptance never opens it again (section 3.9). A wallet MUST show the `AssetID`, the issuer and the expiry before it
+  signs an acceptance, as for an `AssetAccept`, MUST say that the holding that the acceptance opens cannot be closed
+  up to that expiry, and MUST build the bytes that it signs itself, never sign bytes that an application hands it.
+* **Index corruption.** A local index that disagrees with the tree is a consensus fault, not a cache miss, which is
+  why section 5 makes a node stop.
+* **The treasury as signer.** The node takes any transaction whose signer is the treasury address for the subsidy
+  transaction, which carries no signature and no fee, and its `IsAccountAddress()` accepts the treasury address. An
+  asset payload that let the treasury be `From` would need no signature: anyone could lock the PAC of the treasury in
+  deposits, or act as the issuer of an asset created in its name. Hence the explicit rejection of section 3.1.
+
+### Keys, replay and burns
+
+Assets use ordinary accounts. Replay protection is that of every transaction: the lock time, and the rejection of a
+transaction ID that was already executed. An acceptance is protected by its expiry and by the holding that it opens,
+whose `LockedUntil` keeps it open until that expiry (section 3.9). There is no allowance, so a signature can never
+authorize someone else to spend later. A transfer to the zero address destroys units for good, and a wallet SHOULD ask
+for confirmation. Loss of a key is the loss of its holdings, as for PAC.
+
+### Privacy
+
+Balances and transfers are public, as for PAC. This PIP adds no privacy.
 
 ## Future Extensions (informative)
 
-* **Validity proofs.** A later PIP can define `AttestationType = 1`: an anchor with a succinct proof of correct
-  execution, verified by Pactus and final at inclusion, with the committee attesting only that it holds the data.
-  A withheld batch then costs liveness (a freeze and exits) instead of funds. It must first settle the proof
-  system, the program, the setup and the cost of proving, which depends on the state tree of section 5.2.
-* **Data availability sampling** across independent providers, which would remove the main limit of v1.
-* **Forced inclusion**, which needs validity proofs so that a rejection can be checked.
-* **A successor layer** that honors the receipts and names a committee after a halt that cannot resume.
-* **A policy language, paid storage, and fee economics** (a weighted split, a fee market, a refund that follows
-  the real fee).
+* **Collections.** A token-ID dimension if one asset per item proves too costly.
+* **A separate rate controller,** for example a multi-signature or a vote, and a delay before a new rate applies.
+* **Removal of assets that nobody holds,** which needs a count of the holdings of each asset, to bound the permanent
+  part of the state too.
+* **Exchanges,** in dedicated PIPs that use the room of section 6: an atomic swap, so that two parties can exchange
+  assets or an asset and PAC in one transaction, and liquidity pools with a constant product, in the style of
+  PancakeSwap v2.
+* **Bundles,** if asset traffic stays at `MaxAssetTxPerBlock`: the proposer packs the asset transactions of any
+  senders into bundles of up to 8, each of them one entry of the block, so that the cap on work can rise without
+  taking more entries from PAC. The design worked out for this PIP: a bundle is an unsigned transaction built like the
+  subsidy transaction, so the format of a block does not change; its ID covers the IDs of its items and not their
+  bytes, because the store strips the public keys that it already knows; at most one bundle of a block is partial, so
+  a proposer cannot waste entries; the counts are checked before any signature; and a bundle never holds another
+  bundle. It needs a prototype in the node first, and a comparison with a new kind of entry in the body of a block.
+* **An off-chain layer** with its own accountability, if asset demand outgrows `MaxAssetTxPerBlock`, even with
+  bundles.
 
 ## Copyright
 
