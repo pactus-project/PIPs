@@ -367,7 +367,11 @@ recipient gets all 49.
 (section 3.6). A wallet MUST set it to the sum of the current rates that it showed, and MUST NOT set it higher without
 the explicit consent of the user: an issuer that sees a transaction with a loose `MaxRate` in the pool can raise the
 rates just before it. The sender can never pay more than the bounds fixed at creation, and `MaxRate` narrows that
-bound for one transaction. A transfer that fails because a rate moved is signed again with the new value.
+bound for one transaction. `MaxRate` limits the sum of the two rates, not their split: what an entry takes in total,
+`team + burn`, never exceeds `share(Amount, MaxRate)`, but until the transfer is included the issuer can move rate
+from the team share to the burn share, or back, as long as the sum stays within `MaxRate`, and then the collector and
+`Burned` receive more or less than the wallet showed. A transfer that fails because a rate moved is signed again with
+the new value.
 
 A burn is a transfer to the zero address. It needs no payload of its own and cannot be undone: the units leave the
 supply, and `Issued` is not lowered, so burning never makes room for a new mint.
@@ -652,11 +656,11 @@ the next block, until its lock time expires, and the signer then signs it again.
   takes. A pool MAY drop an `AssetTransfer` or `AssetMint` whose recipient has not accepted the asset, but only when
   no transaction in the pool can make it valid (an `AssetAccept` or `AssetAcceptFor` of that recipient), since a
   proposer includes both in one block (section 4.2). A pool SHOULD run the checks in the order of their cost:
-  `BasicCheck`, then the PAC balance (for an `AssetClose`, the PAC balance plus the deposit that it returns, since it
-  pays its fee from the refund), then the signature, then the asset-state `Check`. It SHOULD also limit the number of
-  pending asset transactions per sender, because each one can be valid alone against the current state while all
-  together are not (several transfers of the same units), and without a limit one funded account can fill the pool
-  with transactions that the proposer will skip.
+  `BasicCheck`, then the PAC balance (for an `AssetClose`, the PAC condition of section 3.8, since it pays its fee
+  from the refund), then the signature, then the asset-state `Check`. It SHOULD also limit the number of pending asset
+  transactions per sender, because each one can be valid alone against the current state while all together are not
+  (several transfers of the same units), and without a limit one funded account can fill the pool with transactions
+  that the proposer will skip.
 * RPC (mandatory for the official node, on every surface it ships): payload type values `8` to `14` in `PayloadType`;
   `GetRaw*Transaction` builders for the seven payloads, the one for `AssetAcceptFor` taking an acceptance signed by
   its owner; `GetAssetState`, returning the fields of the header (`FreeHead`, `DepositTotal` and any total that a
@@ -786,13 +790,13 @@ issuer role is left out: it adds a payload and a way to lose control by mistake.
 keeps the trust model simple: only the holder can move units, and nobody else can ever be allowed to.
 
 **Transfer rates: variable, but inside bounds that cannot move.** Issuers of fungible assets ask for a share of each
-transfer (a team or royalty share) and for a burn. A rate that nobody can change is too rigid, since an issuer may need
-to lower it, and a rate that its issuer can change freely is a trap. So each rate has a `Min` and a `Max` fixed at
-creation, public in the state like `MaxSupply`, and the issuer moves only the current value between them. `Min == Max`
-gives a rate that is fixed for ever, with no authority at all. The calculation is three lines of integer arithmetic,
-rounds down, never leaves the `int64` range, and a sum of the two rates of at most 100 % means `net` is never negative.
-`MaxRate` in the transfer protects the signer against a change that lands before inclusion. The rates act on units
-of the asset only and have nothing to do with PAC fees.
+transfer (a team or royalty share) and for a burn. A rate that nobody can change is too rigid, since an issuer may
+need to lower it, and a rate that its issuer can change freely is a trap. So each rate has a `Min` and a `Max` fixed
+at creation, public in the state like `MaxSupply`, and the issuer moves only the current value between them.
+`Min == Max` gives a rate that is fixed for ever, with no authority at all. The calculation is three lines of integer
+arithmetic, rounds down, never leaves the `int64` range, and a sum of the two rates of at most 100 % means `net` is
+never negative. `MaxRate` in the transfer protects the signer against a rise of the total rate that lands before
+inclusion. The rates act on units of the asset only and have nothing to do with PAC fees.
 
 **One issuer for mint and rates.** An earlier draft had a separate parameter controller, a per-parameter mutable flag
 and a minimum received per transfer. Here `Min < Max` already says that a rate is variable, one `MaxRate` per
@@ -992,13 +996,15 @@ Implementations MUST pass at least these. They add no rule to the Specification.
   pays no team share. A transfer to the zero address needs no holding, raises `Burned` and creates no record. A
   holding that reaches zero stays. `Value()` is 0, and the number of records of the tree is the same before and after
   any transfer.
-* **Rates.** The example of section 3.3 gives `team = 15 000`, `burn = 5 000` and `net = 980 000`. With the same rates,
-  99 gives `team = 1`, `burn = 0`, `net = 98`, and 49 gives `team = burn = 0`. A transfer of `2^63 - 1` with rates
-  of 10 000 in total is computed without leaving the `int64` range, and `team + burn + net` equals `Amount` for a
-  range of amounts and rates, including values just below and above multiples of 10 000. `TeamCap` limits `team` and
+* **Rates.** The example of section 3.3 gives `team = 15 000`, `burn = 5 000` and `net = 980 000`. With the same
+  rates, 99 gives `team = 1`, `burn = 0`, `net = 98`, and 49 gives `team = burn = 0`. A transfer of `2^63 - 1` with
+  rates of 10 000 in total is computed without leaving the `int64` range, and `team + burn + net` equals `Amount` for
+  a range of amounts and rates, including values just below and above multiples of 10 000. `TeamCap` limits `team` and
   not `burn`. An entry whose `net` is 0 is rejected. `MaxRate` below the current sum of the rates fails the transfer,
-  and an asset without a policy accepts `MaxRate` 0. An entry to the zero address pays no rate. The recipient, the
-  collector and `Burned` change as specified when the collector is the recipient or the sender.
+  and an asset without a policy accepts `MaxRate` 0. A rate change that moves the split between team and burn and
+  keeps their sum within `MaxRate` does not fail the transfer, and `team + burn <= share(Amount, MaxRate)` holds for
+  every entry, `TeamCap` binding or not. An entry to the zero address pays no rate. The recipient, the collector and
+  `Burned` change as specified when the collector is the recipient or the sender.
 * **Set rate.** The issuer sets a rate inside its bounds and the next transfer uses it. A value outside `[Min, Max]`,
   a non-issuer, an asset without a policy and an unknown asset fail. An asset with `Min == Max` accepts only that
   value. Bounds, cap and collector never change. With a collector other than the issuer, raising `TeamRate` above 0
@@ -1169,11 +1175,12 @@ sold while the rate is low and then turned into one that keeps every transfer. T
 widened, so the damage is limited to what they say, but only if the user reads them. A wallet MUST show the `Max`
 rates, and whether a rate is variable, before the user buys the asset, SHOULD warn when the two `Max` rates are high,
 and MUST set `MaxRate` on every transfer it builds to the rate it showed, never to the `Max` of the asset unless the
-user asks for it. A rate change that lands between signing and inclusion cannot take more than `MaxRate`. A collector
-that is the issuer, or a key that the issuer controls, receives the team share without any further rule, so users
-judge the asset by the issuer, not by the symbol. The shares round down, so many small transfers can avoid a rate;
-this costs the issuer revenue and nobody else anything. A transfer rate does not apply to a mint or to a burn. A later
-PIP for exchanges or pools follows section 6 on rates.
+user asks for it. A rate change that lands between signing and inclusion cannot take more than `MaxRate`, which bounds
+the sum of the two rates and not their split between the team and the burn (section 3.3). A collector that is the
+issuer, or a key that the issuer controls, receives the team share without any further rule, so users judge the asset
+by the issuer, not by the symbol. The shares round down, so many small transfers can avoid a rate; this costs the
+issuer revenue and nobody else anything. A transfer rate does not apply to a mint or to a burn. A later PIP for
+exchanges or pools follows section 6 on rates.
 
 The collector of an asset can never be changed. A collector other than the issuer starts at a team rate of 0, and the
 rate rises only once it has accepted the asset (section 3.6), so a collector that cannot accept, for instance a
