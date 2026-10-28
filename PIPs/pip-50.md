@@ -3,7 +3,7 @@ pip: 50
 title: Native State Anchoring (Pruning-Resistant Live State Slot)
 description: One live, deposit-backed commitment slot per account, with protocol timestamps and node APIs.
 author: CarbonFlake256x (@CarbonFlake256x)
-status: Accepted
+status: Finall
 type: Standards Track
 category: Core
 created: 2026-03-11
