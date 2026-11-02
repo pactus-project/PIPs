@@ -50,7 +50,12 @@ pactus:anchor?<parameters>
 - Parameters follow RFC 3986 query syntax and are UTF-8 before percent-encoding.
   Values MUST be percent-encoded where needed (for example `ipfs%3A%2F%2F…`).
   `+` is a literal plus sign, not a space.
-- Parameter names are case-sensitive.
+  Many standard query parsers follow HTML form encoding and turn `+` into a space
+  (for example JavaScript's `URLSearchParams`, Python's `urllib.parse.parse_qs` and Go's `url.ParseQuery`),
+  so implementations SHOULD split the query on `&` and `=` and percent-decode each value themselves.
+- Parameter names MUST consist only of `a` to `z`, `0` to `9`, `-` and `_`, as written in the URI:
+  names are not percent-decoded. This keeps `ACTION=…` or `%61ction=…` from slipping past
+  as an unknown parameter next to the real `action`.
 - Wallets MUST reject unknown parameters that start with `req-`, and SHOULD ignore other unknown parameters.
 
 ### Parameters
@@ -67,20 +72,24 @@ pactus:anchor?<parameters>
 | `sender` | no | Suggested account. The wallet MAY preselect it, but the user can change it |
 
 A `delete` URI carries only `network`, `action` and, optionally, `sender` and `memo`.
-Wallets MUST ignore `type`, `root`, `uri` and `locked` on a delete.
+It MUST NOT contain `type`, `root`, `uri` or `locked`, so that a deletion cannot look like an update.
 
 ### Validation
 
 A wallet MUST reject the whole URI, and MUST NOT offer to sign anything, when:
 
 - the path is not `anchor`;
+- a parameter name has a character other than `a`–`z`, `0`–`9`, `-` or `_`;
 - a parameter appears more than once;
 - `network` or `action` is missing or has an unknown value;
 - for a `set`, `type` or `root` is missing;
-- a parameter the action uses is malformed or out of range (parameters a `delete` ignores are not checked):
+- for a `delete`, `type`, `root`, `uri` or `locked` is present;
+- a parameter is malformed or out of range:
    - `type` is not an integer from 0 to 255;
    - `root` is not 64 to 128 hex characters, or has an odd length;
-   - `uri` or `memo` is not valid UTF-8 or is too long;
+   - `uri` or `memo` is not valid UTF-8, is too long, or contains a control or formatting character:
+     Unicode general categories `Cc` (including ASCII `0x00`–`0x1F` and `0x7F`), `Cf`
+     (for example U+202E RIGHT-TO-LEFT OVERRIDE or zero-width characters), `Zl` or `Zp`;
    - `locked` is not a plain decimal number of PAC (digits, optionally a `.` and 1 to 9 fractional digits;
      no sign, exponent, grouping or leading zeros), or is above `MaxNanoPAC`;
    - `sender` is not a valid bech32m account address for `network` (BLS, Ed25519 or secp256k1 account;
@@ -95,27 +104,33 @@ A wallet that opens a valid `pactus:anchor` URI:
 1. MUST refuse it if `network` does not match the wallet's network.
 2. MUST let the user choose the sending account among its account addresses,
    and MUST show the account's current anchor, if any: its type, root hash, manifest URI and locked deposit.
+   Whenever the user changes the account, the wallet MUST redo steps 4 to 6 for the new account
+   (deposit to add, balance check, replacement warnings) before it can sign.
 3. MUST build the transaction itself (payload type 7) from the parameters,
    for example with the node's `GetRawAnchorTransaction`.
    It sets the fee and `lock_time` as for any other transaction.
 4. For a `set`, MUST compute the transaction's `Deposit` as described in [Deposit Semantics](#deposit-semantics),
    and MUST check that the account's balance covers it plus the fee.
    For a `delete`, the fee is taken from the refund (PIP-50), so the balance is not checked;
-   the locked deposit must cover the fee.
+   the locked deposit must cover the fee (see step 6).
 5. For a `set`, MUST show, before signing: network and account; anchor type, root hash and manifest URI;
    the deposit locked now and the amount this transaction adds; fee and memo.
+   When the amount to add is above `MinAnchorDeposit`, the wallet MUST highlight it.
    It MAY warn when `type` is a reserved value (`4` to `254` in PIP-50), but MUST NOT reject the URI because of it.
    If the account already has an anchor, it MUST say that the anchor will be replaced.
    If that anchor has a different type, it MUST warn prominently:
    the account has a single slot, and the previous anchor (for example a DID document) will no longer be on chain.
-6. For a `delete`, MUST refuse it if the account has no anchor.
+6. For a `delete`, MUST refuse it if the account has no anchor,
+   or if its `LockedDeposit` is below the fee (PIP-50 would reject the transaction).
    Otherwise it MUST show the anchor that will be removed (type, root hash, manifest URI)
    and the amount returned to the balance (the locked deposit minus the fee), as well as the fee and memo.
+   It SHOULD warn when that amount is zero.
 7. MUST NOT sign or broadcast without explicit user confirmation.
 
 The URI has no return channel.
 The wallet broadcasts the signed transaction through its own node, and the service learns of it by watching the chain
 (for example the account's anchor, or transactions carrying its memo).
+A memo is a hint, not proof: see [Security Considerations](#security-considerations).
 
 ### Deposit Semantics
 
@@ -219,15 +234,18 @@ A `delete` on an account with 100 PAC locked returns 100 PAC minus the fee to th
 | `pactus:anchor?network=mainnet&action=set&type=1&root=<64 hex>&uri=<129 bytes>` | `uri` longer than 128 bytes |
 | `pactus:anchor?network=mainnet&action=set&type=1&root=<64 hex>&memo=<65 bytes>` | `memo` longer than 64 bytes |
 | `pactus:anchor?network=mainnet&action=set&type=1&type=2&root=<64 hex>` | Parameter repeated |
+| `pactus:anchor?network=mainnet&action=delete&ACTION=set` | Parameter name not lower case |
+| `pactus:anchor?network=mainnet&action=delete&%61ction=set` | Parameter name percent-encoded |
+| `pactus:anchor?network=mainnet&action=delete&type=1&root=<64 hex>` | `delete` with `set` parameters |
+| `pactus:anchor?network=mainnet&action=set&type=1&root=<64 hex>&memo=a%0Ab` | Control character in `memo` |
+| `pactus:anchor?network=mainnet&action=set&type=1&root=<64 hex>&uri=ipfs%3A%2F%2F%E2%80%AEfdp.x` | U+202E in `uri` |
 | `pactus:anchor?network=mainnet&action=set&type=1&root=<64 hex>&locked=-1` | `locked` negative |
 | `pactus:anchor?network=mainnet&action=set&type=1&root=<64 hex>&locked=1e2` | `locked` not a plain decimal number |
 | `pactus:anchor?network=mainnet&action=set&type=1&root=<64 hex>&locked=0.0000000001` | More than 9 fractional digits |
 | `pactus:anchor?network=mainnet&action=set&type=1&root=<64 hex>&req-expiry=…` | Unknown `req-` parameter |
 | `pactus:anchor?network=mainnet&action=set&type=1&root=<64 hex>&sender=<validator address>` | Validators cannot own an anchor |
 | `pactus:anchor?network=mainnet&action=delete`, account without an anchor | Nothing to delete |
-
-Accepted, although it carries extra values: `pactus:anchor?network=mainnet&action=delete&type=x`.
-A `delete` ignores `type`, so it is not validated.
+| `pactus:anchor?network=mainnet&action=delete`, account whose locked deposit is below the fee | PIP-50 would reject it |
 
 ## Reference Implementation
 
@@ -247,5 +265,14 @@ and will offer a `pactus:anchor` link and QR code once a wallet supports it.
   so users can check that what the wallet shows is what they asked for.
 - Each account has a single anchor slot. A `set` replaces whatever is there, and a `delete` removes it.
   This is why wallets must show the current anchor and warn when its type changes.
-- `locked` can lock a large amount. Wallets SHOULD highlight the amount to add when it is above the minimum.
+- `locked` can lock a large amount, and getting it back takes a `delete`, which removes the anchor and costs a fee.
+  This is why wallets must highlight the amount to add when it is above the minimum.
+- Control and formatting characters are rejected because they can change how the confirmation screen reads:
+  a newline can push text out of view, and a right-to-left override can reverse part of a URI.
+- The manifest URI is free text on chain, and PIP-50 does not restrict its scheme.
+  Wallets and explorers that render an anchor's URI as a link SHOULD do so only for schemes on an allow list
+  (for example `ipfs://` and `https://`), and show anything else, such as `javascript:` or `data:`, as plain text.
+- Memos are public and anyone can copy one, including from the mempool.
+  A service that waits for a transaction MUST NOT link it to a user or session by its memo alone:
+  it SHOULD check the resulting anchor (sender account, type, root hash and manifest URI) against what it expects.
 - A link for another network is rejected rather than converted, so a testnet link can never move mainnet funds.

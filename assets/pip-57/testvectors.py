@@ -7,6 +7,7 @@ Standard library only. Run it to check the vectors: it exits non-zero on any fai
 import base64
 import re
 import sys
+import unicodedata
 from urllib.parse import unquote_to_bytes
 
 NANO_PAC = 10**9
@@ -15,6 +16,9 @@ MAX_NANO_PAC = 42_000_000 * NANO_PAC  # total supply, the protocol's amount boun
 NETWORK_HRP = {"mainnet": "pc", "testnet": "tpc"}
 ACCOUNT_TYPES = {2, 3, 4}  # BLS, Ed25519 and secp256k1 accounts; not the treasury (0) or validators (1)
 AMOUNT = re.compile(r"(0|[1-9][0-9]*)(?:\.([0-9]{1,9}))?")
+NAME = re.compile(r"[a-z0-9_-]+")
+FORBIDDEN_CATEGORIES = {"Cc", "Cf", "Zl", "Zp"}  # control, format, line and paragraph separators
+SET_ONLY = ("type", "root", "uri", "locked")
 
 # ---- bech32m (BIP-350), as used by Pactus addresses ----
 
@@ -92,6 +96,8 @@ def parse(uri, wallet_network):
     params = {}
     for part in filter(None, query.split("&")):
         name, _, value = part.partition("=")
+        if not NAME.fullmatch(name):  # names are not percent-decoded
+            raise Reject("bad parameter name: " + name)
         if name in params:
             raise Reject("parameter repeated: " + name)
         try:
@@ -111,6 +117,9 @@ def parse(uri, wallet_network):
         raise Reject("network mismatch")
     if len(params.get("memo", "").encode()) > 64:
         raise Reject("memo longer than 64 bytes")
+    for name in ("uri", "memo"):
+        if any(unicodedata.category(c) in FORBIDDEN_CATEGORIES for c in params.get(name, "")):
+            raise Reject("control or formatting character in " + name)
     if "sender" in params:
         decoded = decode_address(params["sender"])
         if not decoded or decoded[0] != NETWORK_HRP[network] or decoded[1] not in ACCOUNT_TYPES:
@@ -118,7 +127,9 @@ def parse(uri, wallet_network):
 
     request = {"network": network, "action": action, "memo": params.get("memo", ""), "sender": params.get("sender")}
     if action == "delete":
-        return request  # type, root, uri and locked are ignored, so not validated
+        if any(name in params for name in SET_ONLY):
+            raise Reject("delete with set parameters")
+        return request
 
     if "type" not in params or "root" not in params:
         raise Reject("type or root missing")
@@ -140,6 +151,11 @@ def parse(uri, wallet_network):
             raise Reject("locked too large")
     request.update(type=int(params["type"]), root=root.lower(), uri=uri_value, locked=locked)
     return request
+
+
+def can_delete(current_locked, fee):
+    """A delete needs an anchor whose deposit covers the fee (PIP-50 pays the fee from the refund)."""
+    return current_locked > 0 and current_locked >= fee
 
 
 def deposit_to_add(locked, current_locked):
@@ -165,7 +181,7 @@ VALID = [
      {"type": 1, "root": ROOT, "uri": "ipfs://" + CID, "locked": 1 * NANO_PAC, "memo": "pactus.page"}),
     (f"{SET}{ROOT}&uri={URI}&locked=100&memo=pactus.page", "mainnet", {"locked": 100 * NANO_PAC}),
     ("pactus:anchor?network=mainnet&action=delete&memo=pactus.page", "mainnet", {"action": "delete"}),
-    ("pactus:anchor?network=mainnet&action=delete&type=x&root=zz", "mainnet", {"action": "delete"}),
+    ("pactus:anchor?network=mainnet&action=delete&utm_source=x", "mainnet", {"action": "delete"}),
     (f"{SET}{ROOT.upper()}&locked=2.5", "mainnet", {"root": ROOT, "locked": 2_500_000_000}),
     (f"{SET}{H}&locked=0.000000001", "mainnet", {"locked": 1}),
     (f"{SET}{H}", "mainnet", {"uri": ""}),
@@ -179,6 +195,7 @@ VALID = [
     (f"{SET}{H}&sender={MAIN_SECP}", "mainnet", {"sender": MAIN_SECP}),
     (f"pactus:anchor?network=testnet&action=delete&sender={TEST_ED}", "testnet", {"sender": TEST_ED}),
     (f"{SET}{H}&label=ignored", "mainnet", {"type": 1}),
+    (f"{SET}{H}&memo=caf%C3%A9%20%F0%9F%8C%BB", "mainnet", {"memo": "café 🌻"}),
 ]
 
 REJECTED = [
@@ -199,6 +216,19 @@ REJECTED = [
     (SET + H + "&memo=" + "m" * 65, "mainnet"),
     (SET + H + "&memo=%FF", "mainnet"),
     ("pactus:anchor?network=mainnet&action=set&type=1&type=2&root=" + H, "mainnet"),
+    ("pactus:anchor?network=mainnet&action=delete&ACTION=set", "mainnet"),
+    ("pactus:anchor?network=mainnet&action=delete&%61ction=set", "mainnet"),
+    ("pactus:anchor?network=mainnet&action=delete&=x", "mainnet"),
+    ("pactus:anchor?network=mainnet&action=delete&type=1&root=" + H, "mainnet"),
+    ("pactus:anchor?network=mainnet&action=delete&type=x", "mainnet"),
+    ("pactus:anchor?network=mainnet&action=delete&uri=", "mainnet"),
+    ("pactus:anchor?network=mainnet&action=delete&locked=100", "mainnet"),
+    (SET + H + "&memo=a%0Ab", "mainnet"),
+    (SET + H + "&memo=a%7Fb", "mainnet"),
+    (SET + H + "&memo=a%E2%80%8Bb", "mainnet"),
+    (SET + H + "&memo=a%E2%80%A8b", "mainnet"),
+    (SET + H + "&uri=ipfs%3A%2F%2F%E2%80%AEfdp.x", "mainnet"),
+    ("pactus:anchor?network=mainnet&action=delete&memo=%09", "mainnet"),
     (SET + H + "&locked=-1", "mainnet"),
     (SET + H + "&locked=+1", "mainnet"),
     (SET + H + "&locked=1e2", "mainnet"),
@@ -223,6 +253,15 @@ DEPOSITS = [
     (1, 1, 0),
     (1, 100, 99),
     (100, 1, 0),
+]
+
+
+DELETES = [
+    # (locked now, fee, allowed), in PAC
+    (0, 0.01, False),
+    (100, 0.01, True),
+    (0.01, 0.01, True),  # valid in PIP-50; the wallet should warn that nothing comes back
+    (0.005, 0.01, False),
 ]
 
 
@@ -258,7 +297,11 @@ def main():
         if got != int(want * NANO_PAC):
             failures += 1
             print(f"FAIL deposit {now} -> {target}: got {got / NANO_PAC}, want {want}")
-    total = 2 + len(VALID) + len(REJECTED) + len(DEPOSITS)
+    for now, fee, want in DELETES:
+        if can_delete(int(now * NANO_PAC), int(fee * NANO_PAC)) != want:
+            failures += 1
+            print(f"FAIL delete with {now} locked and fee {fee}: want {want}")
+    total = 2 + len(VALID) + len(REJECTED) + len(DEPOSITS) + len(DELETES)
     print(f"{total - failures}/{total} vectors pass")
     return 1 if failures else 0
 
