@@ -34,7 +34,9 @@ The key words "MUST", "MUST NOT", "SHOULD" and "MAY" are to be interpreted as de
 
 ### Terminology
 
-- **Application (dApp)**: code plus data, owned by an account, stored in one storage file.
+- **Application (dApp)**: code plus data, stored in one storage file, with its own address.
+- **Owner**: the account that controls an Application. It deploys and changes the code, and it can
+  transfer the ownership to another account.
 - **Storage file**: the on-chain file assigned to an Application. It has a fixed capacity and a
   limited lifetime.
 - **Engine**: the runtime family used to execute an Application. This proposal defines WASM;
@@ -46,8 +48,8 @@ The key words "MUST", "MUST NOT", "SHOULD" and "MAY" are to be interpreted as de
 
 Each Application is defined in an isolated file that contains both code and data.
 Storage is purchased before deployment, based on the capacity the owner needs.
-When a purchase is confirmed, an empty file with the purchased capacity is created and assigned
-to the owning account.
+When a purchase is confirmed, an empty file with the purchased capacity is created under a new
+[Application address](#application-address), and the purchasing account becomes its owner.
 
 ![Storage as file](../assets/pip-58/contract-storage-file.png)
 
@@ -68,18 +70,19 @@ A file that fails validation MUST NOT be executed.
 The `/boot` section is a fixed-size 128-byte, versioned, little-endian structure.
 It includes at least the following fields:
 
-| Field         | Size (Bytes) | Description                                |
-| ------------- | ------------ | ------------------------------------------ |
-| `version`     | 2            | File format version                        |
-| `engine`      | 1            | Engine used to execute the code            |
-| `flags`       | 1            | Bitwise flags                              |
-| `stack_size`  | 1            | Number of stack slots for data allocation  |
-| `reserved`    | 3            | Reserved for future use                    |
-| `created_at`  | 4            | Block height at which the file was created |
-| `expires_at`  | 4            | Block height after which the file expires  |
-| `code_offset` | 4            | Offset of the execution code               |
-| `data_offset` | 4            | Offset of the data section                 |
-| `reserved`    | -            | Bytes reserved for future fields           |
+| Field         | Size (Bytes) | Description                                                |
+| ------------- | ------------ | ---------------------------------------------------------- |
+| `version`     | 2            | File format version                                        |
+| `engine`      | 1            | Engine used to execute the code                            |
+| `flags`       | 1            | Bitwise flags                                              |
+| `stack_size`  | 1            | Number of stack slots for data allocation                  |
+| `reserved`    | 3            | Reserved for future use                                    |
+| `created_at`  | 4            | Block height at which the file was created                 |
+| `expires_at`  | 4            | Block height after which the file expires                  |
+| `code_offset` | 4            | Offset of the execution code                               |
+| `data_offset` | 4            | Offset of the data section                                 |
+| `owner`       | 21           | Owner address, or all zeros when ownership is given up     |
+| `reserved`    | -            | Bytes reserved for future fields                           |
 
 The `engine` field defines the engine for executing the application code. Currently it supports
 WASM as `1`.
@@ -196,11 +199,12 @@ instrumentation.
 
 ### Application lifecycle
 
-1. **Purchase and creation.** An account purchases capacity. A file of that capacity is created,
-   `created_at` is set to the current height, and `expires_at` is set to `created_at` plus the
-   rental period.
+1. **Purchase and creation.** An account purchases capacity. A file of that capacity is created
+   under a new Application address, the purchasing account is recorded as `owner`, `created_at` is
+   set to the current height, and `expires_at` is set to `created_at` plus the rental period.
 2. **Deployment.** The owner writes the execution code into the file.
-3. **Renewal.** Before `expires_at`, the owner renews the file by paying for another rental period.
+3. **Renewal.** Before `expires_at`, any account MAY renew the file by paying for another rental
+   period, so the users of an Application can keep it alive without its owner.
    Renewal updates `expires_at`.
 4. **Expiration.** Once `expires_at` passes, the file is marked read-only. It MUST NOT accept writes
    or execute state-changing entry points.
@@ -215,18 +219,47 @@ The owner is warned at deployment that an Application which is not renewed will 
 
 ### Application address
 
-An Application is owned by an account and is addressed by that account's address.
-Each file is stored on every node under the same account address, and after each mutation the
+Each Application has its own address, separate from the address of its owner:
+
+```text
+address = Type || Hash160(Hash256(ID of the purchase transaction))
+```
+
+- `Hash160` and `Hash256` are the hashes that Pactus already uses to derive account addresses.
+- Every transaction ID is unique, so the address is unique without a new nonce or any other state.
+- The address is known as soon as the purchase transaction is built, before it is broadcast.
+- An address MUST NOT be reused. A deleted Application keeps its address, and a new purchase always
+  creates a new one, so an address always refers to the same Application.
+- `Type` is a new address type, `6`, so wallets and explorers can tell an Application from an account
+  by its address alone and warn that it has no private key. With bech32m it reads as `pc1x...`.
+
+Each file is stored on every node under its Application address, and after each mutation the
 file's Merklized hash is recalculated.
+
+### Ownership
+
+The owner is recorded in the `owner` field of `/boot`.
+
+- The owner MUST be an account address. It MUST NOT be a validator address or the treasury address.
+  A multisig account, if one is defined by another PIP, MAY be an owner.
+- Only the owner can deploy or change the code of the Application.
+- The owner MAY transfer the ownership to another account. The transfer is signed by the current
+  owner, and the Application address does not change.
+- The owner MAY give up the ownership by setting `owner` to all zeros. After that, the code can no
+  longer change and no account can transfer the ownership, but any account can still renew the file.
+
+This keeps an Application usable when its owner changes, loses a key, or stops paying, and lets a
+group share control of an Application through a shared owner account.
 
 ### Merklized hash
 
 The storage file is split into fixed-size chunks of 1 MB.
 Each chunk is hashed, and the chunk hashes are combined into a Merkle tree whose root becomes part
-of the account info.
+of the Application's state record.
 
 ## Backwards Compatibility
 
-This PIP adds a new kind of state (Application storage files) and requires new transaction
-payloads.
+This PIP adds a new kind of state (Application storage files), a new address type (`6`) and
+requires new transaction payloads, including the transfer of ownership and the renewal by any account.
+Nodes that do not know address type `6` reject it, so the change takes effect only after the upgrade.
 It requires a protocol upgrade as described in PIP-51.
