@@ -1,7 +1,7 @@
 ---
 pip: 58
 title: Pactus Sandbox Applications
-description: One renewable file per application, computation that is free and bounded by a count, and PAC held.
+description: One renewable file per Application, computation bounded by a count and not priced, and PAC that it holds.
 author: Pactus Development Team <info@pactus.org>
 status: Draft
 type: Standards Track
@@ -73,14 +73,16 @@ account addresses. `PAC(a)` is the PAC balance of the address `a`, in nano PAC.
 - **Call**: a transaction that enters an Application by `execute`, and all the code that it runs.
 - **Step**: the unit in which the work of a call is counted. Steps bound a call. They are never
   paid for.
-- **Charge**: the PAC that a call pays to the treasury, besides the ordinary fee of its transaction.
+- **Charge**: PAC that a payload or a call pays to the treasury besides the ordinary fee:
+  `CreationCharge`, `CodeCharge`, rent, and the charge of a call.
 - **Engine**: the software that a node uses to run the code. It is not part of this specification.
 
 ### Parameters
 
 The values below are initial proposals. They are constants of the protocol version, and a later
 version may change them ([PIP-51](./pip-51.md)). A value marked _measured_ is set by the benchmark of
-the [Reference Implementation](#reference-implementation) and has no proposal yet.
+the [Reference Implementation](#reference-implementation); where the table gives one, it is a
+first proposal.
 
 | Name                    | Value                | Meaning                                                    |
 | ----------------------- | -------------------- | ---------------------------------------------------------- |
@@ -112,7 +114,7 @@ the [Reference Implementation](#reference-implementation) and has no proposal ye
 | `MaxAppCallsPerBlock`   | _measured_           | Most `AppCall` and `AppAssetCall` in one block             |
 | `MaxAppCodePerBlock`    | 2                    | Most `AppSetCode` in one block                             |
 | `MaxAppCreatesPerBlock` | _measured_           | Most `AppCreate` and `AppExtend` in one block              |
-| `MaxAppBytesPerBlock`   | _measured_           | Most bytes of Application payloads in one block            |
+| `MaxAppBytesPerBlock`   | _measured_           | Most bytes of the payloads that a block caps by count      |
 
 ### Application address
 
@@ -123,8 +125,8 @@ address = Type || Hash160(Hash256(ID of the AppCreate transaction))
 ```
 
 - `Hash160` and `Hash256` are the hashes that Pactus already uses to derive account addresses.
-- Every transaction ID is unique, so the address is unique without a new nonce or any other state.
-- The address is known as soon as the `AppCreate` transaction is built, before it is broadcast.
+- Every transaction ID is unique, so the address is unique with no new state, and it is known as
+  soon as the `AppCreate` transaction is built.
 - An address MUST NOT be reused. A deleted Application keeps its address, and a new `AppCreate`
   always creates a new one, so an address always refers to the same Application.
 - `Type` is a new address type, `6`, so wallets and explorers can tell an Application from an account
@@ -133,7 +135,7 @@ address = Type || Hash160(Hash256(ID of the AppCreate transaction))
 The address of an Application has no key. It never signs a transaction or any other message, and no
 rule lets it act without a transaction that an account address signed. It is invalid as the sender
 or a receiver of every existing payload, a plain `Transfer` or `BatchTransfer` included: PAC reaches
-an Application only through a call (see [PAC](#pac)). An implementation MUST NOT widen its test of
+an Application only by a host function that its own code calls. An implementation MUST NOT widen its test of
 an account address to accept type `6`.
 
 ### State
@@ -272,10 +274,12 @@ They take the next free payload type numbers, which the editors assign. Rules co
 - `Check` reads the state and changes nothing. A transaction that fails `Check` is **invalid**: it
   cannot be in a block. An implementation MUST apply the same tests wherever it executes a block,
   on the path that commits and syncs blocks included.
-- Every PAC amount is in `0 .. MaxNanoPAC`, and every sum MUST be checked before it is formed
-  ([PIP-54](./pip-54.md)).
-- A charge is credited to the treasury. It is not a fee: it MUST NOT be part of the fees of the block
-  that the subsidy transaction pays to the proposer.
+- Every PAC amount is in `0 .. MaxNanoPAC`, and every sum and every product MUST be checked before
+  it is formed ([PIP-54](./pip-54.md)).
+- `Check` includes that `PAC(From)` is at least the fee plus every amount that the payload takes
+  from `From`.
+- Every charge, rent included, is credited to the treasury. It is not a fee: it MUST NOT be part
+  of the fees of the block that the subsidy transaction pays to the proposer.
 - Decoding MUST consume exactly the declared fields, and a varint MUST use its shortest encoding.
 
 `Rent(c, p) = RentPrice × c × p` is the rent of `c` chunks for `p` periods.
@@ -330,8 +334,8 @@ Application spent in grace is paid for.
 
 `Check`: the Application is live and has an owner, who is `From`. It takes the rent of the added
 chunks for the periods that are left, `Rent(NewCapacity - Capacity, p)`, where
-`p = max(1, ceil((ExpiresAt - h) / RentPeriod))`. The new chunks are zero and are added
-at the end of `/data`. Only the owner extends, because a larger file costs more to renew.
+`p = max(1, ceil((ExpiresAt - h) / RentPeriod))`. It sets `Capacity = NewCapacity`; the new chunks
+are zero and are added at the end of `/data`. Only the owner extends, because a larger file costs more to renew.
 
 #### `AppSetOwner`
 
@@ -339,11 +343,11 @@ at the end of `/data`. Only the owner extends, because a larger file costs more 
 | ---------- | ------- | -------------------------------------------------- |
 | `From`     | Address | MUST be the owner                                  |
 | `App`      | Address |                                                    |
-| `HasOwner` | `uint8` | `1` to transfer the ownership, `0` to give it up   |
+| `HasOwner` | `uint8` | `1` to transfer the ownership, `0` to give it up. Any other value is invalid |
 | `NewOwner` | Address | An account address. Present only if `HasOwner` is `1` |
 
-`Check`: the Application is live and has an owner, who is `From`. The address of the Application
-does not change.
+`Check`: the Application is live and has an owner, who is `From`. It sets `HasOwner` and `Owner` as
+given. The address of the Application does not change.
 
 #### `AppCall`
 
@@ -371,11 +375,8 @@ and the moment the call is included: `CodeSeq` also covers a code that was chang
 
 `Check`: the Application is deleted, its `Holdings` is 0, and its PAC is above 0. With `b` the PAC
 of the Application, it pays `min(b, SweepReward)` to `From`, so that someone has a reason to sweep,
-and the rest to the treasury, and leaves the Application at 0 PAC. The owner gains nothing by
-letting an Application die.
-
-The call that moves assets, `AppAssetCall`, and the sweep of asset holdings, `AppAssetSweep`, are
-defined in [Working with PIP-56](#working-with-pip-56).
+and the rest to the treasury, and leaves the Application at 0 PAC. The owner gains no more by
+letting an Application die than any other account that sweeps.
 
 ### Execution
 
@@ -402,7 +403,7 @@ Anything that it does not name is invalid. A valid module:
   [Working with PIP-56](#working-with-pip-56) included: a module that imports them is valid whether
   or not PIP-56 is active;
 - exports a function `execute`, MAY export a function `on_call`, both with no parameter and no
-  result, exports no other function, and has no start function;
+  result, exports nothing else, and has no start function;
 - has exactly one memory, with a declared maximum of at most `MaxMemoryPages`;
 - stays within numeric limits on its size, its functions, their locals and bodies, their nesting,
   and its table;
@@ -414,7 +415,8 @@ a later version MAY allow more, and says what becomes of code deployed under ear
 
 #### A call
 
-A call runs `execute` once, in a new instance of the module whose memory is all zero. The code sees
+A call runs `execute` once, in a new instance of the module, whose memory is zero except for what
+the data segments of the module place in it. The code sees
 its input, the state of its own file, and what the host functions give it. It has no access to
 time, to randomness, to the network or to the filesystem of the node, and it reaches another
 Application only by `app_call` ([Calls between Applications](#calls-between-applications)).
@@ -434,13 +436,14 @@ height, and of nothing else:
 A call whose count would pass `MaxCallSteps` **aborts**, at a point that is the same on every node.
 The depth of calls inside the code is bounded by a count as well, made on the code and not on the
 stack of the machine. The memory of a call is at most `MaxMemoryPages`, counted over all the
-instances that exist at one moment. Within that bound and the declared maximum of the module, a
-growth always succeeds: a node that cannot provide it has a fault and stops, and the call does not
-see it. A growth, or an initial memory, that would pass the bound aborts the call.
+instances that exist at one moment. A growth beyond the declared maximum of the module returns -1,
+as WebAssembly defines it: it counts no page and adds nothing to the charge, and the instruction
+counts its steps like any other. Any other growth, and any initial memory, that would bring the
+pages of all instances above `MaxMemoryPages` aborts the call. Every other growth succeeds: a node
+that cannot provide it has a fault and stops, and the call does not see it.
 
-Steps bound a call. They have no price, and a call that uses all of them pays what a call that uses
-none pays. The exact way of counting is fixed with the reference implementation and its vectors,
-and is a function of the block version ([Open items](#open-items-of-this-draft)).
+Steps have no price. The exact way of counting is fixed with the reference implementation and its
+vectors, and is a function of the block version ([Open items](#open-items-of-this-draft)).
 
 #### Host functions
 
@@ -471,7 +474,7 @@ simulates a call, and nothing else reads it. The output of `on_call` is given to
 
 The functions that move PAC are specified like payloads. In code that runs as `execute`:
 
-- `pac_take(n)`: `1 <= n`, and the sum of all the amounts taken in this call, `n` included, is at
+- `pac_take(n)`: `1 <= n`, and the sum of all the amounts taken by `execute`, `n` included, is at
   most `MaxPAC`. The sum only grows: a later `pac_send` to the caller does not lower it. It moves
   `n` from `From` to the Application.
 - `pac_send(to, n)`: `to` is an account address; `1 <= n <= PAC(App)`; the call has made fewer than
@@ -487,7 +490,7 @@ A call that passed `Check` has one of two outcomes, and both are valid entries o
 - **Success.** `execute` returns, or calls `app_finish`. Everything the call did is applied
   together: the bytes written to the file, the PAC taken and sent, the accounts created, and the
   fields of the record.
-- **Abort.** The code traps; or the count of steps, the depth, the memory, `MaxReadChunks` or
+- **Abort.** The code traps; or the count of steps, the depth of calls inside the code, the memory, `MaxReadChunks` or
   `MaxDirtyChunks` is exceeded; or a host function is called outside its rules, a refused `app_call`
   included; or the charge would pass `MaxCharge`. Nothing the call did is applied: not a byte of
   the file, not a unit of PAC, not a new account.
@@ -516,10 +519,13 @@ units of 64 KiB, the initial size included, and not what the machine maps.
 
 The charge grows as the call runs: `CallCharge` when the call starts, the charge of a chunk at its
 first read or write, the charge of a page when the pages reach a new peak, and `InnerCallCharge`
-when `app_call` is called, before its rules are tested. An operation that would pass
-`MaxCallSteps`, `MaxMemoryPages`, `MaxReadChunks`, `MaxDirtyChunks` or `MaxCharge` adds nothing,
-and the call aborts there. A call that succeeds pays its charge, and a call that aborts pays the charge reached before
-that operation. The charge goes to the treasury.
+when `app_call` is called, before its rules are tested, so that a call that is refused still pays
+for the search of the Application that it names. An operation that would pass `MaxCallSteps`,
+`MaxMemoryPages`, `MaxReadChunks`, `MaxDirtyChunks` or `MaxCharge` adds nothing, and the call
+aborts there. Every other host function tests its rules before it adds to the charge. A call that
+succeeds pays its charge. A call that aborts pays the charge reached at the abort: the operation
+that would pass a bound has added nothing, and a refused `app_call` has added its
+`InnerCallCharge`.
 
 Whatever the code does, the signer of a call pays at most `fee + MaxPAC + MaxCharge`.
 
@@ -544,12 +550,12 @@ deleted for good: nodes MAY drop the bytes of the file, and the record stays.
 
 #### Finishing
 
-`app_finish(to)` is a host function that only the code calls. No payload of the owner closes an
-Application: an owner could otherwise close it against its users, and an Application without an
-owner could never close. Rules: `to` is an account address, and `Holdings` is 0. It sends all the
-PAC of the Application to `to`, as a `pac_send` that counts in `MaxPACOutputs`, and nothing if it
-has none; it sets `Finished`, and ends its frame with success; no instruction
-of the Application runs after it, and nodes MAY drop its file. Rent that was paid and not used is
+`app_finish(to)` is a host function. No payload closes an Application: only its code does, so an
+Application without an owner can still close. Rules: `to` is an account address, and `Holdings` is
+0. If the Application has PAC, it sends all of it to `to`, as a `pac_send` that counts in
+`MaxPACOutputs`; if it has none, nothing is sent, no account is created and no send is counted. It
+sets `Finished` and ends the code of the Application with success: no instruction of the
+Application runs after it, and nodes MAY drop its file. Rent that was paid and not used is
 not returned, so an Application that expects a short life rents a short period.
 
 ### Ownership
@@ -562,7 +568,8 @@ account can take the ownership, but any account can still renew the file.
 **While an Application has an owner, the owner can change its code at once, and the new code can
 take everything the Application holds.** Only an Application whose ownership was given up has code
 that its users can rely on. A wallet MUST show which of the two an Application is before the user
-signs a call, and MUST show `MaxPAC` and `MaxCharge` as the amounts at risk.
+signs a call, and, when it can tell, whether the Applications that it calls have an owner. It MUST
+show `MaxPAC` and `MaxCharge` as the amounts at risk.
 
 ### Block capacity
 
@@ -573,20 +580,18 @@ version below `V` carries none. A block of version `V` or higher carries at most
   the code that a block runs;
 - `MaxAppCodePerBlock` `AppSetCode`;
 - `MaxAppCreatesPerBlock` `AppCreate` and `AppExtend`, counted together;
-- `MaxAppBytesPerBlock` bytes of payloads of Application transactions, as the block encodes them.
+- `MaxAppBytesPerBlock` bytes of the payloads counted above, as the block encodes them.
 
-`AppRenew`, `AppSetOwner` and `AppSweep` run no code and are ordinary entries of a block, so a full
+`AppRenew`, `AppSetOwner` and `AppSweep` run no code and count in none of these caps, so a full
 lane of calls cannot keep an Application from being renewed.
 
-The counts read only the version of the block and the payload type and the length of the payload of each entry, so
-a validator makes them before it verifies any signature. These numbers bound the work that
-Applications add to a block only because three rules hold for every Application transaction:
-
-1. What it does to the state depends only on the transaction, on the state before it, on the height
-   and the version of its block and on constants of the network.
-2. It applies whole or not at all, the fee and the charge of an aborted call excepted.
-3. Its work is bounded by constants of the protocol version that every node counts alike, never by
-   elapsed time.
+The counts read only the version of the block, the payload type and the length of the payload of
+each entry, so a validator makes them before it verifies any signature. These numbers bound the
+work that Applications add to a block only because every Application transaction keeps three
+rules: what it does to the state depends only on the transaction, on the state before it, on the
+height and the version of its block and on constants of the network; it applies whole or not at
+all, the fee and the charge of an aborted call excepted; and its work is bounded by constants that
+every node counts alike, never by elapsed time.
 
 The caps are constants of each protocol version, set by the benchmark of the worst block that the
 rules of that version allow ([Reference Implementation](#reference-implementation)).
@@ -595,8 +600,9 @@ rules of that version allow ([Reference Implementation](#reference-implementatio
 
 The code of an Application can call another Application, inside the transaction that an account
 signed. No payload changes: a transaction enters one Application by `execute`, and every other one
-is entered by `app_call` from code. Each entry is a **frame**: a new instance whose memory is all
-zero, which sees its own file as the transaction has left it so far.
+is entered by `app_call` from code. Each entry is a **frame**: a new instance, initialised as in
+[A call](#a-call), which sees its own file as the transaction has left it so far. A frame and its
+instance end when its function returns or calls `app_finish`; its pages then stop counting.
 
 **Entry.** `execute` runs only as the entry of a transaction, and its caller is the account that
 signed. `on_call` runs only when another Application calls. An Application whose module does not
@@ -606,7 +612,7 @@ export `on_call` is never entered by another one.
 `app` to its end, gives its output to the calling code and continues it. The transaction aborts
 unless:
 
-- `app` is live, is not finished, has code that exports `on_call`, and its `CodeHash` is
+- `app` is live, has code that exports `on_call`, and its `CodeHash` is
   `code_hash`. The pin is mandatory: there is no call to unknown code;
 - `app` has no frame that is running. No Application is entered twice at one time, directly or
   through others, and none calls itself;
@@ -623,43 +629,40 @@ the signer: `1 <= n`, `n` is at most the PAC of the calling Application, and the
 frame is at most `max_pac`. `pac_return(n)` exists only here: `1 <= n <= PAC(App)`, and the sum
 returned in this frame is at most `max_pac_back`; it moves `n` to the calling Application.
 `pac_send` still pays accounts only. An Application that calls `app_finish` in `on_call` is
-finished: its frame ends with success, and a later call to it aborts.
+finished: its frame ends with success, and a later `app_call` to it in the transaction aborts.
 
 **Outcome.** The transaction has one outcome. A trap, a broken rule or a passed bound in any frame
 aborts it, and nothing that it did is applied, in any Application. No code catches the abort of the
 code that it called. Called code that wants to refuse returns, with an output that says so.
 
-**Bounds and charge.** `MaxCallSteps`, the bound on the depth, `MaxReadChunks`, `MaxDirtyChunks`,
-`MaxMemoryPages`, `MaxPACOutputs`, the charge and `MaxCharge` bound all that one transaction runs,
-in all its frames, and a node MUST keep these counts for the transaction. Chunks are counted over
-every file, so chunk `i` of two files is two chunks. Every frame counts the steps of entering its
-Application, those of its code only at its first entry in the transaction, and an `app_call`
-counts steps for its input and its output. The charge adds `InnerCallCharge` for every `app_call`,
-and the signer pays all of it, within `MaxCharge`. The caps of a block count transactions: their
+**Bounds and charge.** `MaxCallSteps`, the depth of calls inside the code, `MaxReadChunks`,
+`MaxDirtyChunks`, `MaxMemoryPages`, `MaxPACOutputs`, the charge and `MaxCharge` bound all that one
+transaction runs, in all its frames, and a node MUST keep these counts for the transaction. An
+`app_call` counts steps for its input and its output. The signer pays the whole charge, within
+`MaxCharge`. The caps of a block count transactions: their
 benchmark uses calls that make `MaxInnerCalls` calls to Applications of `MaxCodeSize`, with nothing
 cached.
 
 **Rules that bind later PIPs.**
 
-1. The bounds and the outcome belong to the transaction, as above.
-2. Only `on_call` is entered by an Application, only `execute` by a transaction, and no
-   Application is entered while it runs.
-3. The PAC and the units of an Application rise only by a host function that its own code calls,
+1. The bounds and the outcome belong to the transaction. Only `on_call` is entered by an
+   Application, only `execute` by a transaction, and no Application is entered while it runs.
+2. The PAC and the units of an Application rise only by a host function that its own code calls,
    a take being within the maximum that the party it takes from stated, or by a return from code
    that it called, within a maximum that its own code stated in that call. Nothing else is ever
    sent to an Application.
-4. Code runs only inside a transaction that an account address signed. Code lowers the balance of
+3. Code runs only inside a transaction that an account address signed. Code lowers the balance of
    an account only in a transaction that the account signed, by a take of the `App` of the
    payload, within the maxima of that payload.
-5. The bits of `Flags` that this PIP does not name, the reserved bytes of `/boot`, every other
+4. The bits of `Flags` that this PIP does not name, the reserved bytes of `/boot`, every other
    export name and every host function name that this PIP does not list (among them `signer`,
    `app_info`, `app_renew`, hashing and the verification of signatures) are reserved. A record, a
    file or a module that uses them is invalid.
 
 ### Working with PIP-56
 
-This section applies only in a block whose version activates both this PIP and
-[PIP-56](./pip-56.md). Until then its payloads are invalid and its host functions abort.
+This section applies only in a block of a version in which both this PIP and
+[PIP-56](./pip-56.md) are active. Until then its payloads are invalid and its host functions abort.
 It changes no record and no payload of PIP-56. An Application is a _program_ in the sense of
 section 6, rule 7 of PIP-56: its address has no key, it is never an account address there, and it
 holds units in ordinary holdings that only the rules below place, credit, debit and remove.
@@ -676,9 +679,9 @@ An `AppAssetCall` is an `AppCall` with one more field, and the same rules:
 | `Assets[].MaxRate`   | `uint16` | Largest sum of the two current rates that the caller accepts. At most 10 000 |
 
 It is an asset transaction of PIP-56 (sections 4.1 and 6, rule 1). It counts as `AssetCallWeight`
-asset transactions in `MaxAssetTxPerBlock`, and the `AppAssetCall` of a block take together at most
-`MaxAppAssetShare` of it; both are constants set by the benchmark, and `MaxAppAssetShare` is at
-most half of `MaxAssetTxPerBlock`, so that calls cannot crowd out plain asset transfers. An
+asset transactions in `MaxAssetTxPerBlock`, and the weights of the `AppAssetCall` of a block add up
+to at most `MaxAppAssetShare`; both are constants set by the benchmark, and `MaxAppAssetShare` is
+at most half of `MaxAssetTxPerBlock`, so that calls cannot crowd out plain asset transfers. An
 `AppAssetCall` also counts in `MaxAppBytesPerBlock` and in `MaxAppCallsPerBlock`.
 
 The asset host functions exist in every frame of an `AppAssetCall`; in an `AppCall` they abort.
@@ -691,18 +694,19 @@ that finds no room in the asset tree aborts.
 | --------------- | ------------------------------------------------------------------------- |
 | `asset_balance(id)` | Units that the Application holds, and whether it has a holding         |
 | `asset_accept(id)`  | The Application has no holding of the asset and at least `HoldingDeposit` in PAC. Places its holding at balance 0, locks the deposit from its own PAC, adds 1 to `Holdings` |
-| `asset_take(id, n)` | `1 <= n`, and the sum taken in this frame for this asset is at most the `MaxAmount` of the payload, or, in `on_call`, the maximum of the `assets` of the `app_call`. The caller holds at least `n`, and the Application holds the asset. Returns the net amount |
+| `asset_take(id, n)` | `1 <= n`, and the sum taken in this frame for this asset is at most the `MaxAmount` of the payload, or, in `on_call`, the take maximum of that asset in the `assets` of the `app_call`. The caller holds at least `n`, and the Application holds the asset. Returns the net amount |
 | `asset_send(id, to, n, max_rate)` | `to` is an account address that holds the asset; `1 <= n <=` the balance of the Application. Returns the net amount |
 | `asset_burn(id, n)` | `1 <= n <=` the balance of the Application. With no rate. Adds `n` to `Burned`, or, if the Application is the `Issuer` of the asset, subtracts `n` from `Issued` |
 | `asset_close(id, max_burn)` | The balance is at most `max_burn`. Burns it as `asset_burn` does, frees the holding, returns its deposit to the PAC of the Application, subtracts 1 from `Holdings` |
-| `asset_create(...)` | Takes the fields of `AssetCreate` of PIP-56 but `From` and the policy, with the same checks. Creates the asset with no policy and the Application as `Issuer`, paying `AssetCharge` from its PAC, and aborts without it. With an initial supply it places the holding of the Application as `asset_accept` does. Returns the `AssetID` |
+| `asset_create(...)` | Takes the fields of `AssetCreate` of PIP-56 but `From` and the policy, with the same checks. Creates the asset with no policy and the Application as `Issuer`. It pays `AssetCharge`, and with an initial supply `HoldingDeposit` as well, from the PAC of the Application, and aborts if that PAC is below the sum. With an initial supply it places the holding of the Application as `asset_accept` does. Returns the `AssetID` |
 | `asset_mint(id, n)` | The Application is the `Issuer` and holds the asset; `1 <= n <= MaxSupply - Issued`. Adds `n` to `Issued` and to its holding |
-| `asset_return(id, n)` | In `on_call` only. `1 <= n <=` the balance of the Application, and the sum returned in this frame is at most the maximum of the `assets` of the `app_call`. The calling Application holds the asset. Returns the net amount |
+| `asset_return(id, n)` | In `on_call` only. `1 <= n <=` the balance of the Application, and the sum returned in this frame is at most the return maximum of that asset in the `assets` of the `app_call`. The calling Application holds the asset. Returns the net amount |
 
 `asset_take`, `asset_send` and `asset_return` move units from one holding to another, so they pay
 the split of section 3.3 of PIP-56, at the current rates of the asset: `n` is the gross amount, the
-receiver gets the net amount, and a net amount of 0 aborts the call. The sum of the two current
-rates MUST be at most the `MaxRate` of the payload, which an asset created in the call always
+receiver gets the net amount, and a net amount of 0 aborts the call. `Check` does not test the
+rates: the function that moves the units does, and aborts the call unless the sum of the two
+current rates is at most the `MaxRate` of the payload, which an asset created in the call always
 meets since it has no policy; for `asset_send`, at most `max_rate` as well; and for an `asset_take`
 or an `asset_return` in `on_call`, at most the rate of that asset in the `assets` of the `app_call`
 as well. The code supplies `max_rate` because the units that it sends are often those of a user
@@ -717,9 +721,9 @@ a holding.
 **Between Applications.** In an `AppAssetCall`, the `assets` of an `app_call` has 0 to 4 entries,
 in strictly ascending order of `AssetID`: an asset that the payload lists or that the call created,
 the most units that the called code may take, the most that it may return, and the largest sum of
-the two rates that the calling code accepts. The maxima are in `0 .. MaxAssetSupply` and the rate is
-at most 10 000. In `on_call`, `asset_take` takes from the calling
-Application within that maximum, and `asset_return` gives back to it. `asset_send` pays accounts
+the two rates that the calling code accepts. The maxima are in `0 .. MaxAssetSupply` and the rate
+is at most 10 000. In `on_call`, `asset_take` takes from the calling Application within the take
+maximum, and `asset_return` gives back to it within the return maximum. `asset_send` pays accounts
 only.
 
 **Issuing.** An asset whose `Issuer` is an Application is created with no policy. Its `Issued`
@@ -774,14 +778,14 @@ are swept.
 
 **A count, not a clock.** An earlier draft bounded a call by a time that each node set for itself.
 Two honest validators with different machines could then disagree on one block. A count that every
-node makes alike gives the same guard with no disagreement, and it keeps what the timeout was for:
-the cost table that gas needs is still absent, because a step has no price.
+node makes alike gives the same guard with no disagreement and, like the timeout, it needs no
+cost table, because a step has no price.
 
 **Free computation, paid storage.** What a call leaves behind is bytes, and what it borrows is
 memory, so that is what it pays for. Computation leaves nothing behind, and the caps of a block
 already bound it.
 
-**A flat charge to the treasury.** The fee of a transaction goes to the proposer of its block, so
+**A charge to the treasury.** The fee of a transaction goes to the proposer of its block, so
 it costs a proposer nothing to fill its own blocks with its own calls. A charge that goes to the
 treasury costs a proposer what it costs anyone.
 
@@ -792,14 +796,12 @@ code takes what it needs within it, and what it does not take never moves.
 **An aborted call is included and pays.** If it were left out of the block, proposers and validators
 would run it for nothing, which is the cheapest way to exhaust them.
 
-**Renewal only during grace.** A second way of running the code, in which funds may leave and not
+**Only renewal during grace.** A second way of running the code, in which funds may leave and not
 enter, is hard to define for an Application that redeems shares, and it doubles what must be
 tested. An Application that wants its users to be able to leave lets them leave while it is live,
 or finishes.
 
-**No engine in the specification.** The validity of a module, the count of steps and the effect of
-every host function are defined here, so the choice of an interpreter or a compiler changes nothing
-that nodes agree on. A node can start with the simplest engine and move to a faster one without a
+**No engine in the specification.** A node can start with the simplest engine and move to a faster one without a
 change of protocol. This PIP therefore promises computation that is free and bounded, and makes no
 claim about its speed.
 
@@ -809,9 +811,6 @@ not ask for, or that takes the signer for its caller. Here an Application is ent
 code asks for it and never while it runs, it is credited only within a maximum that its own code
 stated, and called code never learns who signed. A call names the code that it expects, and one
 failure undoes the whole transaction, so there is no result that a caller can forget to check.
-
-**Independent of PIP-56.** An Application with its PAC is useful alone, and its record lives in a
-tree of its own, so neither PIP waits for the other.
 
 ## Backwards Compatibility
 
@@ -828,17 +827,18 @@ Implementations MUST pass at least these. They add no rule to the Specification.
 - **Agreement.** Two engines, and one engine on two kinds of processor, give the same outcome, the
   same charge and the same roots for every vector, including calls that abort on the last step.
 - **Validity.** A module with a floating-point instruction, a start function, an import that is not
-  a host function, an exported function other than `execute` and `on_call`, two memories, or a section that is
-  not named is rejected, by every engine. A record with a bit of `Flags` that is not named is
+  a host function, an export other than `execute` and `on_call`, two memories, or a section that
+  is not named is rejected, by every engine. A record with a bit of `Flags` that is not named is
   invalid.
 - **Abort.** A call that traps, runs out of steps, reads one chunk too many or passes `MaxCharge`
   is included, changes no byte of the file and no balance but those of the fee and the charge, and
   creates no account. The same call is invalid, not aborted, when `CodeSeq` does not match.
-- **PAC.** `pac_take` beyond `MaxPAC` aborts, in one call or in several; a take, a send back and a
+- **PAC.** `pac_take` beyond `MaxPAC` aborts, in one take or in several; a take, a send back and a
   second take count twice. `pac_send` to the treasury, a validator or an Application aborts. An
   amount of 0 or below aborts. A `Transfer` to an Application is invalid.
 - **Lifecycle.** At `ExpiresAt` a call is valid; at `ExpiresAt + 1` it is invalid and a renewal is
-  valid; one block after the grace period a renewal is invalid and a sweep is valid. A renewal and
+  valid; one block after the grace period a renewal is invalid and a sweep is valid if the
+  Application holds PAC. A renewal and
   a call in one block succeed in that order only.
 - **Finish.** `app_finish` sends all the PAC, and a later transaction to the Application in the
   same block is invalid. It aborts while `Holdings` is above 0.
@@ -849,7 +849,7 @@ Implementations MUST pass at least these. They add no rule to the Specification.
 - **Calls.** A call to an Application that calls back the first, or itself, aborts. So does a call
   with another `code_hash`, to an Application without `on_call`, in grace or finished, a ninth
   `app_call`, a `pac_take` beyond `max_pac` and a `pac_return` beyond `max_pac_back`. An abort in
-  the second callee leaves the file of the first unchanged. In `on_call`, `caller` has type `6`,
+  the second Application that is called leaves the file of the first unchanged. In `on_call`, `caller` has type `6`,
   and `pac_take` never lowers the balance of the signer. The pages of two instances beyond
   `MaxMemoryPages` abort.
 - **Issuing.** With PIP-56, an Application mints up to `MaxSupply`, burns part of its own holding,
@@ -870,7 +870,8 @@ Advice for implementers, which is not part of the consensus rules:
 
 - A transaction pool MUST NOT run the code of a pending call, at admission or when it checks its
   transactions again after a block: it checks what `Check` checks and nothing more, and SHOULD
-  limit the pending calls of one sender and of one Application.
+  limit the pending calls of one sender and of one Application. For an `AppSetCode` it verifies the
+  signature, the owner and the balance before it validates the module.
 - A node SHOULD apply at commit the result that it computed when it validated the block, and not
   run the calls again; the benchmark counts the executions that the node in fact makes.
 - A node that keeps compiled code keeps it under the hash of the code and the versions of the rules,
@@ -897,15 +898,17 @@ Advice for implementers, which is not part of the consensus rules:
   only to the treasury or a deposit, and that apply whole or not at all; an `AppAssetCall` moves
   amounts that depend on what the code does, within maxima that the payload states, and an aborted
   call still pays. Section 3.4 says that the cap is on the units ever issued, which holds for an
-  asset created by `AssetCreate`. The note "Working with PIP-58" describes an owner that was given
-  up as zero bytes, and a call bounded by a time.
+  asset created by `AssetCreate`. Section 2.3 asks for a `MaxRate` that the payload states for every
+  asset whose units leave a holding; an asset created in the call is not listed, and has no policy.
+  The note "Working with PIP-58" describes an owner that was given up as zero bytes, and a call
+  bounded by a time.
 
 ## Security Considerations
 
-**The owner.** An owner that can change the code can take the funds of an Application, and the mint
-of the assets that it issues. This PIP does not delay a change of code. Users are protected against
-a change between signing and inclusion, by `CodeHash` and `CodeSeq`, and against nothing else until
-the ownership is given up.
+**The owner.** An owner that can change the code can take the funds of an Application and controls
+the mint of the assets that it issues. This PIP does not delay a change of code: users are
+protected against a change between signing and inclusion, and against nothing else until the
+ownership is given up.
 
 **The state that a call runs on.** `CodeHash` and `CodeSeq` bind the code, not the data. Another
 call can change `/data` before a call is included, so what a wallet simulated is not a promise. The
@@ -924,23 +927,25 @@ account issued and that a deleted Application held are burned, while their reser
 issuer.
 
 **Calling another Application.** The calling Application trusts the code that it pins for what it
-lets it take, for what comes back and for the output. A callee whose owner changes the code, or
+lets it take, for what comes back and for the output. A called Application whose owner changes the
+code, or
 that nobody renews, makes every call through it abort: the signer pays the fee and the charge, and
-an Application without an owner that depends on such a callee loses that path for good. An
+an Application without an owner that depends on it loses that path for good. An
 Application MUST NOT take the state of another Application at one moment for a price: one
 transaction can move that state, use it and move it back.
+
+**Refusing a call.** Called code has two ways out. If it returns, all that it did stays, a take
+included, even when its output says that it refuses. If it aborts, the whole transaction is undone,
+not its part alone. Called code therefore tests its conditions before it writes or takes anything,
+and the calling code reads the output before it goes on.
 
 **The proposer.** A proposer chooses the calls of its block and their order. It can run a call of
 its own before a pending one. An Application whose outcome depends on the order of calls, a bet for
 example, must be designed for that.
 
-**Capacity.** A flat charge buys a place among the calls of a block at a known price, so a sender
+**Capacity.** The charge buys a place among the calls of a block at a known price, so a sender
 that pays for all of them delays the others for as long as it pays. The caps protect the nodes and
 the payments of a block; they do not make access to an Application fair.
-
-**Transfer rates.** With PIP-56, units that enter and leave an Application pay the transfer rates
-of their asset each time. An Application that holds an asset with rates must account for the net
-amounts that the host functions return, not for the amounts that it asked for.
 
 ## Copyright
 
