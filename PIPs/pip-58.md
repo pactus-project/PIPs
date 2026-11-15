@@ -551,9 +551,9 @@ deleted for good: nodes MAY drop the bytes of the file, and the record stays.
 #### Finishing
 
 `app_finish(to)` is a host function. No payload closes an Application: only its code does, so an
-Application without an owner can still close. Rules: `to` is an account address, and `Holdings` is
-0. If the Application has PAC, it sends all of it to `to`, as a `pac_send` that counts in
-`MaxPACOutputs`; if it has none, nothing is sent, no account is created and no send is counted. It
+Application without an owner can still close. Rules: `to` is an account address, and the
+Application has no holding. If it has PAC, it sends all of it to `to`, as a `pac_send` that counts
+in `MaxPACOutputs`; if it has none, nothing is sent, no account is created and no send is counted. It
 sets `Finished` and ends the code of the Application with success: no instruction of the
 Application runs after it, and nodes MAY drop its file. Rent that was paid and not used is
 not returned, so an Application that expects a short life rents a short period.
